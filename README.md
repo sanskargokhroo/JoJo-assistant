@@ -18,6 +18,8 @@
 
 ## Meet JoJo
 
+Developed by **[Sanskar Gokhroo](https://github.com/sanskargokhroo)**.
+
 - **Native presence.** A desktop dashboard, animated edge glow and voice states:
   listening, thinking, working and speaking. No browser window needed for the desktop UI.
 - **Your model account.** Gemini, OpenAI Responses or Anthropic Messages. Enter a

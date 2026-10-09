@@ -27,6 +27,8 @@ def files(root=ROOT):
 
 def audit(selected,root=ROOT):
     issues=[]
+    metadata_path=root/'JOJO_RELEASE_METADATA.json'
+    public_developer=json.loads(metadata_path.read_text(encoding='utf-8')).get('developer','') if metadata_path.is_file() else ''
     patterns=[('Google API key',re.compile(r'AIza[0-9A-Za-z_-]{35}')),
               ('Google opaque credential',re.compile(r'\bAQ\.[A-Za-z0-9_-]{25,}')),
               ('provider token',re.compile(r'\bsk-(?:proj-|ant-)?[A-Za-z0-9_-]{24,}')),
@@ -56,7 +58,8 @@ def audit(selected,root=ROOT):
                 literals=value if isinstance(value,(tuple,list)) else [value]
                 if any(isinstance(item,str) and len(item)>16 and not item.startswith(('your-','example-')) for item in literals):
                     issues.append((relative,'literal credential assignment'))
-        if any(value and value.casefold() in text.casefold() for value in private_values):issues.append((relative,'private owner/project identifier'))
+        public_credit_file=relative in ('README.md','LICENSE','JOJO_RELEASE_METADATA.json')
+        if any(value and value.casefold() in text.casefold() and not (public_credit_file and value==public_developer) for value in private_values):issues.append((relative,'private owner/project identifier'))
     return issues
 
 def export(selected,root=ROOT):
