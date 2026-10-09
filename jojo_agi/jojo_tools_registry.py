@@ -355,9 +355,12 @@ def deduplicate_and_organize_files(directory_path: str = ".", action: str = "fin
 def get_all_tools(include_disabled=False) -> List[Callable]:
     """Returns the list of all available tool callables for Gemini Function Calling."""
     from jojo_journal import remember_workflow
+    from jojo_workspace import search_knowledge, draft_workflow
     from jojo_security import audit_device_security, inspect_link, inspect_app_file, wifi_security_guidance
     from jojo_smart_home import list_smart_devices, control_smart_device
     tools = [
+        search_knowledge,
+        draft_workflow,
         list_smart_devices,
         control_smart_device,
         audit_device_security,

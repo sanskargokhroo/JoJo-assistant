@@ -88,13 +88,25 @@ Payment restrictions remain active regardless of switches. Arbitrary code and
 generated executable plugins are locked off; there is no unreviewed plugin marketplace.
 The memory-tool switch is not a “stop recording all history” switch.
 
+## Your native workspace
+
+Open **Workspace** for editable memory cards, selected-document search with file/page
+citations, reviewed routines and schedules, task recovery, conversation handoffs,
+temporary capability permissions, encrypted text-file undo and outcome feedback.
+Private session suppresses new conversation persistence and saved-context recall.
+The executor journals action progress and requires observations after known mutations.
+[How to use these features and their limits →](JOJO_WORKSPACE.md)
+
 ## Android companion
 
 Native overlays, observed accessibility actions and verified voice sessions are
 implemented in `android/`. Pair it with your own laptop backend, grant the required
 permissions and connect USB. [Android setup →](android/README.md)
 
-The phone cannot operate independently while the laptop is off. After reboot,
+Full paired AI tasks still require the laptop. A separate **Local essentials** mode
+supports authenticated app launch, time/battery, timer and lock commands without it.
+Optional notification summaries require explicit notification access and an allowlist.
+After reboot,
 modern Android requires a user tap to resume the microphone. OEM battery rules,
 inaccessible controls and app updates can affect behavior. Current source changes
 have not all been tested on a physical phone; this repository preparation does not

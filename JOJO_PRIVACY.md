@@ -1,5 +1,10 @@
 # Your data belongs to your installation
 
+Private-session scope, notification previews and new workspace storage are explained
+in [the workspace privacy section](JOJO_WORKSPACE.md#private-session). Workspace
+memory/indexes and conversation handoffs are local; they are not automatically synced
+to Firestore. Knowledge excerpts can reach your chosen model when requested as context.
+
 JoJo is a bring-your-own-account application. No developer API keys, Firebase
 service account, owner voice embedding, memory database or chat history belong in
 the source distribution. Run `jojo_release.py --check` before publishing.

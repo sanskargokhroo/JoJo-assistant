@@ -71,16 +71,16 @@ adaptation, not self-training or proof of AGI. Never override permissions based 
 Smart devices require configured integrations and an explicit entity allowlist; use the smart-home
 tools only for the user's requested device/action. Never claim all brands are connected automatically.
 
-COGNITIVE AGI CAPABILITIES:
-You possess universal computer agency:
-1. Shell & System: You can execute PowerShell commands, launch applications, check diagnostics, and inspect running processes.
-2. Code Interpreter: You can write, execute, and debug Python code to perform any calculation, data manipulation, automation, or file processing.
-3. Web Perception: You can search DuckDuckGo live and read full web pages / documentation to answer real-time questions.
-4. File Operations: You can read, write, append, search, and organize files across the workspace and Desktop.
-5. Visual Perception & UI-TARS GUI Agent: You can capture the desktop or mobile screen, analyze UI, and execute high-precision UI-TARS actions (clicks, drags, typing, hotkeys, scroll) or run autonomous multi-turn GUI tasks via `run_gui_task_autonomous` or `execute_ui_tars_action`.
-6. Dynamic Skill Learning: When faced with a reusable workflow, you can synthesize, test, and register a new Python tool.
-7. Hierarchical Memory: You recall relevant past experiences and vector semantic memories.
-8. JoJo Deep Research & System Suite: You can perform recursive multi-hop investigations (`research_deep_topic`), generate morning briefings (`get_morning_briefing`), manage Git repositories (`git_vcs_control`), extract PDFs (`extract_pdf_text`), fetch live weather (`check_live_weather`), query REST APIs (`send_http_request`), and execute database queries (`query_database_sqlite`).
+AVAILABLE CAPABILITIES:
+Only the current tool list defines what you can execute. Shell, arbitrary Python,
+raw HTTP/SQL/Git and executable skill generation are disabled.
+Use search_knowledge for owner-selected documents and cite the returned file/page.
+Use draft_workflow to propose reusable instructions; approval and scheduling happen
+in the native Workspace. Do not say a draft has been enabled or executed.
+Desktop controls, file tools, research, memory and allowlisted smart-home tools may
+be disabled by the owner. Respect current capability checks at every step.
+Corrections replace the mistaken detail, not the whole goal. If 'usko', 'previous'
+or a contact reference is ambiguous, ask before sending or changing anything.
 
 
 COGNITIVE EXECUTION RULES (Plan -> Act -> Observe -> Reflect):
@@ -117,16 +117,14 @@ def run_agent_cycle(goal, speak_callback=None, thought_callback=None, context_no
             from jojo_journal import context
             prompt += context(goal)
             prompt += recall_relevant_episodes(goal)
-            if _recent_context:
-                prompt += "\nRecent conversation context (do not repeat already completed work):\n" + "\n".join(_recent_context[-8:])
+            # Journal context is private-session aware; global conversation
+            # lists would retain private turns and mix devices.
             if thought_callback:
                 thought_callback("Planning and checking each requested step…")
             with make_client() as client:
                 result = run_tool_loop(client, goal, prompt, get_all_tools(), on_state=update_agent_state)
             set_outcome(result.status)
             update_agent_state(thought=result.status.replace("_", " "), active=False, tool="", result=result.reply, status=result.status)
-            _recent_context.extend(["User: " + goal, "JoJo (" + result.status + "): " + result.reply])
-            del _recent_context[:-8]
             log_episode(goal, "Explicit tool execution and verification", [step["tool"] for step in result.steps], result.reply, result.status)
             return result.reply
         except TaskCancelled:

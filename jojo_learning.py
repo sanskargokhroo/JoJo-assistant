@@ -11,6 +11,8 @@ def tables(db):
         db.execute("ALTER TABLE learning_outcomes ADD COLUMN result TEXT DEFAULT ''")
 
 def learn(task):
+    from jojo_workspace import private_session
+    if task.get('private') or private_session():return
     if task.get('status') not in {'completed','failed','incomplete','cancelled','needs_input'}:return
     with connect() as db:
         tables(db)
@@ -28,6 +30,8 @@ def owner_command(message):
         return f'Learning memory: {corrections} owner corrections; task outcomes: '+str(dict(rows))+'. Yeh memory-based adaptation hai, model retraining nahi.'
     match=re.match(r'(?is)^(?:yaad rakho|yaad rakhna|remember this|correction:|याद रखो|याद रखना)\s*[:,-]?\s*(.+)$',value)
     if not match:return None
+    from jojo_workspace import private_session
+    if private_session():return 'Private session on hai; correction save nahi ki.'
     text=match.group(1).strip()
     from jojo_policy import require_allowed
     try:require_allowed(text)

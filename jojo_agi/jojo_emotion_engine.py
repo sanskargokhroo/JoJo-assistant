@@ -305,6 +305,8 @@ def get_self_reflection(query_type: str = "who_am_i") -> str:
 
 def log_interaction_pattern(text: str, mood: str, response_type: str):
     """Logs conversation patterns to SQLite for behavioral modeling."""
+    from jojo_workspace import private_session
+    if private_session():return
     try:
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()

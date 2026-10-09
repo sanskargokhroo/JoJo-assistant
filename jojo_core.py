@@ -146,6 +146,8 @@ init_memory_db()
 # 🧠 AUTONOMOUS SELF-LEARNING & DYNAMIC SKILL SYSTEM
 # ==========================================
 def save_user_fact(key, value, category="general"):
+    from jojo_workspace import private_session
+    if private_session():return
     ts = time.time()
     try:
         conn = sqlite3.connect(DB_FILE)
@@ -170,6 +172,8 @@ def save_user_fact(key, value, category="general"):
             pass
 
 def get_user_facts():
+    from jojo_workspace import private_session
+    if private_session():return {}
     facts = {}
     try:
         conn = sqlite3.connect(DB_FILE)
@@ -183,6 +187,8 @@ def get_user_facts():
     return facts
 
 def save_learned_skill(trigger_phrase, action_type, action_payload):
+    from jojo_workspace import private_session
+    if private_session():return
     ts = time.time()
     clean_trig = trigger_phrase.strip().lower()
     try:
@@ -221,6 +227,8 @@ def get_learned_skills():
     return skills
 
 def check_and_learn_skills(text):
+    from jojo_workspace import private_session
+    if private_session():return None
     clean = text.strip()
     low = clean.lower()
 
@@ -258,6 +266,8 @@ def check_and_learn_skills(text):
     return None
 
 def check_learned_skill_trigger(text):
+    from jojo_workspace import private_session
+    if private_session():return None
     from jojo_capabilities import enabled
     if not enabled('desktop') or not enabled('memory'):
         return None
@@ -359,6 +369,8 @@ def is_pc_action_command(text):
     return any(k in t for k in PC_ACTION_KEYWORDS)
 
 def search_cached_memory(question):
+    from jojo_workspace import private_session
+    if private_session():return None
     # Never serve PC action commands from cache — they must always execute live!
     if is_pc_action_command(question):
         return None
@@ -393,6 +405,8 @@ def search_cached_memory(question):
     return None
 
 def save_memory_and_cache(question, answer):
+    from jojo_workspace import private_session
+    if private_session():return
     clean_q = clean_text_for_match(question)
     ts = time.time()
     # Don't cache short, incomplete, or corrupted answers
@@ -619,7 +633,8 @@ def ask_jojo_brain(prompt_text):
             response = chat.send_message(prompt_text)
             reply = (response.text or "").strip()
             if reply:
-                threading.Thread(target=save_memory_and_cache, args=(prompt_text, reply), daemon=True).start()
+                from contextvars import copy_context
+                threading.Thread(target=copy_context().run, args=(save_memory_and_cache, prompt_text, reply), daemon=True).start()
                 return reply
             raise RuntimeError("Model returned an empty answer")
         except Exception as err:
@@ -1773,7 +1788,9 @@ def _speak_now(text, engine=None):
     if not clean_text:
         return
 
-    print(f"JoJo (Voice 2 Madhur): {clean_text}")
+    from jojo_workspace import private_session
+    private = private_session()
+    if not private:print(f"JoJo (Voice 2 Madhur): {clean_text}")
     update_voice_state(status="speaking", reply=clean_text)
 
     acquired = voice_lock.acquire()
@@ -1781,6 +1798,17 @@ def _speak_now(text, engine=None):
     try:
         is_speaking = True
         last_speaking_time = time.time()
+        if private:
+            fallback = subprocess.Popen([sys.executable, str(ROOT / 'jojo_speech_fallback.py')],
+                stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
+            fallback.stdin.write(clean_text.encode('utf-8'));fallback.stdin.close()
+            deadline = time.monotonic() + 120
+            while fallback.poll() is None:
+                if speech_cancel.is_set() or time.monotonic() > deadline:
+                    fallback.terminate();fallback.wait(timeout=3);break
+                time.sleep(.1)
+            return
         try:
             # 1. Synthesize whole sentence at once for smooth, continuous, non-stop speech
             # This completely eliminates mid-speech freezing, stuttering, and chunk delays!
@@ -1858,6 +1886,7 @@ def _speak_now(text, engine=None):
 _preferences = read_preferences()
 AUDIO_DEVICE_ID = _preferences.get("audio_device_id")
 microphone_paused = threading.Event()
+barge_in_enabled = bool(read_preferences().get('barge_in_enabled', False))
 speech_cancel = threading.Event()
 shutdown_requested = threading.Event()
 AUDIO_SAMPLE_RATE = 16000
@@ -1988,9 +2017,9 @@ _speech_start_lock = threading.Lock()
 
 def _speech_worker():
     while True:
-        text, engine = _speech_queue.get()
+        text, engine, context = _speech_queue.get()
         try:
-            _speak_now(text, engine)
+            context.run(_speak_now, text, engine)
         except Exception as exc:
             report_audio_error("Speech playback failed: " + type(exc).__name__)
         finally:
@@ -2004,7 +2033,8 @@ def speak(text, engine=None):
             _speech_thread = threading.Thread(target=_speech_worker, name="JoJo speech", daemon=True)
             _speech_thread.start()
     try:
-        _speech_queue.put_nowait((str(text), engine))
+        from contextvars import copy_context
+        _speech_queue.put_nowait((str(text), engine, copy_context()))
     except queue.Full:
         report_audio_error("Speech queue full; the full response is available in the desktop chat.")
 
@@ -2032,7 +2062,7 @@ def get_vad_listener():
     global vad_listener
     if vad_listener is None:
         vad_listener = MicrophoneListener(sample_rate=AUDIO_SAMPLE_RATE, device=AUDIO_DEVICE_ID,
-            suppressed=lambda: microphone_paused.is_set() or is_speaking or time.time() - last_speaking_time < .35,
+            suppressed=lambda: microphone_paused.is_set() or (not barge_in_enabled and (is_speaking or time.time() - last_speaking_time < .35)),
             on_error=report_audio_error, language=read_preferences().get("speech_language", "hi-IN"))
     return vad_listener
 
@@ -2040,6 +2070,15 @@ def listen_command(duration=3.0):
     return get_vad_listener().listen(timeout=duration, max_speech_duration=30)
 
 def dispatch_command(message, source="laptop"):
+    from jojo_workspace import set_private
+    if message.strip().casefold() in ('privacy on', 'private mode on', 'privacy mode on', 'ye yaad mat rakhna'):
+        set_private(True)
+        from jojo_runtime import current_task
+        if current_task():current_task().private=True
+        return 'Private session on. Nayi conversation save nahi hogi; online model ko request ab bhi ja sakti hai.'
+    if message.strip().casefold() in ('privacy off', 'private mode off', 'privacy mode off'):
+        set_private(False)
+        return 'Private session off. Agli conversation normal memory settings follow karegi.'
     from jojo_capabilities import enabled
     if not enabled('desktop') and source == 'laptop':
         # Keep chat available, but do not enter legacy direct OS action handlers.
@@ -2100,6 +2139,8 @@ task_manager = TaskManager(dispatch_command, speaker=lambda text: speak(text), j
 # 🌐 7. LOCAL FASTAPI GATEWAY & WEB CONTROL CENTER
 # ==========================================
 app = FastAPI(title="JoJo AGI Control Center")
+from jojo_workspace_api import register as register_workspace
+register_workspace(app, task_manager, stop_speech)
 
 _allowed_origins = ["http://127.0.0.1:8000", "http://localhost:8000"]
 _allowed_origins.extend(value.strip() for value in os.environ.get("JOJO_ALLOWED_ORIGINS", "").split(",") if value.strip())
@@ -2136,6 +2177,7 @@ class ChatReq(BaseModel):
     source: str = "laptop"  # 'laptop' (default) or 'mobile'
 
 class ConfigReq(BaseModel):
+    barge_in_enabled: bool = None
     boss_threshold: float = None
     session_timeout: int = None
     voice_engine: str = None
@@ -2323,6 +2365,8 @@ def api_get_status():
 
 @app.get("/api/tts")
 async def api_tts(text: str):
+    from jojo_workspace import private_session
+    if private_session():raise HTTPException(409,'Private session uses native offline speech; cached HTTP audio is disabled.')
     clean = text.strip()
     if not clean:
         raise HTTPException(status_code=400, detail="Empty text")
@@ -2573,6 +2617,9 @@ def api_clear_chat_history():
         conn = sqlite3.connect(DB_FILE)
         c = conn.cursor()
         c.execute("DELETE FROM chat_history")
+        for table in ('qa_cache','episodic_memory','behavior_log'):
+            if c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?",(table,)).fetchone():
+                c.execute('DELETE FROM '+table)
         conn.commit()
         conn.close()
         return {"status": "cleared"}
@@ -2656,7 +2703,7 @@ def api_get_mobile_info():
 
 @app.post("/api/config")
 def api_update_config(req: ConfigReq):
-    global BOSS_SIMILARITY_THRESHOLD, SESSION_TIMEOUT, AUDIO_DEVICE_ID
+    global BOSS_SIMILARITY_THRESHOLD, SESSION_TIMEOUT, AUDIO_DEVICE_ID, barge_in_enabled
     if req.boss_threshold is not None:
         BOSS_SIMILARITY_THRESHOLD = max(0.50, min(0.95, req.boss_threshold))
     if req.session_timeout is not None:
@@ -2674,6 +2721,9 @@ def api_update_config(req: ConfigReq):
         if vad_listener is not None:
             vad_listener.language = req.speech_language
     values = {"audio_device_id": AUDIO_DEVICE_ID, "session_timeout": SESSION_TIMEOUT, "boss_threshold": BOSS_SIMILARITY_THRESHOLD}
+    if req.barge_in_enabled is not None:
+        barge_in_enabled=req.barge_in_enabled
+        values['barge_in_enabled']=barge_in_enabled
     if req.speech_language:
         values["speech_language"] = req.speech_language
     save_preferences(values)
@@ -2701,6 +2751,7 @@ def api_get_voice_state():
         st["owner_voice_error"] = voice_verifier.error
         st["audio_device_id"] = AUDIO_DEVICE_ID
         st["speech_language"] = vad_listener.language if vad_listener else read_preferences().get("speech_language", "hi-IN")
+        st['barge_in_enabled']=barge_in_enabled
         st["task"] = task_manager.get(task_manager.active_id) if task_manager.active_id else None
         return st
 
@@ -3024,6 +3075,8 @@ def api_security_status():
 
 @app.post("/api/security/quick_scan")
 def api_security_quick_scan():
+    from jojo_capabilities import enabled
+    if not enabled('security'):raise HTTPException(403,'Security capability is disabled.')
     from jojo_security import start_defender_scan
     return start_defender_scan()
 
@@ -3064,6 +3117,8 @@ def api_shutdown():
     return {"status": "shutting_down"}
 
 def start_services():
+    from jojo_routines import start as start_routines
+    start_routines(task_manager,shutdown_requested)
     from jojo_cloud_memory import start as start_memory_sync
     start_memory_sync(db,shutdown_requested)
     port = int(os.environ.get("JOJO_PORT", "8000"))
@@ -3090,6 +3145,7 @@ def run_voice_loop():
             if microphone_paused.is_set():
                 time.sleep(.15)
                 continue
+            was_speaking=is_speaking
             text, mono_audio = listen_command(duration=3.0)
             if not text:
                 if is_active_session and not task_manager.active_id and time.time() - last_interaction_time > SESSION_TIMEOUT:
@@ -3099,6 +3155,8 @@ def run_voice_loop():
             update_voice_state(transcript=text)
             clean = strip_wake_word(text)
             wake_detected = clean != text.strip()
+            if was_speaking and not wake_detected:
+                continue
             if is_stop_command(clean):
                 # Stop is deliberately available without speaker authentication.
                 task_manager.cancel_task()
@@ -3113,6 +3171,7 @@ def run_voice_loop():
             res = verify_boss(mono_audio, threshold=BOSS_SIMILARITY_THRESHOLD)
             update_voice_state(similarity=res.similarity)
             if not res.is_match:
+                if was_speaking:continue
                 is_active_session = False
                 refusal = "आप मेरे बॉस नहीं हो" if boss_profile is not None else "Pehle desktop Settings mein apni voice enroll kijiye."
                 update_voice_state(status="access_denied", speaker="stranger", reply=refusal, active=False)
@@ -3120,6 +3179,7 @@ def run_voice_loop():
                     speak(refusal)
                 continue
             is_active_session = True
+            if was_speaking:stop_speech()
             last_interaction_time = time.time()
             update_voice_state(status="listening", speaker="boss", active=True)
             if not clean:

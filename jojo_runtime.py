@@ -16,6 +16,9 @@ import uuid
 _context = ContextVar('jojo_task_context', default=None)
 _device = ContextVar('jojo_device', default='laptop')
 
+def current_task():
+    return _context.get()
+
 def bind_device(source):
     if source not in ('laptop', 'mobile'):
         raise ValueError('Unknown target device')
@@ -45,6 +48,8 @@ def report_progress(message, tool=None):
         with task.lock:
             task.progress = message
             task.events.append({'time': time.time(), 'message': message, 'tool': tool})
+        if task.persist:
+            task.persist(task)
 
 def set_outcome(status):
     task = _context.get()
@@ -64,6 +69,7 @@ def is_stop_command(text):
 def needs_planning(text):
     """Keep compound instructions away from single-action substring handlers."""
     value = normalize_command(text)
+    if re.search(r'^(?:nahi[, ]|nahin[, ]|no[, ]|correction:|usi ko\b|usko\b|pichhli\b|previous\b)',value):return True
     return bool(re.search(
         r'\b(and|then|aur|phir|fir|uske baad|karke|kholke|usme|usmein)\b|और|फिर|उसके बाद|करके|उसमें|खोलकर', value
     )) or bool(re.search(r'\b(type|write|save|likh|paste|create|rename|move|copy|delete)\b|लिख|सेव|बनाओ', value))
@@ -81,6 +87,8 @@ class Task:
     message: str
     source: str
     speak: bool
+    private: bool = False
+    persist: object = None
     status: str = 'queued'
     progress: str = 'Waiting'
     reply: str = ''
@@ -96,7 +104,7 @@ class Task:
     def snapshot(self):
         with self.lock:
             return {key: copy.deepcopy(getattr(self, key)) for key in (
-                'id', 'message', 'source', 'speak', 'status', 'progress', 'reply', 'error', 'created_at'
+                'id', 'message', 'source', 'speak', 'private', 'status', 'progress', 'reply', 'error', 'created_at'
             )} | {'events': list(self.events)}
 
 class TaskManager:
@@ -117,7 +125,9 @@ class TaskManager:
             raise ValueError('Command must contain 1 to 12000 characters.')
         if source not in ('laptop', 'mobile'):
             raise ValueError('Unknown device source.')
-        task = Task(uuid.uuid4().hex, message, source, speak)
+        from jojo_config import read_preferences
+        task = Task(uuid.uuid4().hex, message, source, speak,
+                    private=bool(read_preferences().get('private_session', False)), persist=self._remember)
         with self.lock:
             if self.closed:
                 raise ValueError('JoJo is shutting down; no new task was started.')
@@ -172,7 +182,7 @@ class TaskManager:
         return task.reply or task.error
 
     def _remember(self, task):
-        if self.journal:
+        if self.journal and not task.private:
             try:
                 self.journal(task.snapshot())
             except Exception as exc:
@@ -189,6 +199,7 @@ class TaskManager:
                 with task.lock:
                     task.status, task.progress = 'running', 'Understanding request…'
                     task.deadline = time.monotonic() + self.task_seconds
+                self._remember(task)
                 token = _context.set(task)
                 try:
                     checkpoint()
@@ -210,10 +221,13 @@ class TaskManager:
                     self._remember(task)
                     task.done.set()
                 if task.speak and self.speaker and not task.cancel.is_set():
+                    speech_token = _context.set(task)
                     try:
                         self.speaker(task.reply)
                     except Exception:
                         pass  # Voice failure must not discard the visible task result.
+                    finally:
+                        _context.reset(speech_token)
             finally:
                 with self.lock:
                     self.active_id = None

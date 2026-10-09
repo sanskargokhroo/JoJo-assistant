@@ -35,6 +35,16 @@ public class MainActivity extends Activity {
             }).show());
         button(panel,"Background battery settings",()->startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)));
         button(panel,"Local encrypted PIN vault",()->startActivity(new Intent(this,PinVaultActivity.class)));
+        button(panel,"Local essentials • without laptop",()->startActivity(new Intent(this,JojoOfflineActivity.class)));
+        EditText notificationApps=new EditText(this);notificationApps.setHint("Notification package allowlist, comma separated");
+        notificationApps.setText(getSharedPreferences("jojo",0).getString("notification_apps","com.whatsapp"));panel.addView(notificationApps);
+        Switch notificationToggle=new Switch(this);notificationToggle.setText("Notification summaries (unlocked phone only)");
+        notificationToggle.setChecked(getSharedPreferences("jojo",0).getBoolean("notifications_enabled",false));panel.addView(notificationToggle);
+        notificationToggle.setOnCheckedChangeListener((button,enabled)->{
+            getSharedPreferences("jojo",0).edit().putBoolean("notifications_enabled",enabled).putString("notification_apps",notificationApps.getText().toString().trim()).apply();
+            JojoNotificationService.clear();if(enabled)startActivity(new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS));
+        });
+        button(panel,"Clear notification buffer",()->JojoNotificationService.clear());
         TextView startup=new TextView(this);startup.setTextColor(Color.LTGRAY);startup.setText("Listening stays on when you close this screen. After reboot, tap Resume JoJo in notifications. Force-stop requires reopening the app. Allow notifications and choose Unrestricted battery in system app settings if needed. Phone commands still require the laptop/USB connection.");panel.addView(startup);
         ScrollView scroll=new ScrollView(this);scroll.addView(panel);setContentView(scroll);
     }
@@ -54,6 +64,8 @@ public class MainActivity extends Activity {
             if(request)Toast.makeText(this,"Say JoJo after leaving this screen",Toast.LENGTH_LONG).show();
     }
     private void stopJoJo(){
+        JojoNotificationService.clear();
+        getSharedPreferences("jojo",0).edit().putBoolean("notifications_enabled",false).apply();
         getSharedPreferences("jojo",0).edit().putBoolean("listen_enabled",false).apply();
         VoiceService.stopNow();
         stopService(new Intent(this,VoiceService.class));

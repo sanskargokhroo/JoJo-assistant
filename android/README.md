@@ -128,6 +128,10 @@ Platform references: [Android intents](https://developer.android.com/guide/compo
 
 ## Stop and uninstall (source only)
 
+New source controls include **Local essentials — without laptop** and opt-in
+**Notification summaries**. See [commands, permissions and limitations](../JOJO_WORKSPACE.md#android-source-additions).
+These additions have Java/manifest validation but still need physical-phone testing.
+
 The native dashboard now has **Stop JoJo** and **Uninstall JoJo**. Stop disables
 listening/resume until Start is tapped. Uninstall opens Android's system removal
 confirmation; it does not erase the laptop or Firestore. See

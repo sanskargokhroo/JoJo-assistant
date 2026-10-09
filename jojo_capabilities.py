@@ -13,11 +13,13 @@ CATALOG={
 GROUPS={
  'smart_home':{'list_smart_devices','control_smart_device'},
  'security':{'audit_device_security','inspect_link','inspect_app_file','wifi_security_guidance'},
- 'memory':{'remember_workflow','search_semantic_memories','save_semantic_fact'},
- 'files':{'read_local_file','write_local_file','append_to_file','list_local_directory','search_local_files','extract_pdf_text','deduplicate_and_organize_files'},
+ 'memory':{'remember_workflow','search_semantic_memories','save_semantic_fact','draft_workflow'},
+ 'files':{'read_local_file','write_local_file','append_to_file','list_local_directory','search_local_files','extract_pdf_text','deduplicate_and_organize_files','search_knowledge'},
  'web':{'search_the_web','read_webpage_content','research_deep_topic','get_morning_briefing','check_live_weather'},
 }
-def enabled(group):return read_preferences().get('capabilities',{}).get(group,True)
+def enabled(group):
+    from jojo_permissions import effective
+    return effective(group,read_preferences().get('capabilities',{}).get(group,True))
 def allowed_tool(name):
     group=next((group for group,names in GROUPS.items() if name in names),'desktop')
     return enabled(group) and read_preferences().get('capabilities',{}).get('tool:'+name,True)

@@ -1,6 +1,7 @@
 """Shared, local configuration. Environment variables override .env values."""
 import json
 import os
+import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -51,10 +52,13 @@ def read_preferences():
     except (OSError, ValueError):
         return {}
 
+_preferences_lock=threading.RLock()
+
 def save_preferences(values):
-    previous = read_preferences()
-    previous.update(values)
-    path = DATA_DIR / 'jojo_preferences.json'
-    temp = path.with_suffix('.tmp')
-    temp.write_text(json.dumps(previous, indent=2), encoding='utf-8')
-    temp.replace(path)
+    with _preferences_lock:
+        previous = read_preferences()
+        previous.update(values)
+        path = DATA_DIR / 'jojo_preferences.json'
+        temp = path.with_suffix('.tmp')
+        temp.write_text(json.dumps(previous, indent=2), encoding='utf-8')
+        temp.replace(path)

@@ -162,6 +162,8 @@ def format_report(report):
     return '\n'.join(lines)
 
 def security_command(message):
+    from jojo_capabilities import enabled
+    if not enabled('security'):return None
     low=message.casefold()
     if low.startswith(('app check ', 'file safety check ')):
         prefix='app check ' if low.startswith('app check ') else 'file safety check '
@@ -184,7 +186,8 @@ def start_security_monitor(stop_event):
     if _worker and _worker.is_alive():return
     def run():
         while not stop_event.is_set():
-            audit_device_security()
+            from jojo_capabilities import enabled
+            if enabled('security'):audit_device_security()
             if stop_event.wait(300):break
     _worker=threading.Thread(target=run,name='JoJo security monitor',daemon=True);_worker.start()
 

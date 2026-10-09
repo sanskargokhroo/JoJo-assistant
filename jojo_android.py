@@ -18,6 +18,7 @@ from jojo_policy import PAYMENT_HANDOFF
 from jojo_inbox import read_mode, report_items, offer, advance, read_action_allowed
 
 class MobileInput(BaseModel):
+    notifications: str = Field(default='', max_length=60000)
     saved_unlock_scope: str = Field(default='', max_length=250)
     unlock_verified_id: str = Field(default='', max_length=100)
     auth_required: bool = False
@@ -67,6 +68,10 @@ def register(app, core):
         return {'state':'working','session':state['session'],'action':{'type':'prepare_unlock','scope':scope,'command_id':command_id,'issued_ms':int(time.time()*1000)}}
 
     def plan(req):
+        from jojo_notifications import notification_intent, summarize_notifications
+        if notification_intent(state['goal']):
+            if req.device_locked:return finish('Phone unlock kijiye; locked screen ki notifications read nahi karunga.','needs_input')
+            return finish(summarize_notifications(req.notifications),'completed' if req.notifications else 'needs_input')
         if state['unlocking']:
             unlock=state['unlocking']
             if unlock['phase']=='prepare' and req.result.startswith('unlock preparing:'):
@@ -158,7 +163,7 @@ If duplicate names cannot be distinguished, ask the user. Do not claim delivered
             from google.genai import types
             with make_client() as client:
                 response = client.models.generate_content(model=MODEL, contents=json.dumps(payload, ensure_ascii=False),
-                    config=types.GenerateContentConfig(system_instruction=prompt+context(state['goal']), response_mime_type='application/json', temperature=.1))
+                    config=types.GenerateContentConfig(system_instruction=prompt+('' if state.get('private') else context(state['goal'],source='mobile')), response_mime_type='application/json', temperature=.1))
             action = json.loads(response.text)
             try:
                 action = validate_action(action, req.apps, req.screen, state['install_grant'])
@@ -218,9 +223,10 @@ If duplicate names cannot be distinguished, ask the user. Do not claim delivered
 
     def finish(reply, status):
         status = status if status in ('completed','incomplete','needs_input') else 'incomplete'
-        record({'id': state['id'], 'created_at': time.time(), 'source': 'mobile','device_id':state['device_id'], 'message': state['goal'],
+        record({'id': state['id'], 'created_at': time.time(), 'source': 'mobile','private':state.get('private',False),'device_id':state['device_id'], 'message': state['goal'],
                 'reply': reply, 'status': status, 'events': state['steps']})
         state['clarification'] = state['goal'] if status == 'needs_input' and not state['pending_install'] else ''
+        state['last_goal'],state['last_reply'],state['last_device_id']=state['goal'],reply,state['device_id']
         state['goal'] = ''
         state['expires'] = time.monotonic()+90
         return {'state': 'speaking', 'session': state['session'], 'reply': reply, 'action': {'type': 'finish'}}
@@ -263,11 +269,30 @@ If duplicate names cannot be distinguished, ask the user. Do not claim delivered
             pending = state['pending_install'] if awake else None
             clarification = state['clarification'] if awake else ''
             inbox = state['inbox'] if awake else None
-            state.update(session=state['session'] if awake else secrets.token_urlsafe(24), expires=time.monotonic()+90,
+            from jojo_workspace import private_session,set_private
+            state.update(private=private_session(),session=state['session'] if awake else secrets.token_urlsafe(24), expires=time.monotonic()+90,
                          deadline=time.monotonic()+300, goal=clean, steps=[], id=uuid.uuid4().hex,
                          device_id=req.device_id, pending_install=None, install_grant=None, clarification='',
                          inbox=None,read_mode=read_mode(clean),read_package='',observations=[],reply_draft=None,closing='',locking=False,unlocking=None,unlock_attempted=set())
             from jojo_device_lock import lock_intent, UNLOCK_REPLY, request_windows_lock
+            if clean.casefold().strip(' .!') in ('privacy on','private mode on','privacy off','private mode off'):
+                private=clean.casefold().strip(' .!').endswith('on')
+                set_private(private)
+                if private:state['private']=True
+                return finish('Private session '+('on' if private else 'off')+'. Online AI requests may still occur.','completed')
+            if clean.casefold().strip(' .!') in ('continue on laptop','laptop par continue karo'):
+                from jojo_handoff import create
+                try:
+                    if state.get('last_device_id')!=req.device_id:raise ValueError('Is phone ki previous conversation available nahi hai.')
+                    create('mobile','laptop',state.get('last_goal',''),state.get('last_reply',''))
+                    return finish('Laptop Workspace ke Handoffs tab mein review karke Accept kijiye. Koi laptop action abhi execute nahi kiya.','completed')
+                except ValueError as exc:return finish(str(exc),'needs_input')
+            if clean.casefold().strip(' .!') in ('continue laptop task','laptop wala kaam continue karo'):
+                from jojo_handoff import pending,take
+                items=pending('mobile')
+                if len(items)!=1:return finish('Ek laptop handoff select kijiye; abhi zero ya multiple pending handoffs hain.','needs_input')
+                state['goal']=take(items[0]['id'],'mobile')
+                return {'state':'thinking','session':state['session'],'action':{'type':'observe'}}
             intent=lock_intent(clean,'mobile')
             if intent:
                 if intent[0]=='unlock':
@@ -308,7 +333,8 @@ If duplicate names cannot be distinguished, ask the user. Do not claim delivered
             if blocked_reason(clean):
                 return finish(REFUSAL, 'needs_input')
             # Ask the verified companion for a fresh screen only after wake + owner match.
-            return {'state': 'thinking', 'session': state['session'], 'action': {'type': 'observe'}}
+            from jojo_notifications import notification_intent
+            return {'state': 'thinking', 'session': state['session'], 'action': {'type': 'observe', 'notifications':notification_intent(clean)}}
 
     @app.post('/api/mobile/step')
     def step(req: MobileInput, request: Request):

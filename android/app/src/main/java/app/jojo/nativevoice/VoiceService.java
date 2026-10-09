@@ -20,6 +20,7 @@ public class VoiceService extends Service {
         VoiceService service=instance;
         if(service==null)return;
         service.running=false;
+        JojoNotificationService.clear();
         service.session="";
         if(service.connection!=null){try{service.connection.disconnect();}catch(Exception ignored){}}
         AudioRecord audio=service.recorder;
@@ -120,6 +121,7 @@ public class VoiceService extends Service {
             String result=action.optString("type").equals("observe")?"Fresh observation requested":onMain(()->{if(!running||ScreenService.instance==null)return "failed: service stopped";return ScreenService.instance.execute(next);});
             Thread.sleep(action.optString("type").equals("wait")?3500:650);
             input=screen();input.put("session",session);input.put("result",result);
+            if(action.optBoolean("notifications",false))input.put("notifications",JojoNotificationService.snapshot(this));
             response=post("step",input);
         }
     }

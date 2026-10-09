@@ -90,6 +90,8 @@ def compute_embedding(text: str) -> Optional[np.ndarray]:
 
 def store_semantic_memory(content: str, category: str = "general") -> str:
     """Stores a fact or knowledge item with its semantic vector embedding."""
+    from jojo_workspace import private_session
+    if private_session():return 'Private session: memory was not saved.'
     vec = compute_embedding(content)
     if vec is None:
         return "⚠️ Failed to generate embedding for semantic memory."
@@ -107,6 +109,8 @@ def store_semantic_memory(content: str, category: str = "general") -> str:
 
 def search_semantic_memory(query: str, top_k: int = 3, threshold: float = 0.45) -> List[Dict[str, Any]]:
     """Performs semantic similarity search across knowledge using vector embeddings."""
+    from jojo_workspace import private_session
+    if private_session():return []
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     c.execute("SELECT id, content, category, embedding FROM semantic_knowledge")
@@ -141,6 +145,8 @@ def search_semantic_memory(query: str, top_k: int = 3, threshold: float = 0.45) 
 # 📖 EPISODIC MEMORY (EXPERIENCES & LESSONS)
 # ==========================================
 def log_episode(goal: str, plan: str, tools_used: List[str], outcome: str, lessons: str = ""):
+    from jojo_workspace import private_session
+    if private_session():return
     """Logs a completed agent task episode to episodic memory."""
     try:
         conn = sqlite3.connect(DB_FILE)
@@ -155,6 +161,8 @@ def log_episode(goal: str, plan: str, tools_used: List[str], outcome: str, lesso
         print(f"⚠️ Error logging episode: {e}")
 
 def recall_relevant_episodes(query: str, limit: int = 2) -> str:
+    from jojo_workspace import private_session
+    if private_session():return ''
     """Finds past task episodes that might be relevant to the current goal."""
     try:
         conn = sqlite3.connect(DB_FILE)

@@ -55,11 +55,9 @@ def write_file(file_path: str, content: str) -> str:
     """Writes content to a file, creating parent directories if necessary."""
     abs_path = resolve_path(file_path)
     try:
-        os.makedirs(os.path.dirname(abs_path), exist_ok=True)
-        with open(abs_path, "w", encoding="utf-8") as f:
-            f.write(content)
-        size = os.path.getsize(abs_path)
-        return f"✅ File written successfully: {abs_path} ({size} bytes)"
+        from jojo_undo import write_text
+        result=write_text(abs_path,content)
+        return f"✅ File written: {abs_path} ({result['bytes']} bytes). Undo entry: {result['undo_id'] or 'not available for this edit'}. Read the file to verify."
     except Exception as e:
         return f"⚠️ Error writing file {abs_path}: {str(e)}"
 
@@ -67,11 +65,9 @@ def append_file(file_path: str, content: str) -> str:
     """Appends content to an existing file."""
     abs_path = resolve_path(file_path)
     try:
-        os.makedirs(os.path.dirname(abs_path), exist_ok=True)
-        with open(abs_path, "a", encoding="utf-8") as f:
-            f.write(content)
-        size = os.path.getsize(abs_path)
-        return f"✅ Content appended successfully: {abs_path} (new size: {size} bytes)"
+        from jojo_undo import write_text
+        result=write_text(abs_path,content,append=True)
+        return f"✅ File appended: {abs_path} ({result['bytes']} bytes). Undo entry: {result['undo_id'] or 'not available for this edit'}. Read the file to verify."
     except Exception as e:
         return f"⚠️ Error appending to file {abs_path}: {str(e)}"
 

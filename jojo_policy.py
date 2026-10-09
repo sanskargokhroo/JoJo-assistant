@@ -79,7 +79,7 @@ def guard_tool(name, args):
         'inspect_desktop_screen', 'click_ui_element', 'type_into_active_window',
         'press_keyboard_key', 'get_pc_system_diagnostics', 'read_local_file',
         'write_local_file', 'append_to_file', 'list_local_directory', 'search_local_files',
-        'audit_device_security', 'inspect_app_file', 'deduplicate_and_organize_files'}:
+        'audit_device_security', 'inspect_app_file', 'deduplicate_and_organize_files','search_knowledge'}:
         raise PermissionError('This is a phone task; laptop tools are unavailable.')
     # Arbitrary code and self-installed code cannot enforce an app deny-list.
     if name in {'run_powershell', 'run_python_code', 'create_new_persistent_skill',

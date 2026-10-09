@@ -52,6 +52,7 @@ class JoJoDesktop:
         self.last_security_scan = 'idle'
         self.microphones = {'Windows default': -1}
         self.audio_device_id, self.speech_language = -1, 'hi-IN'
+        self.barge_in_enabled=False
         root.title('JoJo Desktop')
         root.configure(bg=BG)
         root.geometry('580x780')
@@ -99,6 +100,8 @@ class JoJoDesktop:
         self.button(lifecycle, 'Uninstall JoJo', self.uninstall).pack(side='right')
         setup_controls=tk.Frame(self.root,bg=BG);setup_controls.pack(fill='x',padx=24,pady=(8,0))
         self.button(setup_controls,'Owner setup',self.owner_setup).pack(side='left')
+        from jojo_workspace_ui import open_workspace
+        self.button(setup_controls,'Workspace',lambda:open_workspace(self.root,request)).pack(side='left',padx=6)
         self.button(setup_controls,'Skills & plugins',self.skills).pack(side='right')
         security_controls = tk.Frame(self.root, bg=BG)
         security_controls.pack(fill='x', padx=24, pady=(8,0))
@@ -219,12 +222,14 @@ class JoJoDesktop:
         language = ttk.Combobox(win, state='readonly', values=['Hindi / Hinglish', 'English (India)'])
         language.current(0 if self.speech_language == 'hi-IN' else 1)
         language.pack(pady=8)
+        barge=tk.BooleanVar(value=self.barge_in_enabled)
+        tk.Checkbutton(win,text='Headphone interruption (say JoJo while speaking)',variable=barge,bg=BG,fg=TEXT,selectcolor=PANEL).pack(pady=4)
         topmost = tk.BooleanVar(value=bool(self.root.attributes('-topmost')))
         tk.Checkbutton(win, text='Keep window on top', variable=topmost, bg=BG, fg=TEXT,
             selectcolor=PANEL, command=lambda: self.root.attributes('-topmost', topmost.get())).pack(pady=4)
         def save():
             self.requests.put(('config', '/api/config', {'audio_device_id': self.microphones.get(mic.get(), -1),
-                'speech_language': 'hi-IN' if language.current() == 0 else 'en-IN'}))
+                'speech_language': 'hi-IN' if language.current() == 0 else 'en-IN', 'barge_in_enabled':barge.get()}))
             win.destroy()
         self.button(win, 'Save settings', save, True).pack(pady=12)
         def enroll():
@@ -403,6 +408,7 @@ class JoJoDesktop:
                             self.setup_shown=True;self.root.after(400,self.owner_setup)
                 self.audio_device_id = data.get('audio_device_id') if data.get('audio_device_id') is not None else -1
                 self.speech_language = data.get('speech_language', 'hi-IN')
+                self.barge_in_enabled=data.get('barge_in_enabled',False)
                 self.activity = data.get('status', 'idle')
                 self.mic_paused = data.get('microphone_paused', False)
                 self.mic_button.configure(text='Resume mic' if self.mic_paused else 'Pause mic')

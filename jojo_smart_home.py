@@ -31,27 +31,31 @@ def request(method,path,data=None):
 
 def list_smart_devices() -> str:
     """List configured Home Assistant devices and their observed states. No network scan/pairing."""
+    from jojo_capabilities import enabled
+    if not enabled('smart_home'):return '⚠ Smart-home capability is disabled.'
     try:
         _,_,allowed=config()
         rows=request('GET','states')
         return json.dumps([{'id':r['entity_id'],'name':r.get('attributes',{}).get('friendly_name',r['entity_id']),'state':r.get('state')}
             for r in rows if r.get('entity_id') in allowed and r['entity_id'].split('.')[0] in DOMAINS],ensure_ascii=False)
-    except Exception as exc:return str(exc) if isinstance(exc,ValueError) else 'Smart-home connection unavailable; device states not verified.'
+    except Exception as exc:return '⚠ '+(str(exc) if isinstance(exc,ValueError) else 'Smart-home connection unavailable; device states not verified.')
 
 def control_smart_device(entity_id: str, state: str) -> str:
     """Turn an explicitly allowlisted light/switch/fan/media player on or off when requested by the user."""
+    from jojo_capabilities import enabled
+    if not enabled('smart_home'):return '⚠ Smart-home capability is disabled.'
     try:
         _,_,allowed=config()
         if entity_id not in allowed or not re.fullmatch(r'[a-z_]+\.[a-z0-9_]+',entity_id):raise ValueError('Device is not on your smart-home allowlist.')
         domain=entity_id.split('.')[0]
         if domain not in DOMAINS or state not in {'on','off'}:raise ValueError('Only on/off for allowed lights, switches, fans and media players is supported.')
         current=request('GET','states/'+quote(entity_id,safe=''))
-        if current.get('state') in {'unavailable','unknown'}:return 'Device unavailable; no action sent.'
+        if current.get('state') in {'unavailable','unknown'}:return '⚠ Device unavailable; no action sent.'
         if current.get('state')==state:return 'Device already '+state+'.'
         request('POST','services/'+domain+'/turn_'+state,{'entity_id':entity_id})
         observed=request('GET','states/'+quote(entity_id,safe='')).get('state')
-        return 'Verified device state: '+state if observed==state else 'Request sent; desired state not verified. No automatic repeat.'
-    except Exception as exc:return str(exc) if isinstance(exc,ValueError) else 'Smart-home result uncertain/unavailable. No automatic retry; check the device.'
+        return 'Verified device state: '+state if observed==state else '⚠ Request sent; desired state not verified. No automatic repeat.'
+    except Exception as exc:return '⚠ '+(str(exc) if isinstance(exc,ValueError) else 'Smart-home result uncertain/unavailable. No automatic retry; check the device.')
 
 def smart_command(text):
     value=text.strip().casefold()

@@ -41,6 +41,12 @@ def main():
                 else:
                     raise RuntimeError('Test core did not become ready.')
                 assert health['service'] == 'jojo' and health['version'] == 2
+                workspace=api('/api/workspace')
+                assert workspace['cards']==[] and workspace['history']==[]
+                card=api('/api/workspace',{'action':'save_memory','text':'Fixture preference'})
+                assert len(api('/api/workspace')['cards'])==1
+                api('/api/workspace',{'action':'delete_memory','id':card['id']})
+                assert api('/api/workspace')['cards']==[]
                 # A blocked command exercises the worker without doing any external work.
                 task = api('/api/tasks', {'message': 'otp', 'speak': False})
                 deadline = time.monotonic() + 5
@@ -55,7 +61,7 @@ def main():
                 assert api('/api/shutdown', {})['status'] == 'shutting_down'
                 process.wait(timeout=8)
                 assert process.returncode == 0
-                print('PASS: real core startup, task API, task worker, voice-state contract and graceful shutdown.')
+                print('PASS: real core startup, workspace memory API, task worker, voice-state contract and graceful shutdown.')
             except Exception:
                 log.flush()
                 log.seek(0)

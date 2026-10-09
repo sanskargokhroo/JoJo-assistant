@@ -1,5 +1,10 @@
 # JoJo requested features — implementation and validation
 
+The new native Workspace, execution observations, scheduled routines, private
+sessions, document index, file undo, temporary permissions, conversation handoffs,
+Android notification summaries and local essentials are detailed in
+[JOJO_WORKSPACE.md](JOJO_WORKSPACE.md), including what remains unimplemented.
+
 | Request | Implemented | Remaining real-device check |
 | --- | --- | --- |
 | Native laptop edge fog and center orb | Windows alpha-composited animated fog; click-through; listening/thinking/working/speaking; primary display | Live wake/session timing with owner's mic |
@@ -8,7 +13,7 @@
 | Shopping / restricted apps | Amazon and Flipkart browsing/search allowed; Paytm/Binance/Trust Wallet blocked; Android payment/credential detection and target checks hand control to user; desktop title/action and local UI Automation checks | Text/package heuristics can miss custom UI; this is not an OS sandbox |
 | Calls, messages, gallery, settings | Native intents open system apps; agent operates observed controls, verifies results and asks about ambiguous contacts/photos; no blind image selection | App-specific accessibility behavior and actual calls/messages are not phone-tested |
 | Missing apps | Official Play Store title lookup, owner-verified yes scoped to app/session/device, exact details page and one free Install click, observed installation progress | Account prompts/paid or incompatible apps require manual action; unknown package needs Play Store link |
-| Device identity | Android installation ID and session binding; task-scoped desktop/mobile GUI tools; legacy phone command cannot fall through to Windows browser | Cross-device remote delegation is not implemented in the native companion |
+| Device identity | Android installation ID/session binding, device-scoped recall and explicit destination-approved conversation handoffs | File/attachment transfer and unattended cross-device delegation are not implemented |
 | Unread messages / recent calls / reply conversation | Observed sender/text reports, source-app checks, read-only actions, reply offer → recipient → dictated body, same-session owner verification, No → Home, native recipient/body check and single send attempt | Source updated only; no new APK requested. Physical WhatsApp/SMS/dialer tests pending; no background notification announcements or complete inbox guarantee |
 | Owner voice | Local trained WeSpeaker model, 256-D embeddings, 3-part enrollment consistency, checksum, atomic profile, fail-closed verification; refusal phrase implemented | Owner must enroll for 9 seconds; false accepts/rejects and phone/laptop mic differences require real recordings; no replay/liveness detection |
 | Conversation and skill memory | SQLite journal, saved workflow instructions, old-history retrieval, native history restore, interrupted-task marking, mobile task records | No automatic replay of unfinished system actions; generated executable skills remain disabled under app restrictions |
