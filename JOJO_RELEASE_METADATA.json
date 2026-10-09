@@ -2,5 +2,6 @@
   "description": "Native Windows voice assistant with an Android companion, owner voice matching, local memory and bring-your-own Gemini, OpenAI or Anthropic API keys. Experimental.",
   "topics": ["jojo", "voice-assistant", "desktop-assistant", "android", "windows", "python", "accessibility", "gemini", "openai", "anthropic", "firebase", "bring-your-own-key", "automation", "local-first"],
   "status": "experimental",
-  "visibility": "keep-private-until-history-audit"
+  "visibility": "public-clean-history",
+  "repository": "https://github.com/sanskargokhroo/JoJo-assistant"
 }

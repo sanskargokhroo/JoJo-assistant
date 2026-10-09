@@ -36,8 +36,15 @@ You need Windows 10/11, a microphone, Python with Tkinter and an API key from yo
 chosen provider. The current development environment uses Python 3.14; dependency
 availability on other Python versions has not been fully validated.
 
-Download the **clean source release** or clone the sanitized repository once
-published, then choose either setup route from the project folder:
+Download the [clean source release](https://github.com/sanskargokhroo/JoJo-assistant/releases)
+and extract it, or clone the repository:
+
+```powershell
+git clone https://github.com/sanskargokhroo/JoJo-assistant.git
+cd JoJo-assistant
+```
+
+Choose either setup route from the project folder:
 
 ```powershell
 # Native setup window (or double-click jojo_install.bat)
