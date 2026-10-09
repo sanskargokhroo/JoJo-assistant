@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#000410"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="JoJo"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<link rel="manifest" href="/jojo_overlay_manifest.json"/>
+<link rel="apple-touch-icon" href="/icons/jojo_icon_192.png"/>
+<title>JoJo AGI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  width:100%;height:100%;min-height:100vh;min-height:-webkit-fill-available;
+  background:#000410;overflow:hidden;
+  font-family:-apple-system,"Segoe UI",sans-serif;
+  user-select:none;-webkit-user-select:none;
+}
+body{
+  background:radial-gradient(ellipse at 50% 40%,rgba(0,80,140,0.35) 0%,rgba(0,4,20,1) 65%);
+}
+
+/* Top safe area */
+.safe-top{height:env(safe-area-inset-top,30px)}
+
+/* Header */
+.header{
+  text-align:center;padding:8px 0 4px;
+  font-size:11px;letter-spacing:4px;color:rgba(0,200,255,0.45);
+  text-transform:uppercase;
+}
+
+/* 3D Responsive & Adjustable Canvas */
+.canvas-wrap{
+  display:flex;justify-content:center;align-items:center;
+  margin:2px auto 0;
+  width:min(94vw,420px);
+  height:min(44vh,380px);
+  min-height:260px;
+  position:relative;
+  touch-action:none;
+}
+#holoCanvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab;}
+#holoCanvas:active{cursor:grabbing;}
+
+/* Ambient glow (smooth glow without harsh ring) */
+.listen-glow{
+  position:absolute;
+  width:100%;height:100%;
+  border-radius:50%;
+  pointer-events:none;
+  background:radial-gradient(circle,rgba(0,200,255,0.12) 0%,transparent 68%);
+  opacity:0.35;
+  transition:opacity 0.4s,transform 0.4s;
+}
+.listen-glow.active{
+  opacity:0.85;
+  transform:scale(1.06);
+  background:radial-gradient(circle,rgba(0,255,160,0.2) 0%,transparent 68%);
+}
+
+/* Avatar Adjuster Size Controls */
+.size-bar{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  margin:2px auto 4px;z-index:10;position:relative;
+}
+.size-btn{
+  width:32px;height:32px;border-radius:10px;
+  background:rgba(0,200,255,0.08);border:1px solid rgba(0,200,255,0.25);
+  color:#00c8ff;font-size:14px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;outline:none;user-select:none;
+}
+.size-btn:active{background:rgba(0,200,255,0.25);transform:scale(.92)}
+.size-badge{
+  font-size:11px;color:rgba(0,240,255,0.85);font-family:monospace;
+  letter-spacing:1px;font-weight:700;padding:5px 14px;
+  background:rgba(0,24,55,0.65);border:1px solid rgba(0,200,255,0.3);
+  border-radius:20px;cursor:pointer;user-select:none;
+  box-shadow:0 0 10px rgba(0,200,255,0.1);
+}
+.size-hint{
+  font-size:9px;color:rgba(0,200,255,0.35);letter-spacing:1px;text-align:center;
+  margin:-2px auto 6px;text-transform:uppercase;user-select:none;
+}
+
+/* Audio wave bars */
+.wave{
+  display:flex;align-items:flex-end;justify-content:center;
+  gap:4px;height:56px;margin:16px auto;
+  width:min(80vw,300px);
+}
+.wbar{
+  width:5px;border-radius:3px 3px 0 0;min-height:6px;
+  background:linear-gradient(to top,#00c8ff,#7b2fff);
+  transition:height 0.07s ease;
+}
+
+/* Status card */
+.status-card{
+  margin:0 20px;padding:14px 18px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(0,200,255,0.12);
+  border-radius:16px;
+  backdrop-filter:blur(10px);
+  text-align:center;min-height:56px;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+}
+.status-label{
+  font-size:11px;color:rgba(0,200,255,0.5);
+  letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;
+}
+.status-text{
+  font-size:15px;color:rgba(255,255,255,0.88);
+  line-height:1.4;word-wrap:break-word;
+}
+
+/* Dot indicator */
+.dot{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:#00c8ff;margin-right:8px;vertical-align:middle;
+  animation:dotPulse 1.5s infinite;
+}
+@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.65)}}
+
+/* Bottom buttons */
+.bottom{
+  position:fixed;bottom:0;left:0;right:0;
+  padding:16px 24px calc(16px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(to top,rgba(0,4,20,0.95),transparent);
+  display:flex;gap:12px;justify-content:center;align-items:center;
+}
+.btn{
+  flex:1;max-width:160px;padding:14px;border-radius:14px;
+  border:1px solid rgba(0,200,255,0.2);
+  background:rgba(0,200,255,0.07);
+  color:rgba(0,200,255,0.8);font-size:13px;
+  cursor:pointer;transition:all .2s;
+  letter-spacing:.5px;text-align:center;
+}
+.btn:active{background:rgba(0,200,255,0.18);transform:scale(.97)}
+.btn.mic{
+  background:rgba(0,200,255,0.12);
+  border-color:rgba(0,200,255,0.4);
+  color:#00c8ff;font-size:22px;
+  max-width:80px;border-radius:50%;
+  width:64px;height:64px;flex:none;
+  box-shadow:0 0 20px rgba(0,200,255,0.2);
+}
+.btn.mic.speaking{
+  background:rgba(0,255,160,0.15);
+  border-color:rgba(0,255,160,0.5);
+  color:#00ffa0;
+  box-shadow:0 0 30px rgba(0,255,160,0.25);
+}
+
+/* Install prompt */
+.install-tip{
+  margin:12px 20px 0;padding:10px 14px;
+  background:rgba(0,200,255,0.06);
+  border:1px solid rgba(0,200,255,0.15);
+  border-radius:12px;font-size:12px;
+  color:rgba(0,200,255,0.6);text-align:center;
+  display:none;
+}
+
+/* IP config card */
+.ip-card{
+  margin:10px 20px 0;padding:12px 16px;
+  background:rgba(255,150,0,0.06);
+  border:1px solid rgba(255,150,0,0.2);
+  border-radius:12px;text-align:center;
+  display:none;
+}
+.ip-card input{
+  width:100%;margin-top:8px;padding:8px 12px;
+  background:rgba(0,0,0,0.4);border:1px solid rgba(0,200,255,0.3);
+  border-radius:8px;color:#fff;font-size:14px;text-align:center;
+}
+.ip-save{margin-top:8px;padding:8px 20px;background:rgba(0,200,255,0.15);
+  border:1px solid rgba(0,200,255,0.3);color:#00c8ff;border-radius:8px;font-size:13px;cursor:pointer;}
+
+/* Brand */
+.brand{text-align:center;margin-top:8px;font-size:10px;
+  color:rgba(0,200,255,0.25);letter-spacing:2px;}
+</style>
+</head>
+<body>
+<div class="safe-top"></div>
+<div class="header">J O J O &nbsp;A I</div>
+
+<div class="canvas-wrap" id="canvasWrap">
+  <canvas id="holoCanvas"></canvas>
+  <div class="listen-glow" id="listenGlow"></div>
+</div>
+
+<div class="size-bar">
+  <button class="size-btn" onclick="adjustAvatarSize(-0.1)" title="Chhota karein">➖</button>
+  <span class="size-badge" id="sizeBadge" onclick="resetAvatarSize()" title="Double tap ya click karein reset ke liye">100%</span>
+  <button class="size-btn" onclick="adjustAvatarSize(0.1)" title="Bada karein">➕</button>
+</div>
+<div class="size-hint">Pinch to zoom &bull; Drag to rotate &bull; Tap % to reset</div>
+
+<div class="wave" id="waveBar"></div>
+
+<div class="status-card">
+  <div class="status-label">Status</div>
+  <div class="status-text"><span class="dot" id="dot"></span><span id="stxt">Connecting to JoJo...</span></div>
+</div>
+
+<div class="install-tip" id="installTip">
+  📲 Install karo: Share → Add to Home Screen
+</div>
+
+<div class="ip-card" id="ipCard">
+  <div style="color:rgba(255,150,0,0.8);font-size:12px">⚠️ JoJo server nahi mila! IP check karo:</div>
+  <input type="text" id="ipInput" placeholder="192.168.x.x:8000"/>
+  <button class="ip-save" onclick="saveIP()">Connect</button>
+</div>
+
+<div class="brand">JOJO AGI &bull; the configured owner</div>
+
+<div class="bottom">
+  <div class="btn" onclick="sendVoiceCmd('screenshot le')">📸 Screenshot</div>
+  <div class="btn mic" id="micBtn" title="Status">🎙️</div>
+  <div class="btn" onclick="sendVoiceCmd('chrome kholo')">🌐 Chrome</div>
+</div>
+
+<script src="/three.min.js"></script>
+<script>
+if(typeof THREE === 'undefined'){
+  document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+}
+</script>
+<script src="/GLTFLoader.js"></script>
+<script>
+if(typeof THREE !== 'undefined' && !THREE.GLTFLoader){
+  document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"><\/script>');
+}
+</script>
+<script>
+// ── Config ────────────────────────────────────────────────
+var currentHost = window.location.host;
+var DEFAULT_IP = currentHost || "192.168.31.163:8000";
+var savedIP = localStorage.getItem("jojo_ip");
+if(!savedIP || savedIP === "192.168.31.163:8000"){
+  savedIP = currentHost || DEFAULT_IP;
+}
+function getAPI(){
+  if(!savedIP && window.location.host) return "http://" + window.location.host;
+  return "http://" + (savedIP || DEFAULT_IP);
+}
+function saveIP(){
+  savedIP = document.getElementById("ipInput").value.trim() || DEFAULT_IP;
+  localStorage.setItem("jojo_ip", savedIP);
+  document.getElementById("ipCard").style.display = "none";
+  document.getElementById("ipInput").value = savedIP;
+  poll();
+}
+document.getElementById("ipInput").value = savedIP;
+
+// ── PWA install prompt ─────────────────────────────────────
+var deferredPrompt;
+var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+if(isIOS && !navigator.standalone){
+  document.getElementById("installTip").style.display="block";
+}
+window.addEventListener("beforeinstallprompt", function(e){
+  e.preventDefault(); deferredPrompt = e;
+  document.getElementById("installTip").style.display="block";
+  document.getElementById("installTip").innerHTML = "📲 <b>Install JoJo App</b> — tap here!";
+  document.getElementById("installTip").onclick = function(){
+    if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt=null; }
+  };
+});
+
+// ── Build wave bars ────────────────────────────────────────
+var wb = document.getElementById("waveBar");
+var bars = [];
+for(var i=0;i<14;i++){
+  var b = document.createElement("div"); b.className="wbar"; b.style.height="6px"; wb.appendChild(b); bars.push(b);
+}
+var animBars=false, speaking=false, audioLvl=0;
+function animateWave(){
+  if(!animBars){bars.forEach(function(b){b.style.height="6px";});return;}
+  bars.forEach(function(b){
+    var h=Math.max(6,Math.random()*48*audioLvl+audioLvl*16);b.style.height=h+"px";
+  });
+  setTimeout(animateWave,75);
+}
+
+// ── 3D Holographic Neural Head Avatar (Same as Desktop HUD) ──
+var can = document.getElementById("holoCanvas");
+var canWrap = document.getElementById("canvasWrap") || can.parentElement;
+
+var scene = new THREE.Scene();
+var cam = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+cam.position.set(0, 0, 16);
+
+var ren = new THREE.WebGLRenderer({
+  canvas: can,
+  alpha: true,
+  antialias: true,
+  powerPreference: 'high-performance'
+});
+ren.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+var coreGroup = new THREE.Group();
+scene.add(coreGroup);
+
+// Glow Point Particle Texture
+var pCanvas = document.createElement('canvas');
+pCanvas.width = 64; pCanvas.height = 64;
+var pCtx = pCanvas.getContext('2d');
+var grad = pCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+grad.addColorStop(0.2, 'rgba(0, 240, 255, 0.9)');
+grad.addColorStop(0.6, 'rgba(0, 136, 255, 0.35)');
+grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+pCtx.fillStyle = grad;
+pCtx.fillRect(0, 0, 64, 64);
+var glowTexture = new THREE.CanvasTexture(pCanvas);
+
+// 1. Surrounding Neural Ambient Particle Sphere
+var sphereN = 900;
+var sphereGeo = new THREE.BufferGeometry();
+var spherePos = new Float32Array(sphereN * 3);
+for(var i=0; i<sphereN; i++){
+  var phi = Math.acos(1 - 2 * (i + 0.5) / sphereN);
+  var theta = Math.PI * (1 + Math.sqrt(5)) * i;
+  var r = 6.2 + (Math.random() - 0.5) * 0.6;
+  spherePos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+  spherePos[i * 3 + 1] = r * Math.cos(phi);
+  spherePos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+}
+sphereGeo.setAttribute('position', new THREE.BufferAttribute(spherePos, 3));
+var sphereMat = new THREE.PointsMaterial({
+  color: 0x00f0ff,
+  size: 0.22,
+  map: glowTexture,
+  transparent: true,
+  opacity: 0.85,
+  blending: THREE.AdditiveBlending
+});
+var particleSphere = new THREE.Points(sphereGeo, sphereMat);
+coreGroup.add(particleSphere);
+
+// 2. 3D Face Wireframe + Glowing Points + Depth Occlusion
+var posAttr = null, origPositions = null;
+var lipIndices = [], chinIndices = [];
+var pointsMesh = null, wireframeMesh = null, occlusionMesh = null;
+
+function buildFaceMesh(geometry){
+  geometry.center();
+  geometry.computeVertexNormals();
+
+  posAttr = geometry.attributes.position;
+  var count = posAttr.count;
+  origPositions = new Float32Array(posAttr.array);
+
+  lipIndices = [];
+  chinIndices = [];
+  for(var i=0; i<count; i++){
+    var y = origPositions[i * 3 + 1];
+    var z = origPositions[i * 3 + 2];
+    var x = origPositions[i * 3];
+    if(y > -2.2 && y < -0.2 && z > 2.8 && Math.abs(x) < 2.5) lipIndices.push(i);
+    if(y <= -2.2 && y > -4.5 && z > 1.8 && Math.abs(x) < 3.0) chinIndices.push(i);
+  }
+
+  // Occlusion Mesh (dark solid interior for true depth)
+  var occMat = new THREE.MeshBasicMaterial({ color: 0x000410, depthWrite: true });
+  occlusionMesh = new THREE.Mesh(geometry, occMat);
+  occlusionMesh.renderOrder = 0;
+  coreGroup.add(occlusionMesh);
+
+  // Glowing Cyan Wireframe
+  var wireGeom = new THREE.WireframeGeometry(geometry);
+  var lineMat = new THREE.LineBasicMaterial({
+    color: 0x00c8ff,
+    transparent: true,
+    opacity: 0.65,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  wireframeMesh = new THREE.LineSegments(wireGeom, lineMat);
+  wireframeMesh.renderOrder = 1;
+  coreGroup.add(wireframeMesh);
+
+  // Glowing Points on Face Mesh
+  var ptsMat = new THREE.PointsMaterial({
+    color: 0x00f0ff,
+    size: 0.22,
+    map: glowTexture,
+    transparent: true,
+    opacity: 0.95,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false
+  });
+  pointsMesh = new THREE.Points(geometry, ptsMat);
+  pointsMesh.renderOrder = 2;
+  coreGroup.add(pointsMesh);
+
+  updateAvatarScale();
+}
+
+function loadHeadModel(){
+  if(typeof THREE.GLTFLoader !== "undefined"){
+    var loader = new THREE.GLTFLoader();
+    loader.load('/head.glb', function(gltf){
+      var geom = null;
+      gltf.scene.traverse(function(child){
+        if(child.isMesh && !geom) geom = child.geometry;
+      });
+      if(!geom) geom = new THREE.SphereGeometry(4.8, 48, 48);
+      buildFaceMesh(geom);
+    }, undefined, function(){
+      var fallbackGeo = new THREE.SphereGeometry(4.8, 48, 48);
+      buildFaceMesh(fallbackGeo);
+    });
+  } else {
+    var fallbackGeo = new THREE.SphereGeometry(4.8, 48, 48);
+    buildFaceMesh(fallbackGeo);
+  }
+}
+loadHeadModel();
+
+// ── Responsive & User Adjustable Sizing ───────────────────────
+var userAvatarScale = parseFloat(localStorage.getItem("jojo_avatar_scale")) || 1.0;
+
+function updateAvatarScale(){
+  if(!ren || !cam) return;
+  var w = canWrap.clientWidth || window.innerWidth;
+  var h = canWrap.clientHeight || 300;
+  var aspect = w / h;
+  cam.aspect = aspect;
+
+  // Fit camera frustum dynamically to screen aspect
+  if(aspect < 1.0){
+    cam.position.z = (16 / aspect) * 0.85;
+  } else {
+    cam.position.z = 16;
+  }
+  cam.updateProjectionMatrix();
+  ren.setSize(w, h);
+
+  // Auto-scale base factor computed for screen width/height
+  var autoScale = Math.min(w / 340, h / 340);
+  autoScale = Math.max(0.72, Math.min(autoScale, 1.4));
+  var finalScale = autoScale * userAvatarScale;
+
+  if(coreGroup){
+    coreGroup.scale.setScalar(finalScale);
+  }
+
+  var badge = document.getElementById("sizeBadge");
+  if(badge){
+    badge.textContent = Math.round(userAvatarScale * 100) + "%";
+  }
+}
+
+function adjustAvatarSize(delta){
+  userAvatarScale = Math.max(0.5, Math.min(2.2, Math.round((userAvatarScale + delta) * 10) / 10));
+  localStorage.setItem("jojo_avatar_scale", userAvatarScale);
+  updateAvatarScale();
+}
+
+function resetAvatarSize(){
+  userAvatarScale = 1.0;
+  localStorage.setItem("jojo_avatar_scale", userAvatarScale);
+  updateAvatarScale();
+}
+
+window.addEventListener("resize", updateAvatarScale);
+window.addEventListener("orientationchange", function(){
+  setTimeout(updateAvatarScale, 200);
+});
+
+// ── Touch Gestures (Look-around + Pinch-to-zoom) ──────────────
+var mouse = { x: 0, y: 0, targetX: 0, targetY: 0, isDragging: false, lastX: 0, lastY: 0 };
+var initialPinchDist = 0, initialScaleAtPinch = 1.0, lastTapTime = 0;
+
+function setupTouchGestures(){
+  var el = canWrap;
+
+  el.addEventListener('mousedown', function(e){
+    mouse.isDragging = true;
+    mouse.lastX = e.clientX;
+    mouse.lastY = e.clientY;
+  });
+  window.addEventListener('mousemove', function(e){
+    if(mouse.isDragging){
+      var dx = e.clientX - mouse.lastX;
+      var dy = e.clientY - mouse.lastY;
+      mouse.targetX += dx * 0.005;
+      mouse.targetY += dy * 0.005;
+      mouse.lastX = e.clientX;
+      mouse.lastY = e.clientY;
+    } else {
+      var rect = el.getBoundingClientRect();
+      if(e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom){
+        mouse.targetX = ((e.clientX - rect.left) / rect.width - 0.5) * 0.8;
+        mouse.targetY = ((e.clientY - rect.top) / rect.height - 0.5) * 0.6;
+      }
+    }
+  });
+  window.addEventListener('mouseup', function(){ mouse.isDragging = false; });
+
+  el.addEventListener('touchstart', function(e){
+    var now = Date.now();
+    if(now - lastTapTime < 300){
+      resetAvatarSize();
+      lastTapTime = 0;
+      return;
+    }
+    lastTapTime = now;
+
+    if(e.touches.length === 1){
+      mouse.isDragging = true;
+      mouse.lastX = e.touches[0].clientX;
+      mouse.lastY = e.touches[0].clientY;
+    } else if(e.touches.length === 2){
+      mouse.isDragging = false;
+      initialPinchDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      initialScaleAtPinch = userAvatarScale;
+    }
+  }, { passive: true });
+
+  el.addEventListener('touchmove', function(e){
+    if(e.touches.length === 1 && mouse.isDragging){
+      var dx = e.touches[0].clientX - mouse.lastX;
+      var dy = e.touches[0].clientY - mouse.lastY;
+      mouse.targetX += dx * 0.006;
+      mouse.targetY += dy * 0.006;
+      mouse.lastX = e.touches[0].clientX;
+      mouse.lastY = e.touches[0].clientY;
+    } else if(e.touches.length === 2 && initialPinchDist > 0){
+      var curDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      var factor = curDist / initialPinchDist;
+      userAvatarScale = Math.max(0.5, Math.min(2.2, Math.round(initialScaleAtPinch * factor * 100) / 100));
+      localStorage.setItem("jojo_avatar_scale", userAvatarScale);
+      updateAvatarScale();
+    }
+  }, { passive: true });
+
+  el.addEventListener('touchend', function(e){
+    if(e.touches.length === 0){
+      mouse.isDragging = false;
+      initialPinchDist = 0;
+    } else if(e.touches.length === 1){
+      mouse.isDragging = true;
+      mouse.lastX = e.touches[0].clientX;
+      mouse.lastY = e.touches[0].clientY;
+    }
+  });
+}
+setupTouchGestures();
+
+// ── Render Loop & Facial Lip Sync Animation ──────────────────
+var clock = 0;
+function renderLoop(){
+  requestAnimationFrame(renderLoop);
+  clock += 0.015;
+
+  // Smooth Look-around Interpolation
+  mouse.x += (mouse.targetX - mouse.x) * 0.08;
+  mouse.y += (mouse.targetY - mouse.y) * 0.08;
+  if(coreGroup){
+    coreGroup.rotation.y = mouse.x;
+    coreGroup.rotation.x = -mouse.y;
+  }
+
+  // Particle Sphere Voice Pulse
+  if(particleSphere){
+    particleSphere.rotation.y += 0.002;
+    var targetScale = speaking ? (1.0 + Math.sin(clock * 8) * 0.08 + audioLvl * 0.15) : (1.0 + Math.sin(clock * 1.5) * 0.02);
+    particleSphere.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+  }
+
+  // Lip Sync Movement on 3D Face Wireframe
+  if(posAttr && origPositions && speaking && lipIndices.length > 0){
+    var mouthOpen = (Math.sin(clock * 16) * 0.5 + 0.5) * (0.8 + audioLvl * 0.6);
+    var arr = posAttr.array;
+    for(var k=0; k<lipIndices.length; k++){
+      var idx = lipIndices[k];
+      arr[idx * 3 + 1] = origPositions[idx * 3 + 1] - mouthOpen * 0.65;
+      arr[idx * 3 + 2] = origPositions[idx * 3 + 2] + mouthOpen * 0.2;
+    }
+    for(var k=0; k<chinIndices.length; k++){
+      var idx = chinIndices[k];
+      arr[idx * 3 + 1] = origPositions[idx * 3 + 1] - mouthOpen * 0.45;
+    }
+    posAttr.needsUpdate = true;
+  } else if(posAttr && origPositions && !speaking && lipIndices.length > 0 && posAttr.array[lipIndices[0] * 3 + 1] !== origPositions[lipIndices[0] * 3 + 1]){
+    var arr = posAttr.array;
+    for(var k=0; k<lipIndices.length; k++){
+      var idx = lipIndices[k];
+      arr[idx * 3 + 1] = origPositions[idx * 3 + 1];
+      arr[idx * 3 + 2] = origPositions[idx * 3 + 2];
+    }
+    for(var k=0; k<chinIndices.length; k++){
+      var idx = chinIndices[k];
+      arr[idx * 3 + 1] = origPositions[idx * 3 + 1];
+    }
+    posAttr.needsUpdate = true;
+  }
+
+  ren.render(scene, cam);
+}
+renderLoop();
+updateAvatarScale();
+
+// ── Status update ──────────────────────────────────────────
+var dot=document.getElementById("dot"), stxt=document.getElementById("stxt");
+var listenGlow=document.getElementById("listenGlow"), micBtn=document.getElementById("micBtn");
+var SC={listening:"#00c8ff",speaking:"#00ff88",thinking:"#ffaa00",access_denied:"#ff4444",idle:"rgba(0,200,255,.3)"};
+
+function setStatus(status,text){
+  dot.style.background = SC[status]||"#00c8ff";
+  stxt.textContent = text || "Ready...";
+  speaking = (status==="speaking");
+  audioLvl = speaking ? 0.85 : 0.1;
+  if(speaking){
+    if(listenGlow) listenGlow.classList.add("active");
+    micBtn.classList.add("speaking"); micBtn.textContent="🔊";
+    if(!animBars){animBars=true;animateWave();}
+  } else {
+    if(listenGlow){
+      if(status==="listening") listenGlow.classList.add("active");
+      else listenGlow.classList.remove("active");
+    }
+    micBtn.classList.remove("speaking"); micBtn.textContent="🎙️";
+    animBars=false;
+  }
+}
+
+// ── Poll JoJo backend ──────────────────────────────────────
+var lastKey="", failCount=0;
+async function poll(){
+  try{
+    var r=await fetch(getAPI()+"/api/voice_state",{signal:AbortSignal.timeout(2000)});
+    if(!r.ok)throw new Error("bad");
+    var d=await r.json();
+    failCount=0; document.getElementById("ipCard").style.display="none";
+    var k=(d.status||"")+(d.transcript||"")+(d.reply||"");
+    if(k===lastKey)return; lastKey=k;
+    if(d.status==="speaking"){
+      setStatus("speaking",(d.reply||"बोल रहा हूँ...").substring(0,100));
+    } else if(d.status==="authenticating"){
+      setStatus("thinking","🎙️ \""+(d.transcript||"")+"\"");
+    } else if(d.status==="access_denied"){
+      setStatus("access_denied","⛔ Boss nahi ho tum!");
+    } else {
+      setStatus("listening","🟢 JoJo Ready — Boliye Boss!");
+    }
+  } catch(e){
+    failCount++;
+    setStatus("idle","⚠️ Connecting to JoJo...");
+    if(failCount>=3){ document.getElementById("ipCard").style.display="block"; }
+  }
+}
+setInterval(poll,500); poll();
+
+// ── Quick command send ─────────────────────────────────────
+async function sendVoiceCmd(cmd){
+  try{
+    await fetch(getAPI()+"/api/voice_command",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({command:cmd,speaker:"boss",source:"mobile"})
+    });
+    setStatus("thinking","Sending: "+cmd);
+  } catch(e){ alert("JoJo server se connect nahi hua!"); }
+}
+
+// ── Service Worker (offline-capable PWA) ──────────────────
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("/jojo_sw.js").catch(function(){});
+}
+</script>
+</body>
+</html>

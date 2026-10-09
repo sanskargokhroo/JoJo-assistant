@@ -1,0 +1,3224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JoJo AGI - Futuristic Command Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #070913;
+      --bg-card: rgba(14, 20, 38, 0.75);
+      --bg-card-hover: rgba(20, 30, 58, 0.85);
+      --border-glow: rgba(0, 240, 255, 0.25);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --neon-cyan: #00f0ff;
+      --neon-purple: #a855f7;
+      --neon-pink: #ec4899;
+      --neon-green: #10b981;
+      --neon-amber: #f59e0b;
+      --neon-red: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-display: 'Orbitron', sans-serif;
+      --font-body: 'Outfit', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.07) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 0.6) 0%, transparent 100%);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Navigation Header */
+    header {
+      background: rgba(7, 9, 19, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .core-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--neon-cyan) 0%, #005273 70%, #021727 100%);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      animation: pulse-ring 3s infinite;
+    }
+
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 10px rgba(0, 240, 255, 0.4); transform: scale(1); }
+      50% { box-shadow: 0 0 25px rgba(0, 240, 255, 0.8), 0 0 35px rgba(168, 85, 247, 0.4); transform: scale(1.05); }
+      100% { box-shadow: 0 0 10px rgba(0, 240, 255, 0.4); transform: scale(1); }
+    }
+
+    .brand-text h1 {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #ffffff 30%, var(--neon-cyan) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 0.75rem;
+      color: var(--neon-cyan);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .telemetry-pills {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--neon-green);
+      box-shadow: 0 0 8px var(--neon-green);
+      animation: blink 2s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Main Container & Tabs */
+    main {
+      flex: 1;
+      max-width: 1300px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.75rem;
+      background: rgba(14, 20, 38, 0.5);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 0.4rem;
+      overflow-x: auto;
+    }
+
+    .nav-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .nav-tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-tab.active {
+      color: #000;
+      background: var(--neon-cyan);
+      font-weight: 600;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+    }
+
+    /* Tab Content Panels */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards & Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      border-color: var(--border-glow);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+      opacity: 0.5;
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      background: rgba(7, 10, 22, 0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      transition: all 0.2s;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    }
+
+    .quick-pills {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.6rem;
+    }
+
+    .time-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--neon-cyan);
+      border-radius: 8px;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .time-btn:hover {
+      background: var(--neon-cyan);
+      color: #000;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--neon-cyan), #0099cc);
+      color: #000;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      padding: 0.8rem 1.5rem;
+      font-size: 0.95rem;
+      font-family: var(--font-body);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      transition: all 0.25s ease;
+      width: 100%;
+      box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(0, 240, 255, 0.5);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--neon-red);
+      border-radius: 6px;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-danger:hover {
+      background: var(--neon-red);
+      color: #fff;
+    }
+
+    /* Reminder & QA Lists */
+    .item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 0.25rem;
+    }
+
+    .list-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      transition: all 0.2s;
+    }
+
+    .list-item:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .item-content h4 {
+      font-size: 0.95rem;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .item-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .status-tag {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-pending {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--neon-amber);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .status-completed {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--neon-green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    /* Terminal & Chat Interface */
+    .terminal-window {
+      background: rgba(5, 7, 15, 0.95);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      height: 480px;
+    }
+
+    .terminal-header {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-r { background: #ff5f56; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #27c93f; }
+
+    .terminal-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .msg-bubble {
+      max-width: 80%;
+      padding: 0.8rem 1.1rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .msg-user {
+      align-self: flex-end;
+      background: linear-gradient(135deg, #1e293b, #334155);
+      color: #fff;
+      border-bottom-right-radius: 2px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .msg-jojo {
+      align-self: flex-start;
+      background: rgba(0, 240, 255, 0.1);
+      color: #e0f7fa;
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      border-bottom-left-radius: 2px;
+    }
+
+    .terminal-input-bar {
+      padding: 0.75rem;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* Automation Task Cards */
+    .task-btn-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .task-card-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .task-card-btn:hover {
+      background: rgba(0, 240, 255, 0.08);
+      border-color: var(--neon-cyan);
+      transform: translateY(-3px);
+    }
+
+    .task-icon {
+      font-size: 2rem;
+    }
+
+    .task-label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    /* Slider styling */
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      accent-color: var(--neon-cyan);
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+    }
+
+    .slider-val {
+      font-family: var(--font-display);
+      color: var(--neon-cyan);
+      font-size: 1rem;
+      min-width: 45px;
+      text-align: right;
+    }
+
+    /* ==========================================
+       🔮 HOLOGRAPHIC VOICE HUD STYLES
+       ========================================== */
+    .hud-card {
+      background: radial-gradient(circle at 50% 35%, rgba(14, 25, 55, 0.95) 0%, rgba(7, 9, 19, 0.98) 100%);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      box-shadow: 0 0 60px rgba(0, 240, 255, 0.15), inset 0 0 40px rgba(0, 240, 255, 0.05);
+      border-radius: 28px;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s ease;
+    }
+
+    .hud-card.fullscreen-mode {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      border-radius: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+
+    .hud-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.04) 0%, transparent 60%);
+      pointer-events: none;
+      animation: rotate-bg 25s linear infinite;
+    }
+
+    @keyframes rotate-bg {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .hud-orb-stage {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      margin: 1.5rem auto 2rem auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hud-ring-outer {
+      position: absolute;
+      width: 270px;
+      height: 270px;
+      border-radius: 50%;
+      border: 2px dashed rgba(0, 240, 255, 0.4);
+      animation: spin-clockwise 16s linear infinite;
+    }
+
+    .hud-ring-middle {
+      position: absolute;
+      width: 210px;
+      height: 210px;
+      border-radius: 50%;
+      border: 2px solid rgba(168, 85, 247, 0.5);
+      border-top-color: transparent;
+      border-bottom-color: transparent;
+      animation: spin-counter 10s linear infinite;
+    }
+
+    .hud-ring-inner {
+      position: absolute;
+      width: 155px;
+      height: 155px;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 240, 255, 0.6);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
+    }
+
+    @keyframes spin-clockwise {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes spin-counter {
+      0% { transform: rotate(360deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    .hud-plasma-core {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    /* Core States */
+    .state-sleeping {
+      background: radial-gradient(circle, #6366f1 0%, #312e81 60%, #0f172a 100%);
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+      animation: breathe 4s ease-in-out infinite;
+    }
+
+    .state-wake {
+      background: radial-gradient(circle, #fbbf24 0%, #d97706 60%, #78350f 100%);
+      box-shadow: 0 0 55px rgba(245, 158, 11, 0.95);
+      transform: scale(1.18);
+    }
+
+    .state-authenticating {
+      background: radial-gradient(circle, #ec4899 0%, #a855f7 60%, #581c87 100%);
+      box-shadow: 0 0 60px rgba(236, 72, 153, 0.95);
+      animation: scan-pulse 0.7s ease-in-out infinite;
+    }
+
+    .state-verified {
+      background: radial-gradient(circle, #00f0ff 0%, #059669 60%, #064e3b 100%);
+      box-shadow: 0 0 70px rgba(0, 240, 255, 0.95), 0 0 90px rgba(16, 185, 129, 0.6);
+      animation: breathe 1.8s ease-in-out infinite;
+    }
+
+    .state-denied {
+      background: radial-gradient(circle, #ef4444 0%, #b91c1c 60%, #450a0a 100%);
+      box-shadow: 0 0 75px rgba(239, 68, 68, 1);
+      animation: alarm-shake 0.35s ease-in-out infinite;
+    }
+
+    .state-listening {
+      background: radial-gradient(circle, #38bdf8 0%, #0284c7 60%, #082f49 100%);
+      box-shadow: 0 0 50px rgba(56, 189, 248, 0.85);
+      animation: breathe 1.5s ease-in-out infinite;
+    }
+
+    .state-speaking {
+      background: radial-gradient(circle, #a855f7 0%, #00f0ff 70%, #1e1b4b 100%);
+      box-shadow: 0 0 65px rgba(0, 240, 255, 0.95), 0 0 80px rgba(168, 85, 247, 0.7);
+      animation: speech-pulse 0.5s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    @keyframes scan-pulse {
+      0%, 100% { transform: scale(1.05); filter: brightness(1.1); }
+      50% { transform: scale(1.2); filter: brightness(1.4); }
+    }
+
+    @keyframes alarm-shake {
+      0%, 100% { transform: scale(1.1) translateX(0); }
+      25% { transform: scale(1.13) translateX(-5px); }
+      75% { transform: scale(1.13) translateX(5px); }
+    }
+
+    @keyframes speech-pulse {
+      0%, 100% { transform: scale(1.02); }
+      50% { transform: scale(1.16); }
+    }
+
+    .hud-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 1.6rem;
+      border-radius: 30px;
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+      border: 1px solid var(--border-subtle);
+      background: rgba(0, 0, 0, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .hud-subtitle-box {
+      background: rgba(7, 9, 19, 0.75);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 1.25rem 1.75rem;
+      margin: 1rem auto;
+      max-width: 780px;
+      text-align: left;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    
+    /* ========================================================
+       🤖 JOJO 3D CYBERNETIC HUMANOID AVATAR STAGE
+       ======================================================== */
+    .jojo-avatar-container {
+      position: relative;
+      width: 100%;
+      max-width: 820px;
+      margin: 0.75rem auto 1.25rem auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .avatar-canvas-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 680px;
+      height: 480px;
+      background: radial-gradient(circle at 50% 40%, rgba(16, 28, 62, 0.7) 0%, rgba(6, 9, 20, 0.95) 75%);
+      border: 1.5px solid rgba(0, 240, 255, 0.35);
+      border-radius: 28px;
+      box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.8),
+        0 0 45px rgba(0, 240, 255, 0.2),
+        inset 0 0 60px rgba(0, 240, 255, 0.05);
+      overflow: hidden;
+      cursor: crosshair;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .avatar-canvas-wrapper:hover {
+      border-color: rgba(0, 240, 255, 0.7);
+      box-shadow: 
+        0 25px 65px rgba(0, 0, 0, 0.9),
+        0 0 65px rgba(0, 240, 255, 0.4),
+        inset 0 0 70px rgba(0, 240, 255, 0.1);
+    }
+
+    #jojo-humanoid-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Sci-Fi Corner Accents */
+    .avatar-canvas-wrapper::before,
+    .avatar-canvas-wrapper::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      pointer-events: none;
+      z-index: 10;
+      border-color: #00f0ff;
+      border-style: solid;
+    }
+    .avatar-canvas-wrapper::before {
+      top: 14px;
+      left: 14px;
+      border-width: 2px 0 0 2px;
+      border-top-left-radius: 8px;
+    }
+    .avatar-canvas-wrapper::after {
+      bottom: 14px;
+      right: 14px;
+      border-width: 0 2px 2px 0;
+      border-bottom-right-radius: 8px;
+    }
+
+    /* Minimalist Futuristic JoJo Hologram Center Badge */
+    .jojo-hologram-badge {
+      position: absolute;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.45rem 1.4rem;
+      background: rgba(6, 10, 24, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--font-display);
+      z-index: 8;
+      pointer-events: none;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 240, 255, 0.25);
+    }
+
+    .jojo-hologram-badge .badge-icon {
+      font-size: 1rem;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    .jojo-hologram-badge .badge-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #00f0ff;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+    }
+
+    /* Avatar Controls Bar */
+    .avatar-control-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin-top: 1rem;
+      width: 100%;
+    }
+    .avatar-ctrl-btn {
+      background: rgba(14, 20, 38, 0.85);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 20px;
+      padding: 0.5rem 1.1rem;
+      color: #e2e8f0;
+      font-family: var(--font-display);
+      font-size: 0.76rem;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(8px);
+    }
+    .avatar-ctrl-btn:hover {
+      background: rgba(0, 240, 255, 0.18);
+      border-color: var(--neon-cyan);
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 240, 255, 0.35);
+    }
+    .avatar-ctrl-btn.active {
+      background: rgba(0, 240, 255, 0.28);
+      border-color: var(--neon-cyan);
+      color: var(--neon-cyan);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    }
+
+    .hud-wave-canvas {
+      width: 100%;
+      height: 85px;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      margin: 1.2rem 0;
+      display: block;
+    }
+
+    .hud-actions-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .hud-btn-handsfree {
+      background: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%);
+      color: #000;
+      font-weight: 700;
+      font-family: var(--font-display);
+      letter-spacing: 1px;
+      padding: 0.85rem 1.8rem;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+    }
+
+    .hud-btn-handsfree.active {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 0 35px rgba(16, 185, 129, 0.8);
+      color: #fff;
+    }
+
+    /* Toast notification */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: rgba(14, 20, 38, 0.95);
+      border: 1px solid var(--neon-cyan);
+      color: #fff;
+      padding: 0.85rem 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 8px 25px rgba(0, 240, 255, 0.4);
+      font-size: 0.9rem;
+      z-index: 100;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.2);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--neon-cyan);
+    }
+
+    /* ========================================================
+       🔮 GLOBAL FLOATING JOJO 3D VOICE HUD OVERLAY (ALL PAGES)
+       ======================================================== */
+    .floating-jojo-orb {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #00f0ff 0%, #0284c7 55%, #082f49 100%);
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.65), 0 8px 30px rgba(0,0,0,0.8);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 99998;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: jojo-float 3.5s ease-in-out infinite;
+    }
+
+    .floating-jojo-orb:hover {
+      transform: scale(1.12);
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.95), 0 10px 40px rgba(0,0,0,0.9);
+    }
+
+    .floating-jojo-orb.is-sleeping {
+      background: radial-gradient(circle, #6366f1 0%, #312e81 60%, #0f172a 100%);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.5), 0 6px 20px rgba(0,0,0,0.6);
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    .floating-jojo-orb .orb-ring {
+      position: absolute;
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      border: 1.5px dashed rgba(0, 240, 255, 0.4);
+      animation: spin-clockwise 8s linear infinite;
+    }
+
+    @keyframes jojo-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    /* Global JoJo Hologram Modal Card */
+    .global-jojo-modal {
+      position: fixed;
+      bottom: 96px;
+      right: 24px;
+      width: 365px;
+      max-width: 92vw;
+      background: rgba(8, 12, 28, 0.92);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1.5px solid rgba(0, 240, 255, 0.45);
+      border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.85), 0 0 45px rgba(0, 240, 255, 0.35);
+      padding: 1.4rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 99999;
+      transform: translateY(25px) scale(0.92);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .global-jojo-modal.is-active {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .global-jojo-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.4rem;
+    }
+
+    .global-jojo-title {
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: var(--neon-cyan);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .global-jojo-ctrls {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .global-jojo-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .global-jojo-btn:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+
+    /* Holographic concentric rings in modal */
+    .modal-orb-stage {
+      position: relative;
+      width: 190px;
+      height: 190px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0.3rem 0;
+    }
+
+    .modal-ring-outer {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      border: 2px dashed rgba(0, 240, 255, 0.35);
+      animation: spin-clockwise 14s linear infinite;
+    }
+
+    .modal-ring-middle {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 2px solid rgba(168, 85, 247, 0.45);
+      border-top-color: transparent;
+      border-bottom-color: transparent;
+      animation: spin-counter 9s linear infinite;
+    }
+
+    .modal-ring-inner {
+      position: absolute;
+      width: 105px;
+      height: 105px;
+      border-radius: 50%;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      animation: breathe 2s ease-in-out infinite;
+    }
+
+    .modal-plasma-core {
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+    }
+
+    .modal-wave-canvas {
+      width: 100%;
+      height: 38px;
+      margin-top: 0.4rem;
+    }
+
+    .modal-subtitle-box {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 0.6rem 0.8rem;
+      margin-top: 0.5rem;
+      min-height: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .global-jojo-modal {
+        bottom: 20px;
+        right: 50%;
+        transform: translateX(50%) translateY(25px) scale(0.92);
+        width: 94vw;
+        max-width: 380px;
+      }
+      .global-jojo-modal.is-active {
+        transform: translateX(50%) translateY(0) scale(1);
+      }
+      .floating-jojo-orb {
+        bottom: 16px;
+        right: 16px;
+        width: 54px;
+        height: 54px;
+      }
+    }
+  </style>
+  <!-- Three.js & GLTF 3D Neural Hologram Engine -->
+  <script src="/three.min.js"></script>
+  <script src="/GLTFLoader.js"></script>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="brand">
+      <div class="core-avatar">
+        <span style="font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; color: #000;">J</span>
+      </div>
+      <div class="brand-text">
+        <h1>JOJO AGI COMMAND CENTER</h1>
+        <p>AUTONOMOUS DUAL-CORE COMPANION</p>
+      </div>
+    </div>
+
+    <div class="telemetry-pills">
+      <div class="pill" onclick="toggleGlobalJoJoHUD()" style="cursor: pointer; background: rgba(0, 240, 255, 0.12); border-color: rgba(0, 240, 255, 0.5); color: #00f0ff; font-weight: 600;" title="Toggle JoJo 3D Holographic HUD"><span style="animation: pulse 1.5s infinite;">🔮</span> <span>JoJo Hologram</span></div>
+      <div class="pill"><span class="dot"></span> <span id="status-mode">Active / Listening</span></div>
+      <div class="pill">🧠 <span id="gemini-key-pill">Gemini Pool #1</span></div>
+      <div class="pill">🎙️ <span id="voice-pill" style="color: var(--neon-cyan); font-weight: 600;">Voice 2: Madhur Neural (Permanent)</span></div>
+      <div class="pill">🔒 Welch FFT (<span id="threshold-pill">0.72</span>)</div>
+      <div class="pill">☁️ <span id="cloud-pill">Firestore Sync</span></div>
+    </div>
+  </header>
+
+  <!-- Main Area -->
+  <main>
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('voice-hud')">🔮 JoJo</button>
+      <button class="nav-tab" onclick="switchTab('reminders')">📢 Friendly Reminders</button>
+      <button class="nav-tab" onclick="switchTab('memory')">⚡ Instant QA Memory</button>
+      <button class="nav-tab" onclick="switchTab('notes')">📝 Smart Notes</button>
+      <button class="nav-tab" onclick="switchTab('chat')">💬 Live Chat & Voice</button>
+      <button class="nav-tab" onclick="switchTab('history')">📜 Chat Timeline</button>
+      <button class="nav-tab" onclick="switchTab('mobile')">📱 Mobile & Termux Hub</button>
+      <button class="nav-tab" onclick="switchTab('automation')">💻 PC Automation</button>
+      <button class="nav-tab" onclick="switchTab('settings')">⚙️ AI Core Tuning</button>
+    </div>
+
+    <!-- TAB 0: HOLOGRAPHIC VOICE HUD (PRIMARY) -->
+    <div id="tab-voice-hud" class="tab-content active">
+      <div class="hud-card" id="hud-main-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <span style="font-size: 1.4rem;">🔮</span>
+            <span style="font-family: var(--font-display); font-size: 1.15rem; color: #00f0ff; font-weight: 700; letter-spacing: 1.5px; text-shadow: 0 0 10px rgba(0,240,255,0.6);">JoJo Hologram</span>
+          </div>
+          <div style="display: flex; gap: 0.6rem;">
+            <button type="button" class="time-btn" onclick="toggleFullscreenHUD()">⛶ Fullscreen</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Status Badge -->
+        <div id="hud-badge" class="hud-status-badge" style="color: var(--neon-cyan); border-color: rgba(0, 240, 255, 0.4);">
+          <span id="hud-badge-dot" class="dot"></span>
+          <span id="hud-badge-text">SLEEP MODE - WAITING FOR "JOJO"</span>
+        </div>
+
+        <!-- 🧠 3D NEURAL NETWORK HUMAN FACE MESH (EXACT IMAGE REPLICA) -->
+        <div class="jojo-avatar-container" id="jojo-avatar-container">
+          <div class="avatar-canvas-wrapper" id="avatar-canvas-wrapper" title="Drag to rotate JoJo 3D Neural Face in real-time">
+            <!-- Three.js 3D WebGL Canvas Container -->
+            <div id="three-head-container" style="width: 100%; height: 100%; position: relative; overflow: hidden;"></div>
+            
+            <!-- Clean Minimalist JoJo Hologram Center Badge -->
+            <div class="jojo-hologram-badge">
+              <span class="badge-icon">🔮</span>
+              <span class="badge-title">JoJo Hologram</span>
+            </div>
+          </div>
+
+          <!-- Interactive Neural Mesh Controls -->
+          <div class="avatar-control-bar">
+            <button type="button" class="avatar-ctrl-btn" onclick="triggerNeuralPulse()">
+              ⚡ Pulse Synapses
+            </button>
+            <button type="button" class="avatar-ctrl-btn" onclick="triggerSpeechLipSyncDemo()">
+              🗣️ Test Speech Lip-Sync
+            </button>
+            <button type="button" class="avatar-ctrl-btn" id="btn-toggle-points" onclick="toggleNeuralPoints()">
+              ✨ Points: ON
+            </button>
+            <button type="button" class="avatar-ctrl-btn" id="btn-toggle-mesh" onclick="toggleNeuralWireframe()">
+              🌐 Wireframe: ON
+            </button>
+            <button type="button" class="avatar-ctrl-btn" onclick="resetHeadView()">
+              🎯 Reset 3D View
+            </button>
+          </div>
+        </div>
+
+        <!-- Classic Concentric Orb (Hidden fallback) -->
+        <div class="hud-orb-stage" id="hud-orb-stage" style="display: none;">
+          <div class="hud-ring-outer" id="hud-ring-outer"></div>
+          <div class="hud-ring-middle" id="hud-ring-middle"></div>
+          <div class="hud-ring-inner" id="hud-ring-inner"></div>
+          <div class="hud-plasma-core state-sleeping" id="hud-plasma-core" onclick="simulateBossTrigger()" title="Click to trigger wake">
+            <span style="font-family: var(--font-display); font-weight: 900; font-size: 1.5rem; color: #fff; text-shadow: 0 0 10px rgba(0,0,0,0.8);">JOJO</span>
+          </div>
+        </div>
+
+        <!-- Biometric Verification Bar -->
+        <div style="max-width: 480px; margin: 0 auto 1rem auto;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+            <span>Voice Biometric Match: <b id="hud-sim-score" style="color: var(--neon-cyan);">0.00</b></span>
+            <span>Threshold: <b style="color: var(--neon-purple);" id="hud-sim-thresh">0.72</b></span>
+          </div>
+          <div style="background: rgba(255, 255, 255, 0.08); height: 8px; border-radius: 4px; overflow: hidden; position: relative;">
+            <div id="hud-sim-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #00f0ff); transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+
+        <!-- Real-Time Audio Frequency Canvas -->
+        <div style="max-width: 780px; margin: 0 auto;">
+          <canvas id="voice-canvas" class="hud-wave-canvas" height="85"></canvas>
+        </div>
+
+        <!-- Live Subtitles / Dialogue Display -->
+        <div class="hud-subtitle-box">
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 0.4rem;">
+            🎙️ User Speech / Wake-Word:
+          </div>
+          <div id="hud-user-transcript" style="font-size: 1.05rem; color: #fff; font-weight: 500; min-height: 1.5rem; margin-bottom: 0.8rem;">
+            [ माइक सुन रहा है... कहिए "JoJo" ]
+          </div>
+          <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--neon-cyan); margin-bottom: 0.4rem;">
+            🤖 JoJo Spoken Response:
+          </div>
+          <div id="hud-jojo-reply" style="font-size: 1.05rem; color: var(--neon-cyan); font-weight: 500; min-height: 1.5rem;">
+            बॉस, मैं स्लीप मोड पर हूँ। जब भी काम हो बस 'JoJo' बोलिए!
+          </div>
+        </div>
+
+        <!-- Live Interactive Controls -->
+        <div class="hud-actions-row">
+          <button type="button" id="btn-handsfree-mic" class="hud-btn-handsfree" onclick="toggleHandsFreeVoice()">
+            <span id="handsfree-mic-icon">🎙️</span>
+            <span id="handsfree-mic-text">START BROWSER HANDS-FREE MIC</span>
+          </button>
+          <button type="button" class="time-btn" style="padding: 0.85rem 1.4rem; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: #34d399;" onclick="simulateBossTrigger()">
+            ⚡ Test Boss Wake ("JoJo")
+          </button>
+          <button type="button" class="time-btn" style="padding: 0.85rem 1.4rem; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #f87171;" onclick="simulateStrangerTrigger()">
+            ⛔ Test Stranger Wake ("JoJo")
+          </button>
+          <button type="button" class="time-btn" style="padding: 0.85rem 1.4rem;" onclick="putJoJoToSleep()">
+            💤 Sleep JoJo Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: PROACTIVE REMINDERS -->
+    <div id="tab-reminders" class="tab-content">
+      <div class="grid-2">
+        <!-- New Reminder Form -->
+        <div class="glass-card">
+          <h2 class="card-title">➕ नया रिमाइंडर शेड्यूल करें</h2>
+          <form id="reminder-form" onsubmit="createReminder(event)">
+            <div class="form-group">
+              <label>रिमाइंडर मैसेज (जैसे: 'दवाई लेना', 'पानी पीना', 'मीटिंग'):</label>
+              <input type="text" id="rem-msg" placeholder="बॉस, क्या याद दिलाना है?" required />
+              <div class="quick-pills">
+                <button type="button" class="time-btn" onclick="setDelay(10)">+10 सेकंड</button>
+                <button type="button" class="time-btn" onclick="setDelay(30)">+30 सेकंड</button>
+                <button type="button" class="time-btn" onclick="setDelay(60)">+1 मिनट</button>
+                <button type="button" class="time-btn" onclick="setDelay(300)">+5 मिनट</button>
+                <button type="button" class="time-btn" onclick="setDelay(900)">+15 मिनट</button>
+                <button type="button" class="time-btn" onclick="setDelay(3600)">+1 घंटा</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>समय (Seconds में):</label>
+              <input type="number" id="rem-delay" value="10" min="1" required />
+            </div>
+
+            <button type="submit" class="btn-primary">🚀 रिमाइंडर सेट करो बॉस</button>
+          </form>
+        </div>
+
+        <!-- Reminders List -->
+        <div class="glass-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h2 class="card-title" style="margin-bottom: 0;">📋 एक्टिव व शेड्यूल्ड टास्क</h2>
+            <button class="time-btn" onclick="loadReminders()">🔄 रिफ्रेश</button>
+          </div>
+          <div class="item-list" id="reminders-list">
+            <p style="color: var(--text-muted); font-size: 0.85rem;">लोड हो रहा है...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: INSTANT QA MEMORY -->
+    <div id="tab-memory" class="tab-content">
+      <div class="grid-2">
+        <!-- Add Custom QA -->
+        <div class="glass-card">
+          <h2 class="card-title">⚡ नया इंस्टेंट जवाब जोड़ें</h2>
+          <p style="font-size: 0.825rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+            ये जवाब JoJo की लोकल SQLite मेमोरी में सेव होते हैं। जब आप ये सवाल पूछेंगे तो JoJo बिना किसी Gemini API कॉल के 0.1 सेकंड में तुरंत जवाब देगा!
+          </p>
+          <form id="qa-form" onsubmit="saveCustomQA(event)">
+            <div class="form-group">
+              <label>सवाल (Question / Query):</label>
+              <input type="text" id="qa-q" placeholder="जैसे: तुम्हारा बॉस कौन है?" required />
+            </div>
+            <div class="form-group">
+              <label>जवाब (Instant Answer):</label>
+              <textarea id="qa-a" rows="3" placeholder="जैसे: मेरे बॉस आप हैं, और मैं हमेशा आपके साथ हूँ!" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary">💾 लोकल मेमोरी में सेव करो</button>
+          </form>
+        </div>
+
+        <!-- QA Cache List -->
+        <div class="glass-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h2 class="card-title" style="margin-bottom: 0;">🧠 कैश्ड मेमोरी लाइब्रेरी</h2>
+            <button class="time-btn" onclick="loadQACache()">🔄 रिफ्रेश</button>
+          </div>
+          <div class="item-list" id="qa-list">
+            <p style="color: var(--text-muted); font-size: 0.85rem;">लोड हो रहा है...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: LIVE CHAT & VOICE -->
+    <div id="tab-chat" class="tab-content">
+      <div class="terminal-window">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <div class="terminal-dot dot-r"></div>
+            <div class="terminal-dot dot-y"></div>
+            <div class="terminal-dot dot-g"></div>
+          </div>
+          <span style="font-family: var(--font-display); font-size: 0.8rem; color: var(--neon-cyan);">JOJO NEURAL DIALOG TERMINAL</span>
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+            <input type="checkbox" id="speak-checkbox" checked />
+            <label for="speak-checkbox" style="margin: 0; cursor: pointer; color: #fff;">स्पीकर पर भी बोलो 🔊</label>
+          </div>
+        </div>
+
+        <div class="terminal-messages" id="chat-messages">
+          <div class="msg-bubble msg-jojo">
+            बॉस, सब सेट है! बताओ आज क्या हाल चाल हैं? कुछ भी पूछो या टास्क दो!
+          </div>
+        </div>
+
+        <form class="terminal-input-bar" onsubmit="sendChatMessage(event)">
+          <input type="text" id="chat-input" placeholder="यहाँ JoJo से बात करें..." autocomplete="off" />
+          <button type="submit" class="btn-primary" style="width: auto; padding: 0.75rem 1.5rem;">भेजें 🚀</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- TAB 4: PC AUTOMATION -->
+    <div id="tab-automation" class="tab-content">
+      <div class="glass-card">
+        <h2 class="card-title">💻 वन-क्लिक पीसी टास्क ऑटोमेशन</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+          यहाँ से आप सीधे JoJo के सिस्टम ट्रिगर्स चला सकते हैं बिना वॉइस कमांड बोले:
+        </p>
+
+        <div class="task-btn-grid">
+          <div class="task-card-btn" onclick="triggerTask('chrome')">
+            <span class="task-icon">🌐</span>
+            <span class="task-label">गूगल क्रोम खोलो</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Open Google Chrome</span>
+          </div>
+
+          <div class="task-card-btn" onclick="triggerTask('screenshot')">
+            <span class="task-icon">📸</span>
+            <span class="task-label">स्क्रीनशॉट लो</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Save to Desktop</span>
+          </div>
+
+          <div class="task-card-btn" onclick="triggerTask('laptop lock')">
+            <span class="task-icon">🔒</span>
+            <span class="task-label">पीसी लॉक करो</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Lock Workstation</span>
+          </div>
+
+          <div class="task-card-btn" onclick="testCustomVoice()">
+            <span class="task-icon">🎙️</span>
+            <span class="task-label">वॉइस टेस्ट</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Speak Test Line</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SETTINGS & TUNING -->
+    <div id="tab-settings" class="tab-content">
+      <div class="glass-card" style="max-width: 650px; margin: 0 auto;">
+        <h2 class="card-title">⚙️ AI कोर पैरामीटर्स और ट्यूनिंग</h2>
+        
+        <form onsubmit="saveConfig(event)">
+          <div class="form-group">
+            <label>बॉस वॉइस ऑथेंटिकेशन थ्रेशोल्ड (Welch FFT Cosine Similarity):</label>
+            <div class="slider-container">
+              <input type="range" id="threshold-slider" min="0.50" max="0.90" step="0.01" value="0.68" oninput="updateSliderVal('thresh-val', this.value)" />
+              <span class="slider-val" id="thresh-val">0.68</span>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;">
+              डिफ़ॉल्ट 0.68 है। ज्यादा बढ़ाने पर स्ट्रिक्ट हो जाएगा (सिर्फ एग्जैक्ट मैच), कम करने पर आसानी से मैच करेगा।
+            </p>
+          </div>
+
+          <div class="form-group" style="margin-top: 1.5rem;">
+            <label>कंटीन्यूअस एक्टिव सेशन टाइमआउट (Seconds):</label>
+            <div class="slider-container">
+              <input type="range" id="timeout-slider" min="15" max="120" step="5" value="30" oninput="updateSliderVal('timeout-val', this.value)" />
+              <span class="slider-val" id="timeout-val">30s</span>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;">
+              एक बार "JoJo" बोलने के बाद कितनी देर तक JoJo बिना वेक-वर्ड के सुनता रहेगा।
+            </p>
+          </div>
+
+          <div class="form-group" style="margin-top: 1.5rem;">
+            <label>🎙️ JoJo परमानेंट वॉइस (Selected by Boss):</label>
+            <select id="voice-select" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-cyan); border-radius: 8px; color: #fff; font-family: var(--font-body); font-size: 0.9rem; margin-top: 0.5rem;" disabled>
+              <option value="voice_2_madhur">🌟 Voice 2: Microsoft Madhur Neural (+10% Speed, +4Hz Pitch) [PERMANENT & LOCKED]</option>
+            </select>
+            <p style="font-size: 0.75rem; color: var(--neon-green); margin-top: 0.4rem;">
+              ✓ Voice 2 को स्थायी (Permanent) लॉक कर दिया गया है। बाकी सभी आवाज़ें हटा दी गई हैं।
+            </p>
+          </div>
+
+          <div class="form-group" style="margin-top: 1.5rem;">
+            <label>⚡ बोलने की स्पीड (Speed / Tempo):</label>
+            <div class="slider-container">
+              <input type="range" id="speed-slider" min="0.75" max="1.25" step="0.02" value="0.92" oninput="updateSliderVal('speed-val', this.value)" />
+              <span class="slider-val" id="speed-val">0.92x</span>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;">
+              0.92x एक फुर्तीले, एनर्जेटिक यंग दोस्त जैसी नेचुरल गति देता है।
+            </p>
+          </div>
+
+          <div style="margin-top: 1.5rem; padding: 1.2rem; background: rgba(0, 240, 255, 0.04); border: 1px dashed var(--border-glow); border-radius: 10px;">
+            <label style="font-size: 0.85rem; color: var(--neon-cyan); font-weight: 600;">🎧 लाइव आवाज़ टेस्ट करो:</label>
+            <div style="display: flex; gap: 0.75rem; margin-top: 0.6rem;">
+              <input type="text" id="voice-test-text" value="हाँ बॉस! आवाज़ एकदम साफ़, यंग इंडियन लड़के जैसी और बिना किसी लैग के है।" style="flex: 1; padding: 0.6rem 0.8rem; background: rgba(0,0,0,0.4); border: 1px solid var(--border-subtle); border-radius: 6px; color: #fff; font-size: 0.85rem;" />
+              <button type="button" class="btn-primary" style="width: auto; padding: 0.6rem 1.2rem;" onclick="testSelectedVoice()">सुनाओ 🔊</button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 1.5rem;">
+            <label>🎧 इनपुट माइक्रोफोन डिवाइस (Mic Device):</label>
+            <select id="mic-select" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-cyan); border-radius: 8px; color: #fff; font-family: var(--font-body); font-size: 0.9rem; margin-top: 0.5rem;">
+              <option value="1">Microphone Array (Realtek)</option>
+            </select>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;">
+              ईयरफ़ोन या ब्लूटूथ हेडसेट कनेक्ट होने पर यहाँ से चुनें।
+            </p>
+          </div>
+
+          <div style="margin-top: 1.5rem; padding: 1.2rem; background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+              <div>
+                <h4 style="color: var(--neon-purple); font-size: 0.95rem;">🎙️ 1-Click बॉस आवाज़ री-एनरोलमेंट</h4>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+                  अपनी आवाज़ का नया बायोमेट्रिक सैंपल सीधे यहाँ से रिकॉर्ड करके लॉक करें।
+                </p>
+              </div>
+              <button type="button" id="enroll-btn" class="btn-primary" style="width: auto; padding: 0.6rem 1.2rem; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);" onclick="enrollBossVoiceLive()">
+                नई आवाज़ रजिस्टर करें 🎤
+              </button>
+            </div>
+            <div id="enroll-status" style="margin-top: 0.6rem; font-size: 0.85rem; color: var(--neon-cyan); display: none;"></div>
+          </div>
+
+          <div style="margin-top: 1.5rem; padding: 0.85rem 1rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.4rem;">🛡️</span>
+            <div>
+              <h5 style="color: var(--neon-green); font-size: 0.85rem; font-weight: 600;">FINANCIAL & CRYPTO SECURITY SHIELD: PERMANENTLY ACTIVE</h5>
+              <p style="color: var(--text-muted); font-size: 0.75rem;">
+                GPay, PhonePe, Paytm, Banking Apps, OTP & Crypto Wallets (MetaMask, TrustWallet, Binance, Bitget, Seed Phrases) 100% ब्लॉक व सुरक्षित हैं।
+              </p>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" style="margin-top: 1.5rem;">💾 सेटिंग्स अपडेट करो बॉस</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- TAB: SMART NOTES -->
+    <div id="tab-notes" class="tab-content">
+      <div class="grid-2">
+        <div class="glass-card">
+          <h2 class="card-title">📝 नया नोट लिखें</h2>
+          <form onsubmit="saveCustomNote(event)">
+            <div class="form-group">
+              <label>नोट कंटेंट (जैसे: 'कल राहुल से मीटिंग है 4 बजे'):</label>
+              <textarea id="note-text" rows="4" style="width: 100%; padding: 0.75rem; background: rgba(0,0,0,0.4); border: 1px solid var(--border-subtle); border-radius: 8px; color: #fff; font-family: var(--font-body); font-size: 0.9rem;" placeholder="यहाँ नोट लिखें या आवाज़ से बोलें..." required></textarea>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 1rem;">सेव करो बॉस 💾</button>
+          </form>
+        </div>
+
+        <div class="glass-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <h2 class="card-title" style="margin: 0;">📋 मेरे सेव किए गए नोट्स</h2>
+            <button type="button" class="btn-danger" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.75rem;" onclick="loadNotes()">रिफ्रेश ⟳</button>
+          </div>
+          <div class="items-list" id="notes-list">
+            <p style="color: var(--text-muted); font-size: 0.85rem;">नोट्स लोड हो रहे हैं...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: CHAT TIMELINE -->
+    <div id="tab-history" class="tab-content">
+      <div class="glass-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+          <h2 class="card-title" style="margin: 0;">📜 JoJo कन्वर्सेशन टाइमलाइन</h2>
+          <button type="button" class="btn-danger" style="width: auto; padding: 0.45rem 1rem;" onclick="clearChatHistory()">हिस्ट्री डिलीट करें 🗑️</button>
+        </div>
+        <div class="items-list" id="history-list" style="max-height: 550px; overflow-y: auto;">
+          <p style="color: var(--text-muted); font-size: 0.85rem;">चैट हिस्ट्री लोड हो रही है...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: MOBILE & TERMUX HUB -->
+    <div id="tab-mobile" class="tab-content">
+      <div class="glass-card" style="max-width: 800px; margin: 0 auto;">
+        <h2 class="card-title">📱 JoJo 1-क्लिक मोबाइल और Termux हब</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+          अपने किसी भी एंड्रॉइड फ़ोन पर JoJo को एक सेकंड में इंस्टॉल और एक्सेस करें:
+        </p>
+
+        <!-- Method 1: Instant Web Dashboard -->
+        <div style="padding: 1.2rem; background: rgba(0, 240, 255, 0.05); border: 1px solid var(--border-glow); border-radius: 10px; margin-bottom: 1.5rem;">
+          <h4 style="color: var(--neon-cyan); font-size: 1rem; margin-bottom: 0.4rem;">🌐 तरीका 1: फ़ोन ब्राउज़र से सीधे चलाएं (Instant Mobile Web App)</h4>
+          <p style="font-size: 0.8rem; color: #fff; margin-bottom: 0.6rem;">
+            फ़ोन को उसी वाई-फ़ाई से कनेक्ट करें और ब्राउज़र (Chrome / Brave) में यह लिंक खोलें:
+          </p>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <input type="text" id="mobile-url-input" value="http://192.168.31.163:8000/" readonly style="flex: 1; padding: 0.75rem; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-cyan); border-radius: 8px; color: var(--neon-cyan); font-family: monospace; font-size: 1rem; font-weight: bold;" />
+            <button class="btn-primary" style="width: auto; padding: 0.75rem 1.2rem;" onclick="copyMobileUrl()">कॉपी 📋</button>
+          </div>
+        </div>
+
+        <!-- Method 2: Termux 1-Command Setup -->
+        <div style="padding: 1.2rem; background: rgba(168, 85, 247, 0.06); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 10px; margin-bottom: 1.5rem;">
+          <h4 style="color: var(--neon-purple); font-size: 1rem; margin-bottom: 0.4rem;">⚡ तरीका 2: Termux पर 1-कमांड ऑटो-इंस्टॉलेशन (Calling, Maps & Amazon)</h4>
+          <p style="font-size: 0.8rem; color: #fff; margin-bottom: 0.6rem;">
+            फ़ोन में <b>Termux</b> ऐप खोलें और सिर्फ यह एक लाइन पेस्ट करके Enter दबाएं:
+          </p>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <input type="text" id="termux-cmd-input" value="pkg install -y curl && curl -sL http://192.168.31.163:8000/jojo_termux_setup.sh | bash" readonly style="flex: 1; padding: 0.75rem; background: rgba(0,0,0,0.5); border: 1px solid var(--neon-purple); border-radius: 8px; color: #38bdf8; font-family: monospace; font-size: 0.85rem;" />
+            <button class="btn-primary" style="width: auto; padding: 0.75rem 1.2rem; background: linear-gradient(135deg, #a855f7 0%, #6366f1 100%);" onclick="copyTermuxCmd()">कोड कॉपी 📋</button>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.6rem;">
+            ✓ यह अपने आप सारी फाइल्स इंस्टॉल कर देगा और 'jojo' कमांड बना देगा।
+          </p>
+        </div>
+
+        <!-- Method 3: Universal Public Tunnel (Outside Home / Different Networks) -->
+        <div style="padding: 1.2rem; background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; margin-bottom: 1.5rem;">
+          <h4 style="color: var(--neon-green); font-size: 1rem; margin-bottom: 0.4rem;">🌐 तरीका 3: अलग-अलग वाई-फ़ाई / 4G मोबाइल डेटा पर एक्सेस (Zero Wi-Fi Limit)</h4>
+          <p style="font-size: 0.8rem; color: #fff; margin-bottom: 0.6rem;">
+            अगर आपका फ़ोन और लैपटॉप अलग-अलग नेटवर्क पर हैं, तो लैपटॉप के JoJo फ़ोल्डर में <b>jojo_start_public_tunnel.bat</b> पर डबल क्लिक करें — आपको एक सुरक्षित पब्लिक HTTPS लिंक मिल जाएगा जिसे आप दुनिया के किसी भी कोने से फ़ोन पर खोल सकते हैं!
+          </p>
+          <div style="font-size: 0.78rem; color: var(--neon-cyan);">
+            ☁️ <b>Firebase Cloud Relay:</b> JoJo मोबाइल साथी बैकग्राउंड में Firebase Firestore के ज़रिए सभी कमांड्स को बिना लोकल वाई-फ़ाई के भी रियल-टाइम सिंक करता है!
+          </div>
+        </div>
+
+        <!-- Phone Capabilities & Safety Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.85rem;">
+          <div style="padding: 0.85rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">📧</div>
+            <h5 style="color: #fff; font-size: 0.85rem;">Gmail & Email</h5>
+            <p style="font-size: 0.72rem; color: var(--text-muted);">नया मेल बनाना और भेजना</p>
+          </div>
+          <div style="padding: 0.85rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">🌐</div>
+            <h5 style="color: #fff; font-size: 0.85rem;">Chrome Search</h5>
+            <p style="font-size: 0.72rem; color: var(--text-muted);">वेबसाइट व गूगल सर्च</p>
+          </div>
+          <div style="padding: 0.85rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">🔒</div>
+            <h5 style="color: #fff; font-size: 0.85rem;">Screen Lock / Wake</h5>
+            <p style="font-size: 0.72rem; color: var(--text-muted);">स्क्रीन लॉक व ऑन करना</p>
+          </div>
+          <div style="padding: 0.85rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">⏰</div>
+            <h5 style="color: #fff; font-size: 0.85rem;">Alarm & Timers</h5>
+            <p style="font-size: 0.72rem; color: var(--text-muted);">अलार्म व टाइमर सेट करना</p>
+          </div>
+          <div style="padding: 0.85rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">⚙️</div>
+            <h5 style="color: #fff; font-size: 0.85rem;">Settings & Updates</h5>
+            <p style="font-size: 0.72rem; color: var(--text-muted);">अपडेट व साउंड सेटिंग्स</p>
+          </div>
+          <div style="padding: 0.85rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">🎶</div>
+            <h5 style="color: #fff; font-size: 0.85rem;">Ringtone & Volume</h5>
+            <p style="font-size: 0.72rem; color: var(--text-muted);">वॉल्यूम कम/ज़्यादा करना</p>
+          </div>
+          <div style="padding: 0.85rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">🔦</div>
+            <h5 style="color: #fff; font-size: 0.85rem;">Torch / Flashlight</h5>
+            <p style="font-size: 0.72rem; color: var(--text-muted);">टॉर्च ऑन व ऑफ़ करना</p>
+          </div>
+          <div style="padding: 0.85rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">🔋</div>
+            <h5 style="color: #fff; font-size: 0.85rem;">Battery Status</h5>
+            <p style="font-size: 0.72rem; color: var(--text-muted);">चार्जिंग व बैटरी प्रतिशत</p>
+          </div>
+          <div style="padding: 0.85rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">🛒</div>
+            <h5 style="color: #fff; font-size: 0.85rem;">Amazon Shopping</h5>
+            <p style="font-size: 0.72rem; color: var(--text-muted);">प्रोडक्ट्स और शॉपिंग</p>
+          </div>
+          <div style="padding: 0.85rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">🗺️</div>
+            <h5 style="color: #fff; font-size: 0.85rem;">Google Maps</h5>
+            <p style="font-size: 0.72rem; color: var(--text-muted);">रास्ता और नेविगेशन</p>
+          </div>
+          <div style="padding: 0.85rem; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid var(--border-subtle);">
+            <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">📞</div>
+            <h5 style="color: #fff; font-size: 0.85rem;">Phone Calling</h5>
+            <p style="font-size: 0.72rem; color: var(--text-muted);">नंबर डायल व कॉलिंग</p>
+          </div>
+          <div style="padding: 0.85rem; background: rgba(239, 68, 68, 0.08); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.3);">
+            <div style="font-size: 1.4rem; margin-bottom: 0.2rem;">🔒</div>
+            <h5 style="color: var(--neon-red); font-size: 0.85rem;">Security Shield</h5>
+            <p style="font-size: 0.72rem; color: var(--text-muted);">UPI, OTP & Crypto ब्लॉक</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast Element -->
+  <div id="toast">सूचना संदेश</div>
+
+  <!-- 🔮 Persistent Ambient Floating JoJo Orb (Bottom Right) -->
+  <div class="floating-jojo-orb is-sleeping" id="floating-jojo-orb" onclick="toggleGlobalJoJoHUD()" title="JoJo 3D Neural Hologram HUD">
+    <div class="orb-ring"></div>
+    <span id="floating-orb-icon" style="font-size: 1.5rem;">🔮</span>
+  </div>
+
+  <!-- 🔮 Global JoJo 3D Holographic Overlay Modal -->
+  <div class="global-jojo-modal" id="global-jojo-modal">
+    <div class="global-jojo-header">
+      <div class="global-jojo-title">
+        <span>🔮</span> JOJO 3D HUD
+      </div>
+      <div class="global-jojo-ctrls">
+        <button type="button" class="global-jojo-btn" onclick="openFullscreenHUDTab()" title="Full HUD View">⛶</button>
+        <button type="button" class="global-jojo-btn" onclick="closeGlobalJoJoHUD()" title="Minimize">✕</button>
+      </div>
+    </div>
+
+    <!-- 3D Holographic Concentric Orb Stage -->
+    <div class="modal-orb-stage">
+      <div class="modal-ring-outer"></div>
+      <div class="modal-ring-middle"></div>
+      <div class="modal-ring-inner"></div>
+      <div class="modal-plasma-core state-sleeping" id="modal-plasma-core" onclick="simulateBossTrigger()" title="Click to trigger wake">
+        <span id="modal-core-icon" style="font-size: 1.8rem;">💤</span>
+      </div>
+    </div>
+
+    <!-- Status Pill -->
+    <div id="modal-status-pill" class="hud-status-badge" style="color: #a5b4fc; border-color: rgba(99, 102, 241, 0.4); margin-bottom: 0.3rem;">
+      <span id="modal-status-dot" class="dot" style="background: #6366f1;"></span>
+      <span id="modal-status-text">SLEEP MODE - WAITING FOR "JOJO"</span>
+    </div>
+
+    <!-- Real-Time Sine Wave Audio Frequency Canvas -->
+    <div style="width: 100%;">
+      <canvas id="modal-wave-canvas" class="modal-wave-canvas"></canvas>
+    </div>
+
+    <!-- Subtitle Card -->
+    <div class="modal-subtitle-box">
+      <div id="modal-speaker-tag" style="font-size: 0.68rem; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.2rem; font-weight: 600;">
+        🤖 JOJO ASSISTANT:
+      </div>
+      <div id="modal-subtitle-text" style="font-size: 0.88rem; color: #fff; line-height: 1.3; font-weight: 500;">
+        "JoJo" बोलिए एक्टिवेट करने के लिए...
+      </div>
+    </div>
+
+    <!-- Quick Action / Voice Trigger Button -->
+    <div style="width: 100%; display: flex; gap: 0.5rem; margin-top: 0.6rem;">
+      <button type="button" onclick="simulateBossTrigger()" style="flex: 1; padding: 0.45rem; background: rgba(0, 240, 255, 0.12); border: 1px solid rgba(0, 240, 255, 0.4); border-radius: 12px; color: var(--neon-cyan); font-size: 0.75rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+        <span>🎙️</span> <span>बोलिए "JoJo"</span>
+      </button>
+      <button type="button" onclick="putJoJoToSleep()" style="padding: 0.45rem 0.8rem; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: var(--text-muted); font-size: 0.75rem; cursor: pointer;">
+        💤 स्लीप
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      const activeBtn = Array.from(document.querySelectorAll('.nav-tab')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (activeBtn) activeBtn.classList.add('active');
+      
+      const activeContent = document.getElementById('tab-' + tabId);
+      if (activeContent) activeContent.classList.add('active');
+
+      if (tabId === 'voice-hud') resizeVoiceCanvas();
+      if (tabId === 'reminders') loadReminders();
+      if (tabId === 'memory') loadQACache();
+      if (tabId === 'notes') loadNotes();
+      if (tabId === 'history') loadChatHistory();
+      if (tabId === 'mobile') loadMobileInfo();
+      if (tabId === 'settings') loadAudioDevices();
+    }
+
+    // Quick time delay pills
+    function setDelay(sec) {
+      document.getElementById('rem-delay').value = sec;
+    }
+
+    function updateSliderVal(id, val) {
+      document.getElementById(id).innerText = val + (id.includes('timeout') ? 's' : (id.includes('speed') ? 'x' : ''));
+    }
+
+    // Toast notification
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    // Fetch live telemetry status
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/status');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        document.getElementById('threshold-pill').innerText = data.boss_threshold;
+        document.getElementById('gemini-key-pill').innerText = `Gemini Pool #${data.gemini_active_key_index}`;
+        document.getElementById('status-mode').innerText = data.is_active_session ? 'Active (Listening)' : 'Sleep (Ready)';
+        document.getElementById('threshold-slider').value = data.boss_threshold;
+        document.getElementById('thresh-val').innerText = data.boss_threshold;
+        document.getElementById('timeout-slider').value = data.session_timeout;
+        document.getElementById('timeout-val').innerText = data.session_timeout + 's';
+
+        const vPill = document.getElementById('voice-pill');
+        if (vPill) vPill.innerText = "Voice 2: Madhur Neural (Permanent)";
+        if (data.piper_speed !== undefined) {
+          const sSlider = document.getElementById('speed-slider');
+          if (sSlider && !sSlider.matches(':focus')) {
+            sSlider.value = data.piper_speed;
+            const sVal = document.getElementById('speed-val');
+            if (sVal) sVal.innerText = data.piper_speed + 'x';
+          }
+        }
+        if (data.local_ip) {
+          const mUrl = document.getElementById('mobile-url-input');
+          if (mUrl) mUrl.value = `http://${data.local_ip}:8000/`;
+          const tCmd = document.getElementById('termux-cmd-input');
+          if (tCmd) tCmd.value = `pkg install -y curl && curl -sL http://${data.local_ip}:8000/jojo_termux_setup.sh | bash`;
+        }
+      } catch (err) {
+        console.error('Status fetch error:', err);
+      }
+    }
+
+    // AUDIO DEVICES API
+    async function loadAudioDevices() {
+      try {
+        const res = await fetch('/api/audio_devices');
+        const devices = await res.json();
+        const sel = document.getElementById('mic-select');
+        if (!sel || !devices || devices.length === 0) return;
+        sel.innerHTML = devices.map(d => `
+          <option value="${d.id}" ${d.selected ? 'selected' : ''}>[Dev ${d.id}] ${escapeHtml(d.name)}</option>
+        `).join('');
+      } catch (err) {
+        console.error('Audio devices error:', err);
+      }
+    }
+
+    // BOSS VOICE RE-ENROLLMENT
+    async function enrollBossVoiceLive() {
+      const btn = document.getElementById('enroll-btn');
+      const statusDiv = document.getElementById('enroll-status');
+      btn.disabled = true;
+      statusDiv.style.display = 'block';
+      statusDiv.innerHTML = '🎤 <b>रिकॉर्डिंग शुरू...</b> ज़ोर से बोलिए: <i>"JoJo main tumhara boss hoon"</i> (4 सेकंड्स)...';
+
+      try {
+        const res = await fetch('/api/enroll_boss', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+          statusDiv.innerHTML = '✅ <b style="color: var(--neon-green);">' + escapeHtml(data.message) + '</b>';
+          showToast('बॉस वॉइस बायोमेट्रिक्स अपडेट और लॉक हो गए!');
+        } else {
+          statusDiv.innerHTML = '⚠️ एरर: ' + escapeHtml(data.detail || 'रिकॉर्डिंग फ़ेल हुई');
+        }
+      } catch (err) {
+        statusDiv.innerHTML = '⚠️ नेटवर्क एरर: सर्वर से कनेक्ट नहीं हो पाया';
+      } finally {
+        btn.disabled = false;
+        setTimeout(() => { statusDiv.style.display = 'none'; }, 6000);
+      }
+    }
+
+    // SMART NOTES API
+    async function loadNotes() {
+      const list = document.getElementById('notes-list');
+      try {
+        const res = await fetch('/api/notes');
+        const notes = await res.json();
+        if (!notes || notes.length === 0) {
+          list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">कोई सेव किया हुआ नोट नहीं है बॉस।</p>';
+          return;
+        }
+        list.innerHTML = notes.map(n => {
+          const dt = new Date(n.created_at * 1000).toLocaleString();
+          return `
+            <div class="list-item">
+              <div class="item-content" style="max-width: 80%;">
+                <p style="font-size: 0.95rem; color: #fff;">${escapeHtml(n.text)}</p>
+                <div class="item-meta" style="margin-top: 0.3rem;">
+                  <span>🕒 ${dt}</span>
+                </div>
+              </div>
+              <div>
+                <button class="btn-danger" onclick="deleteNote(${n.id})">हटाएं ✕</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        list.innerHTML = '<p style="color: var(--neon-red);">नोट्स लोड करने में समस्या आई।</p>';
+      }
+    }
+
+    async function saveCustomNote(e) {
+      e.preventDefault();
+      const txt = document.getElementById('note-text').value.trim();
+      if (!txt) return;
+
+      try {
+        const res = await fetch('/api/notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: txt })
+        });
+        if (res.ok) {
+          showToast('नोट सेव हो गया बॉस!');
+          document.getElementById('note-text').value = '';
+          loadNotes();
+        }
+      } catch (err) {
+        showToast('नोट सेव नहीं हो पाया');
+      }
+    }
+
+    async function deleteNote(id) {
+      if (!confirm('क्या आप इस नोट को हटाना चाहते हैं?')) return;
+      try {
+        await fetch(`/api/notes/${id}`, { method: 'DELETE' });
+        showToast('नोट हटा दिया गया!');
+        loadNotes();
+      } catch (err) {
+        showToast('डिलीट एरर');
+      }
+    }
+
+    // CHAT TIMELINE API
+    async function loadChatHistory() {
+      const list = document.getElementById('history-list');
+      try {
+        const res = await fetch('/api/chat_history');
+        const history = await res.json();
+        if (!history || history.length === 0) {
+          list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">कोई चैट हिस्ट्री उपलब्ध नहीं है।</p>';
+          return;
+        }
+        list.innerHTML = history.map(h => {
+          const isBoss = h.role === 'Boss';
+          const dt = new Date(h.timestamp * 1000).toLocaleTimeString();
+          return `
+            <div class="list-item" style="border-left: 3px solid ${isBoss ? 'var(--neon-cyan)' : 'var(--neon-purple)'};">
+              <div class="item-content" style="max-width: 90%;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+                  <span style="font-weight: bold; font-size: 0.8rem; color: ${isBoss ? 'var(--neon-cyan)' : 'var(--neon-purple)'};">${isBoss ? '👑 Boss' : '🤖 JoJo'}</span>
+                  <span style="font-size: 0.7rem; color: var(--text-muted);">${dt}</span>
+                </div>
+                <p style="font-size: 0.9rem; color: #fff;">${escapeHtml(h.message)}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        list.innerHTML = '<p style="color: var(--neon-red);">चैट लोड करने में समस्या आई।</p>';
+      }
+    }
+
+    async function clearChatHistory() {
+      if (!confirm('क्या आप सारी चैट हिस्ट्री मिटाना चाहते हैं?')) return;
+      try {
+        await fetch('/api/chat_history', { method: 'DELETE' });
+        showToast('चैट हिस्ट्री साफ़ कर दी गई है!');
+        loadChatHistory();
+      } catch (err) {
+        showToast('क्लियर करने में एरर आया');
+      }
+    }
+
+    // MOBILE URL & TERMUX COPY
+    function copyMobileUrl() {
+      const input = document.getElementById('mobile-url-input');
+      input.select();
+      navigator.clipboard.writeText(input.value);
+      showToast('फ़ोन लिंक कॉपी हो गया! ब्राउज़र में खोलें 🌐');
+    }
+
+    function copyTermuxCmd() {
+      const input = document.getElementById('termux-cmd-input');
+      input.select();
+      navigator.clipboard.writeText(input.value);
+      showToast('Termux कमांड कॉपी हो गया! Termux में पेस्ट करें ⚡');
+    }
+
+    function loadMobileInfo() {
+      fetch('/api/mobile_info')
+        .then(r => r.json())
+        .then(data => {
+          if (data.web_url) document.getElementById('mobile-url-input').value = data.web_url;
+          if (data.termux_command) document.getElementById('termux-cmd-input').value = data.termux_command;
+        }).catch(() => {});
+    }
+
+    // REMINDERS API
+    async function loadReminders() {
+      const list = document.getElementById('reminders-list');
+      try {
+        const res = await fetch('/api/reminders');
+        const data = await res.json();
+        if (!data || data.length === 0) {
+          list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">कोई शेड्यूल्ड रिमाइंडर नहीं है बॉस।</p>';
+          return;
+        }
+
+        list.innerHTML = data.map(r => {
+          const isPending = r.status === 'pending';
+          const triggerDate = new Date(r.trigger_time * 1000).toLocaleTimeString();
+          return `
+            <div class="list-item">
+              <div class="item-content">
+                <h4>${escapeHtml(r.message)}</h4>
+                <div class="item-meta">
+                  <span class="status-tag ${isPending ? 'status-pending' : 'status-completed'}">${r.status}</span>
+                  <span>⏰ ${triggerDate}</span>
+                </div>
+              </div>
+              <div>
+                ${isPending ? `<button class="btn-danger" onclick="deleteReminder(${r.id})">हटाएं ✕</button>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        list.innerHTML = '<p style="color: var(--neon-red);">लोड करने में समस्या आई।</p>';
+      }
+    }
+
+    async function createReminder(e) {
+      e.preventDefault();
+      const msg = document.getElementById('rem-msg').value.trim();
+      const delay = parseInt(document.getElementById('rem-delay').value);
+      if (!msg) return;
+
+      try {
+        const res = await fetch('/api/reminders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg, delay_seconds: delay })
+        });
+        if (res.ok) {
+          showToast(`डन बॉस! ${delay} सेकंड में याद दिला दूँगा।`);
+          document.getElementById('rem-msg').value = '';
+          loadReminders();
+        }
+      } catch (err) {
+        showToast('एरर: रिमाइंडर सेट नहीं हो पाया');
+      }
+    }
+
+    async function deleteReminder(id) {
+      if (!confirm('क्या आप इस रिमाइंडर को हटाना चाहते हैं?')) return;
+      try {
+        await fetch(`/api/reminders/${id}`, { method: 'DELETE' });
+        showToast('रिमाइंडर हटा दिया गया है!');
+        loadReminders();
+      } catch (err) {
+        showToast('डिलीट करने में एरर आया');
+      }
+    }
+
+    // QA CACHE API
+    async function loadQACache() {
+      const list = document.getElementById('qa-list');
+      try {
+        const res = await fetch('/api/qa_cache');
+        const data = await res.json();
+        if (!data || data.length === 0) {
+          list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">कोई कैश्ड जवाब उपलब्ध नहीं है।</p>';
+          return;
+        }
+
+        list.innerHTML = data.map(qa => `
+          <div class="list-item">
+            <div class="item-content" style="max-width: 80%;">
+              <h4 style="color: var(--neon-cyan);">Q: ${escapeHtml(qa.question)}</h4>
+              <p style="font-size: 0.85rem; color: #fff; margin-top: 0.2rem;">A: ${escapeHtml(qa.answer)}</p>
+              <div class="item-meta" style="margin-top: 0.4rem;">
+                <span>🎯 Hits: ${qa.hit_count}</span>
+              </div>
+            </div>
+            <div>
+              <button class="btn-danger" onclick="deleteQACache(${qa.id})">हटाएं ✕</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        list.innerHTML = '<p style="color: var(--neon-red);">लोड करने में समस्या आई।</p>';
+      }
+    }
+
+    async function saveCustomQA(e) {
+      e.preventDefault();
+      const q = document.getElementById('qa-q').value.trim();
+      const a = document.getElementById('qa-a').value.trim();
+      if (!q || !a) return;
+
+      try {
+        const res = await fetch('/api/qa_cache', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q, answer: a })
+        });
+        if (res.ok) {
+          showToast('जवाब मेमोरी में सेव हो गया बॉस!');
+          document.getElementById('qa-q').value = '';
+          document.getElementById('qa-a').value = '';
+          loadQACache();
+        }
+      } catch (err) {
+        showToast('मेमोरी में सेव नहीं हो पाया');
+      }
+    }
+
+    async function deleteQACache(id) {
+      if (!confirm('इस मेमोरी को डिलीट करना चाहते हैं?')) return;
+      try {
+        await fetch(`/api/qa_cache/${id}`, { method: 'DELETE' });
+        showToast('मेमोरी से हटा दिया गया!');
+        loadQACache();
+      } catch (err) {
+        showToast('डिलीट एरर');
+      }
+    }
+
+    // CHAT & VOICE API
+    function getClientSource() {
+      return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ? 'mobile' : 'laptop';
+    }
+
+    async function sendChatMessage(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const container = document.getElementById('chat-messages');
+      container.innerHTML += `<div class="msg-bubble msg-user">${escapeHtml(text)}</div>`;
+      input.value = '';
+      container.scrollTop = container.scrollHeight;
+
+      const shouldSpeak = document.getElementById('speak-checkbox').checked;
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, source: getClientSource() })
+        });
+        const data = await res.json();
+        const reply = data.reply || 'माफ करना बॉस, समझ नहीं पाया!';
+        
+        container.innerHTML += `<div class="msg-bubble msg-jojo">${escapeHtml(reply)}</div>`;
+        container.scrollTop = container.scrollHeight;
+
+        if (shouldSpeak) {
+          fetch('/api/speak', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: reply })
+          });
+        }
+      } catch (err) {
+        container.innerHTML += `<div class="msg-bubble msg-jojo" style="color: var(--neon-red);">सर्वर से बात नहीं हो पा रही है बॉस!</div>`;
+      }
+    }
+
+    // PC AUTOMATION API
+    async function triggerTask(taskName) {
+      showToast(`टास्क एक्जीक्यूट हो रहा है: ${taskName}`);
+      try {
+        const res = await fetch('/api/pc_task', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task: taskName })
+        });
+        const data = await res.json();
+        showToast(data.message || 'टास्क पूरा हुआ बॉस!');
+      } catch (err) {
+        showToast('टास्क फेल हुआ');
+      }
+    }
+
+    function testCustomVoice() {
+      const eng = document.getElementById('voice-select') ? document.getElementById('voice-select').value : 'piper_rohan';
+      fetch('/api/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: 'हाँ बॉस! आवाज़ एकदम साफ़ और बुलंद है।', voice_engine: eng })
+      });
+      showToast('वॉइस टेस्ट चल रहा है 🔊');
+    }
+
+    function testSelectedVoice() {
+      const txt = document.getElementById('voice-test-text').value.trim() || 'हाँ बॉस, आवाज़ एकदम साफ़ है!';
+      const eng = document.getElementById('voice-select').value;
+      fetch('/api/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: txt, voice_engine: eng })
+      });
+      showToast('वॉइस टेस्ट चल रहा है 🔊');
+    }
+
+    // CONFIG SETTINGS API
+    async function saveConfig(e) {
+      e.preventDefault();
+      const thresh = parseFloat(document.getElementById('threshold-slider').value);
+      const timeout = parseInt(document.getElementById('timeout-slider').value);
+      const vEngine = document.getElementById('voice-select').value;
+      const vSpeed = parseFloat(document.getElementById('speed-slider').value);
+      const micSel = document.getElementById('mic-select');
+      const micId = micSel ? parseInt(micSel.value) : undefined;
+
+      try {
+        const res = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            boss_threshold: thresh,
+            session_timeout: timeout,
+            voice_engine: vEngine,
+            piper_speed: vSpeed,
+            audio_device_id: micId
+          })
+        });
+        if (res.ok) {
+          showToast('सेटिंग्स और वॉइस इंजन सेव हो गया बॉस!');
+          fetchStatus();
+        }
+      } catch (err) {
+        showToast('सेटिंग्स सेव करने में एरर आया');
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.innerText = text;
+      return div.innerHTML;
+    }
+
+    // ==========================================
+    // 🔮 HOLOGRAPHIC VOICE HUD & WEBSPEECH ENGINE
+    // ==========================================
+    let voiceCanvas = null;
+    let canvasCtx = null;
+    let currentHudState = 'state-sleeping';
+    let handsFreeRecognition = null;
+    let isHandsFreeActive = false;
+
+    function initVoiceCanvas() {
+      voiceCanvas = document.getElementById('voice-canvas');
+      if (!voiceCanvas) return;
+      canvasCtx = voiceCanvas.getContext('2d');
+      resizeVoiceCanvas();
+      window.addEventListener('resize', resizeVoiceCanvas);
+      animateVoiceWaves();
+    }
+
+    function resizeVoiceCanvas() {
+      if (!voiceCanvas) return;
+      const rect = voiceCanvas.getBoundingClientRect();
+      voiceCanvas.width = rect.width * (window.devicePixelRatio || 1);
+      voiceCanvas.height = 85 * (window.devicePixelRatio || 1);
+    }
+
+    let wavePhase = 0;
+    function animateVoiceWaves() {
+      if (!canvasCtx || !voiceCanvas) return;
+      const w = voiceCanvas.width;
+      const h = voiceCanvas.height;
+      canvasCtx.clearRect(0, 0, w, h);
+
+      wavePhase += 0.05;
+
+      let color1 = 'rgba(99, 102, 241, 0.4)';
+      let color2 = 'rgba(168, 85, 247, 0.3)';
+      let amp = 8;
+      let freq = 0.02;
+
+      if (currentHudState === 'state-wake') {
+        color1 = 'rgba(245, 158, 11, 0.9)';
+        color2 = 'rgba(251, 191, 36, 0.7)';
+        amp = 20;
+        freq = 0.04;
+      } else if (currentHudState === 'state-authenticating') {
+        color1 = 'rgba(236, 72, 153, 0.9)';
+        color2 = 'rgba(168, 85, 247, 0.8)';
+        amp = 18;
+        freq = 0.05;
+      } else if (currentHudState === 'state-verified') {
+        color1 = 'rgba(0, 240, 255, 0.95)';
+        color2 = 'rgba(16, 185, 129, 0.8)';
+        amp = 25;
+        freq = 0.035;
+      } else if (currentHudState === 'state-denied') {
+        color1 = 'rgba(239, 68, 68, 0.95)';
+        color2 = 'rgba(185, 28, 28, 0.8)';
+        amp = 24;
+        freq = 0.08;
+      } else if (currentHudState === 'state-listening') {
+        color1 = 'rgba(56, 189, 248, 0.9)';
+        color2 = 'rgba(0, 240, 255, 0.7)';
+        amp = 16;
+        freq = 0.03;
+      } else if (currentHudState === 'state-speaking') {
+        color1 = 'rgba(168, 85, 247, 0.95)';
+        color2 = 'rgba(0, 240, 255, 0.85)';
+        amp = 28;
+        freq = 0.04;
+      }
+
+      canvasCtx.beginPath();
+      canvasCtx.lineWidth = 2.5 * Math.min(window.devicePixelRatio || 1, 1.25);
+      canvasCtx.strokeStyle = color1;
+      for (let x = 0; x <= w; x += 3) {
+        const y = h / 2 + Math.sin(x * freq + wavePhase) * amp * Math.sin(x / w * Math.PI);
+        if (x === 0) canvasCtx.moveTo(x, y);
+        else canvasCtx.lineTo(x, y);
+      }
+      canvasCtx.stroke();
+
+      canvasCtx.beginPath();
+      canvasCtx.lineWidth = 1.2 * Math.min(window.devicePixelRatio || 1, 1.25);
+      canvasCtx.strokeStyle = color2;
+      for (let x = 0; x <= w; x += 3) {
+        const y = h / 2 + Math.cos(x * freq * 1.5 - wavePhase * 1.2) * (amp * 0.6) * Math.sin(x / w * Math.PI);
+        if (x === 0) canvasCtx.moveTo(x, y);
+        else canvasCtx.lineTo(x, y);
+      }
+      canvasCtx.stroke();
+
+      requestAnimationFrame(animateVoiceWaves);
+    }
+
+    async function pollVoiceState() {
+      try {
+        const res = await fetch('/api/voice_state');
+        if (!res.ok) return;
+        const st = await res.json();
+        applyVoiceState(st);
+      } catch (e) {}
+    }
+
+    function applyVoiceState(st) {
+      const core = document.getElementById('hud-plasma-core');
+      const badge = document.getElementById('hud-badge');
+      const badgeText = document.getElementById('hud-badge-text');
+      const badgeDot = document.getElementById('hud-badge-dot');
+      const uTrans = document.getElementById('hud-user-transcript');
+      const jReply = document.getElementById('hud-jojo-reply');
+      const simScore = document.getElementById('hud-sim-score');
+      const simBar = document.getElementById('hud-sim-bar');
+
+      if (!core || !badge) return;
+
+      core.className = 'hud-plasma-core';
+
+      if (st.boss_similarity !== undefined && simScore && simBar) {
+        simScore.innerText = st.boss_similarity.toFixed(2);
+        const pct = Math.min(100, Math.max(0, st.boss_similarity * 100));
+        simBar.style.width = pct + '%';
+        if (st.boss_similarity >= 0.72) {
+          simBar.style.background = 'linear-gradient(90deg, #10b981, #00f0ff)';
+        } else {
+          simBar.style.background = 'linear-gradient(90deg, #ef4444, #f59e0b)';
+        }
+      }
+
+      if (st.last_transcript && uTrans) {
+        uTrans.innerText = st.last_transcript;
+      }
+      if (st.last_reply && jReply) {
+        jReply.innerText = st.last_reply;
+      }
+
+      switch(st.status) {
+        case 'sleeping':
+          core.classList.add('state-sleeping');
+          currentHudState = 'state-sleeping';
+          badge.style.borderColor = 'rgba(99, 102, 241, 0.4)';
+          badge.style.color = '#a5b4fc';
+          badgeDot.style.background = '#6366f1';
+          badgeText.innerText = 'SLEEP MODE - WAITING FOR "JOJO"';
+          break;
+        case 'wake_detected':
+          core.classList.add('state-wake');
+          currentHudState = 'state-wake';
+          badge.style.borderColor = 'rgba(245, 158, 11, 0.6)';
+          badge.style.color = '#fbbf24';
+          badgeDot.style.background = '#f59e0b';
+          badgeText.innerText = '⚡ WAKE WORD "JOJO" DETECTED!';
+          break;
+        case 'authenticating':
+          core.classList.add('state-authenticating');
+          currentHudState = 'state-authenticating';
+          badge.style.borderColor = 'rgba(236, 72, 153, 0.6)';
+          badge.style.color = '#f472b6';
+          badgeDot.style.background = '#ec4899';
+          badgeText.innerText = '🔒 AUTHENTICATING BOSS BIOMETRICS...';
+          break;
+        case 'boss_verified':
+          core.classList.add('state-verified');
+          currentHudState = 'state-verified';
+          badge.style.borderColor = 'rgba(0, 240, 255, 0.6)';
+          badge.style.color = '#00f0ff';
+          badgeDot.style.background = '#00f0ff';
+          badgeText.innerText = '✅ BOSS VERIFIED - "हाँ बॉस, बोलिए!"';
+          break;
+        case 'access_denied':
+          core.classList.add('state-denied');
+          currentHudState = 'state-denied';
+          badge.style.borderColor = 'rgba(239, 68, 68, 0.8)';
+          badge.style.color = '#ef4444';
+          badgeDot.style.background = '#ef4444';
+          badgeText.innerText = '⛔ ACCESS DENIED: "आप मेरे बॉस नहीं हो"';
+          break;
+        case 'listening':
+          core.classList.add('state-listening');
+          currentHudState = 'state-listening';
+          badge.style.borderColor = 'rgba(56, 189, 248, 0.6)';
+          badge.style.color = '#38bdf8';
+          badgeDot.style.background = '#38bdf8';
+          badgeText.innerText = '🎙️ LISTENING TO BOSS...';
+          break;
+        case 'speaking':
+          core.classList.add('state-speaking');
+          currentHudState = 'state-speaking';
+          badge.style.borderColor = 'rgba(168, 85, 247, 0.8)';
+          badge.style.color = '#c084fc';
+          badgeDot.style.background = '#a855f7';
+          badgeText.innerText = '🔊 JOJO SPEAKING...';
+          break;
+        default:
+          core.classList.add('state-sleeping');
+          currentHudState = 'state-sleeping';
+          badgeText.innerText = 'JOJO ONLINE';
+      }
+
+      // 🔮 Synchronize Global JoJo 3D Holographic HUD
+      updateGlobalJoJoHUD(st);
+
+      // 🤖 Synchronize 3D Humanoid Cybernetic Avatar
+      if (typeof updateAvatarState === 'function') {
+        updateAvatarState(st);
+      }
+    }
+
+    // ========================================================
+    // 🔮 GLOBAL FLOATING JOJO 3D HUD CONTROLLER & CANVAS
+    // ========================================================
+    let isGlobalJoJoOpen = false;
+    let jojoUserManuallyClosed = false;
+    let jojoSleepTimer = null;
+    let modalCanvas, modalCtx;
+    let modalWavePhase = 0;
+
+    function initModalWaveCanvas() {
+      modalCanvas = document.getElementById('modal-wave-canvas');
+      if (!modalCanvas) return;
+      modalCtx = modalCanvas.getContext('2d');
+      resizeModalCanvas();
+      window.addEventListener('resize', resizeModalCanvas);
+      requestAnimationFrame(animateModalWaves);
+    }
+
+    function resizeModalCanvas() {
+      if (!modalCanvas || !modalCanvas.parentElement) return;
+      const rect = modalCanvas.parentElement.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      modalCanvas.width = (rect.width || 320) * dpr;
+      modalCanvas.height = 38 * dpr;
+      modalCanvas.style.width = '100%';
+      modalCanvas.style.height = '38px';
+      if (modalCtx) modalCtx.scale(dpr, dpr);
+    }
+
+    function animateModalWaves() {
+      requestAnimationFrame(animateModalWaves);
+      if (!isGlobalJoJoOpen || !modalCanvas || !modalCtx) return;
+      const w = modalCanvas.width / (window.devicePixelRatio || 1);
+      const h = modalCanvas.height / (window.devicePixelRatio || 1);
+
+      modalCtx.clearRect(0, 0, w, h);
+      modalWavePhase += 0.08;
+
+      let waveColor = '#6366f1';
+      let amp = 5;
+      let freq = 0.04;
+
+      if (currentHudState === 'state-wake') {
+        waveColor = '#fbbf24'; amp = 16; freq = 0.05;
+      } else if (currentHudState === 'state-authenticating') {
+        waveColor = '#ec4899'; amp = 18; freq = 0.06;
+      } else if (currentHudState === 'state-verified') {
+        waveColor = '#00f0ff'; amp = 22; freq = 0.04;
+      } else if (currentHudState === 'state-denied') {
+        waveColor = '#ef4444'; amp = 12; freq = 0.08;
+      } else if (currentHudState === 'state-listening') {
+        waveColor = '#38bdf8'; amp = 18; freq = 0.045;
+      } else if (currentHudState === 'state-speaking') {
+        waveColor = '#34d399'; amp = 24; freq = 0.05;
+      }
+
+      modalCtx.beginPath();
+      modalCtx.lineWidth = 2;
+      modalCtx.strokeStyle = waveColor;
+
+      for (let x = 0; x <= w; x += 3) {
+        const y = h / 2 + Math.sin(x * freq + modalWavePhase) * amp * Math.sin(x / w * Math.PI);
+        if (x === 0) modalCtx.moveTo(x, y);
+        else modalCtx.lineTo(x, y);
+      }
+      modalCtx.stroke();
+    }
+
+    function toggleGlobalJoJoHUD() {
+      if (isGlobalJoJoOpen) {
+        closeGlobalJoJoHUD();
+      } else {
+        openGlobalJoJoHUD(true);
+      }
+    }
+
+    function openGlobalJoJoHUD(userInitiated = false) {
+      const modal = document.getElementById('global-jojo-modal');
+      const orb = document.getElementById('floating-jojo-orb');
+      if (!modal) return;
+
+      if (userInitiated) {
+        jojoUserManuallyClosed = false;
+      }
+
+      modal.classList.add('is-active');
+      isGlobalJoJoOpen = true;
+      if (orb) orb.style.opacity = '0.6';
+      resizeModalCanvas();
+    }
+
+    function closeGlobalJoJoHUD() {
+      const modal = document.getElementById('global-jojo-modal');
+      const orb = document.getElementById('floating-jojo-orb');
+      if (modal) modal.classList.remove('is-active');
+      isGlobalJoJoOpen = false;
+      jojoUserManuallyClosed = true;
+      if (orb) orb.style.opacity = '1';
+    }
+
+    function openFullscreenHUDTab() {
+      closeGlobalJoJoHUD();
+      switchTab('voice-hud');
+      toggleFullscreenHUD();
+    }
+
+    function updateGlobalJoJoHUD(st) {
+      const modal = document.getElementById('global-jojo-modal');
+      const orb = document.getElementById('floating-jojo-orb');
+      const orbIcon = document.getElementById('floating-orb-icon');
+      const mCore = document.getElementById('modal-plasma-core');
+      const mIcon = document.getElementById('modal-core-icon');
+      const mText = document.getElementById('modal-status-text');
+      const mDot = document.getElementById('modal-status-dot');
+      const mPill = document.getElementById('modal-status-pill');
+      const mSpk = document.getElementById('modal-speaker-tag');
+      const mSub = document.getElementById('modal-subtitle-text');
+
+      if (!mCore || !modal) return;
+
+      mCore.className = 'modal-plasma-core';
+
+      // Auto-popup JoJo HUD if voice activity occurs and user didn't explicitly dismiss
+      if (st.status && st.status !== 'sleeping') {
+        if (!jojoUserManuallyClosed && !isGlobalJoJoOpen) {
+          openGlobalJoJoHUD(false);
+        }
+        if (jojoSleepTimer) {
+          clearTimeout(jojoSleepTimer);
+          jojoSleepTimer = null;
+        }
+      } else if (st.status === 'sleeping') {
+        // In sleep mode: auto-hide modal after 4 seconds to let user read final reply
+        if (isGlobalJoJoOpen && !jojoSleepTimer && !jojoUserManuallyClosed) {
+          jojoSleepTimer = setTimeout(() => {
+            closeGlobalJoJoHUD();
+            jojoUserManuallyClosed = false;
+            jojoSleepTimer = null;
+          }, 4000);
+        }
+      }
+
+      // Update Subtitles
+      if (st.last_transcript && mSub) {
+        if (mSpk) mSpk.innerText = "🎙️ USER / BOSS:";
+        mSub.innerText = st.last_transcript;
+      } else if (st.last_reply && mSub) {
+        if (mSpk) mSpk.innerText = "🤖 JOJO ASSISTANT:";
+        mSub.innerText = st.last_reply;
+      }
+
+      // Status Visual Mapping
+      switch(st.status) {
+        case 'wake_detected':
+          mCore.classList.add('state-wake');
+          if (mIcon) mIcon.innerText = '⚡';
+          if (orbIcon) orbIcon.innerText = '⚡';
+          if (orb) orb.className = 'floating-jojo-orb';
+          if (mPill) { mPill.style.color = '#fbbf24'; mPill.style.borderColor = 'rgba(245, 158, 11, 0.6)'; }
+          if (mDot) mDot.style.background = '#f59e0b';
+          if (mText) mText.innerText = '⚡ WAKE WORD "JOJO" DETECTED!';
+          break;
+        case 'authenticating':
+          mCore.classList.add('state-authenticating');
+          if (mIcon) mIcon.innerText = '🔒';
+          if (orbIcon) orbIcon.innerText = '🔒';
+          if (orb) orb.className = 'floating-jojo-orb';
+          if (mPill) { mPill.style.color = '#f472b6'; mPill.style.borderColor = 'rgba(236, 72, 153, 0.6)'; }
+          if (mDot) mDot.style.background = '#ec4899';
+          if (mText) mText.innerText = '🔒 AUTHENTICATING BOSS...';
+          break;
+        case 'boss_verified':
+          mCore.classList.add('state-verified');
+          if (mIcon) mIcon.innerText = '🛡️';
+          if (orbIcon) orbIcon.innerText = '🛡️';
+          if (orb) orb.className = 'floating-jojo-orb';
+          if (mPill) { mPill.style.color = '#00f0ff'; mPill.style.borderColor = 'rgba(0, 240, 255, 0.6)'; }
+          if (mDot) mDot.style.background = '#00f0ff';
+          if (mText) mText.innerText = '✅ BOSS VERIFIED - "हाँ बॉस, बोलिए!"';
+          break;
+        case 'access_denied':
+          mCore.classList.add('state-denied');
+          if (mIcon) mIcon.innerText = '⛔';
+          if (orbIcon) orbIcon.innerText = '⛔';
+          if (orb) orb.className = 'floating-jojo-orb';
+          if (mPill) { mPill.style.color = '#ef4444'; mPill.style.borderColor = 'rgba(239, 68, 68, 0.8)'; }
+          if (mDot) mDot.style.background = '#ef4444';
+          if (mText) mText.innerText = '⛔ ACCESS DENIED ("आप मेरे बॉस नहीं हो")';
+          break;
+        case 'listening':
+          mCore.classList.add('state-listening');
+          if (mIcon) mIcon.innerText = '🎙️';
+          if (orbIcon) orbIcon.innerText = '🎙️';
+          if (orb) orb.className = 'floating-jojo-orb';
+          if (mPill) { mPill.style.color = '#38bdf8'; mPill.style.borderColor = 'rgba(56, 189, 248, 0.6)'; }
+          if (mDot) mDot.style.background = '#38bdf8';
+          if (mText) mText.innerText = '🎙️ LISTENING TO BOSS...';
+          break;
+        case 'speaking':
+          mCore.classList.add('state-speaking');
+          if (mIcon) mIcon.innerText = '🔊';
+          if (orbIcon) orbIcon.innerText = '🔊';
+          if (orb) orb.className = 'floating-jojo-orb';
+          if (mPill) { mPill.style.color = '#34d399'; mPill.style.borderColor = 'rgba(52, 211, 153, 0.7)'; }
+          if (mDot) mDot.style.background = '#10b981';
+          if (mText) mText.innerText = '🔊 JOJO SPEAKING...';
+          break;
+        case 'sleeping':
+        default:
+          mCore.classList.add('state-sleeping');
+          if (mIcon) mIcon.innerText = '💤';
+          if (orbIcon) orbIcon.innerText = '🔮';
+          if (orb) orb.className = 'floating-jojo-orb is-sleeping';
+          if (mPill) { mPill.style.color = '#a5b4fc'; mPill.style.borderColor = 'rgba(99, 102, 241, 0.4)'; }
+          if (mDot) mDot.style.background = '#6366f1';
+          if (mText) mText.innerText = 'SLEEP MODE - WAITING FOR "JOJO"';
+          break;
+      }
+    }
+
+    function toggleHandsFreeVoice() {
+      const btn = document.getElementById('btn-handsfree-mic');
+      const textSpan = document.getElementById('handsfree-mic-text');
+      const iconSpan = document.getElementById('handsfree-mic-icon');
+
+      if (isHandsFreeActive) {
+        if (handsFreeRecognition) {
+          try { handsFreeRecognition.stop(); } catch(e){}
+          handsFreeRecognition = null;
+        }
+        isHandsFreeActive = false;
+        btn.classList.remove('active');
+        textSpan.innerText = 'START BROWSER HANDS-FREE MIC';
+        iconSpan.innerText = '🎙️';
+        showToast('हैंड्स-फ्री माइक बंद किया गया');
+        return;
+      }
+
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        showToast('⚠️ इस ब्राउज़र में Web Speech API सपोर्ट नहीं है। Chrome इस्तेमाल करें!');
+        return;
+      }
+
+      handsFreeRecognition = new SpeechRec();
+      handsFreeRecognition.continuous = true;
+      handsFreeRecognition.interimResults = false;
+      handsFreeRecognition.lang = 'hi-IN';
+
+      handsFreeRecognition.onstart = () => {
+        isHandsFreeActive = true;
+        btn.classList.add('active');
+        textSpan.innerText = 'HANDS-FREE MIC ACTIVE (SAY "JOJO")';
+        iconSpan.innerText = '🟢';
+        showToast('🎙️ हैंड्स-फ्री माइक चालू! कहिए "JoJo"');
+      };
+
+      handsFreeRecognition.onresult = async (event) => {
+        const lastResultIndex = event.results.length - 1;
+        const transcript = event.results[lastResultIndex][0].transcript.trim();
+        console.log('Browser Mic Transcript:', transcript);
+
+        const lower = transcript.toLowerCase();
+        const wakeWords = ['jojo', 'jo jo', 'zojo', 'zozo', 'जोजो', 'जो जो'];
+        const hasWake = wakeWords.some(w => lower.includes(w));
+
+        if (hasWake || currentHudState === 'state-listening' || currentHudState === 'state-verified') {
+          showToast(`आवाज़ मिली: "${transcript}"`);
+          try {
+            const res = await fetch('/api/voice_command', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ command: transcript, speaker: 'boss', source: getClientSource() })
+            });
+            await res.json();
+            pollVoiceState();
+          } catch(e) {
+            console.error('Command post error:', e);
+          }
+        }
+      };
+
+      handsFreeRecognition.onerror = (e) => {
+        console.warn('SpeechRec Error:', e.error);
+        if (e.error === 'not-allowed') {
+          showToast('⚠️ कृपया ब्राउज़र में माइक्रोफ़ोन की अनुमति दें!');
+          isHandsFreeActive = false;
+          btn.classList.remove('active');
+          textSpan.innerText = 'START BROWSER HANDS-FREE MIC';
+        }
+      };
+
+      handsFreeRecognition.onend = () => {
+        if (isHandsFreeActive) {
+          try { handsFreeRecognition.start(); } catch(e){}
+        }
+      };
+
+      try {
+        handsFreeRecognition.start();
+      } catch(e) {
+        showToast('माइक शुरू करने में एरर आया');
+      }
+    }
+
+    async function simulateBossTrigger() {
+      showToast('⚡ Boss Voice Authenticated Simulating...');
+      try {
+        await fetch('/api/wake_session?speaker=boss', { method: 'POST' });
+        pollVoiceState();
+      } catch(e) {}
+    }
+
+    async function simulateStrangerTrigger() {
+      showToast('⛔ Stranger Voice Simulating ("आप मेरे बॉस नहीं हो")...');
+      try {
+        await fetch('/api/wake_session?speaker=stranger', { method: 'POST' });
+        pollVoiceState();
+      } catch(e) {}
+    }
+
+    async function putJoJoToSleep() {
+      showToast('💤 JoJo स्लीप मोड में जा रहा है...');
+      try {
+        await fetch('/api/voice_command', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: 'so jao', speaker: 'boss' })
+        });
+        pollVoiceState();
+      } catch(e) {}
+    }
+
+    function toggleFullscreenHUD() {
+      const card = document.getElementById('hud-main-card');
+      if (!card) return;
+      if (!document.fullscreenElement) {
+        card.requestFullscreen ? card.requestFullscreen() : card.classList.toggle('fullscreen-mode');
+      } else {
+        document.exitFullscreen ? document.exitFullscreen() : card.classList.remove('fullscreen-mode');
+      }
+    }
+
+
+    
+    // ========================================================
+    // 🧠 3D NEURAL NETWORK HUMAN FACE MESH ENGINE (THREE.JS)
+    // ========================================================
+    let headScene, headCamera, headRenderer;
+    let headGroup, headPoints, headWireframe, headOcclusionMesh;
+    let headOrigPositions = null;
+    let headPositionAttr = null;
+    let lowerLipIndices = [];
+    let chinIndices = [];
+    let headIsLoaded = false;
+    let headMouse = { x: 0, y: 0, targetX: 0, targetY: 0, isDragging: false, prevMouseX: 0, prevMouseY: 0 };
+    let headAnimTime = 0;
+    let headPulseStrength = 0;
+    let headLipSyncActive = false;
+    let headLipSyncUntil = 0;
+    let showPoints = true;
+    let showWireframe = true;
+
+    // Palette mapping for JoJo States
+    const neuralColors = {
+      sleeping: { point: 0x00f0ff, line: 0x0066aa, core: 0x020713 },
+      wake_detected: { point: 0xfbbf24, line: 0xd97706, core: 0x161004 },
+      authenticating: { point: 0xec4899, line: 0xa855f7, core: 0x17071e },
+      boss_verified: { point: 0x10b981, line: 0x059669, core: 0x02160e },
+      access_denied: { point: 0xef4444, line: 0xb91c1c, core: 0x1c0505 },
+      listening: { point: 0x38bdf8, line: 0x0284c7, core: 0x031021 },
+      speaking: { point: 0x00f0ff, line: 0x10b981, core: 0x021721 }
+    };
+    let currentNeuralColorKey = 'sleeping';
+
+    function initThreeNeuralFace() {
+      const container = document.getElementById('three-head-container');
+      if (!container) return;
+
+      const rect = container.getBoundingClientRect();
+      const W = rect.width || 680;
+      const H = rect.height || 480;
+
+      // 1. Scene & Dark Background
+      headScene = new THREE.Scene();
+      headScene.background = new THREE.Color(0x040814); // Deep Navy Black
+
+      // 2. Camera
+      headCamera = new THREE.PerspectiveCamera(35, W / H, 0.1, 1000);
+      headCamera.position.set(-0.8, 0.6, 17);
+
+      // 3. High-Performance WebGL Renderer (Silky Smooth 60 FPS)
+      headRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance', precision: 'mediump' });
+      headRenderer.setSize(W, H);
+      headRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+      container.innerHTML = '';
+      container.appendChild(headRenderer.domElement);
+
+      headGroup = new THREE.Group();
+      headScene.add(headGroup);
+
+      // 4. Create Glow Point Sprite Texture (Soft-Edged Circular Dot)
+      const pointCanvas = document.createElement('canvas');
+      pointCanvas.width = 64;
+      pointCanvas.height = 64;
+      const pCtx = pointCanvas.getContext('2d');
+      const grad = pCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+      grad.addColorStop(0.2, 'rgba(0, 240, 255, 0.9)');
+      grad.addColorStop(0.55, 'rgba(0, 160, 255, 0.4)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      pCtx.fillStyle = grad;
+      pCtx.fillRect(0, 0, 64, 64);
+      const pointTexture = new THREE.CanvasTexture(pointCanvas);
+
+      // 5. Load Real 3D Human Head Geometry
+      const loader = new THREE.GLTFLoader();
+      loader.load('/head.glb', (gltf) => {
+        let geom = null;
+        gltf.scene.traverse((child) => {
+          if (child.isMesh && !geom) {
+            geom = child.geometry;
+          }
+        });
+
+        if (!geom) {
+          console.warn('Fallback geometry generated');
+          geom = new THREE.SphereGeometry(7, 48, 48);
+        }
+
+        buildNeuralMeshObjects(geom, pointTexture);
+        headIsLoaded = true;
+        console.log('✅ 3D Neural Human Face Mesh Loaded & Active!');
+      }, undefined, (err) => {
+        console.warn('Could not load /head.glb, building high-res parametric 3D face:', err);
+        const fallbackGeom = createParametricHeadGeometry();
+        buildNeuralMeshObjects(fallbackGeom, pointTexture);
+        headIsLoaded = true;
+      });
+
+      // 6. Interactive Mouse & Drag Listeners
+      setupHeadMouseInteraction(container);
+
+      // 7. Handle Resize
+      window.addEventListener('resize', () => {
+        if (!container || !headCamera || !headRenderer) return;
+        const r = container.getBoundingClientRect();
+        headCamera.aspect = r.width / r.height;
+        headCamera.updateProjectionMatrix();
+        headRenderer.setSize(r.width, r.height);
+      });
+
+      // 8. Start Render Loop
+      animateThreeHead();
+    }
+
+    function buildNeuralMeshObjects(geometry, pointTexture) {
+      geometry.center();
+      geometry.computeVertexNormals();
+
+      // Store original vertex coordinates for lip-sync and wave displacements
+      headPositionAttr = geometry.attributes.position;
+      const posCount = headPositionAttr.count;
+      headOrigPositions = new Float32Array(headPositionAttr.array);
+
+      // Identify Lower Lip and Chin Vertices for Speech Lip-Sync
+      lowerLipIndices = [];
+      chinIndices = [];
+      for (let i = 0; i < posCount; i++) {
+        const y = headOrigPositions[i * 3 + 1];
+        const z = headOrigPositions[i * 3 + 2];
+        const x = headOrigPositions[i * 3];
+
+        // Lower lip area: y in [-1.8, -0.4], z > 3.0, |x| < 2.2
+        if (y > -2.2 && y < -0.2 && z > 2.8 && Math.abs(x) < 2.5) {
+          lowerLipIndices.push(i);
+        }
+        // Chin area
+        if (y <= -2.2 && y > -4.5 && z > 1.8 && Math.abs(x) < 3.0) {
+          chinIndices.push(i);
+        }
+      }
+
+      // A. Dark Occlusion Mesh (blocks back-side vertices so front face is crisp)
+      const occMat = new THREE.MeshBasicMaterial({
+        color: 0x030713,
+        transparent: false,
+        depthWrite: true
+      });
+      headOcclusionMesh = new THREE.Mesh(geometry, occMat);
+      headOcclusionMesh.renderOrder = 0;
+      headGroup.add(headOcclusionMesh);
+
+      // B. Synaptic Wireframe Connections (Lines)
+      const wireframeGeom = new THREE.WireframeGeometry(geometry);
+      const lineMat = new THREE.LineBasicMaterial({
+        color: 0x00c8ff,
+        transparent: true,
+        opacity: 0.62,
+        blending: THREE.AdditiveBlending,
+        depthTest: true,
+        depthWrite: false
+      });
+      headWireframe = new THREE.LineSegments(wireframeGeom, lineMat);
+      headWireframe.renderOrder = 1;
+      headGroup.add(headWireframe);
+
+      // C. Luminous Neural Point Cloud (Nodes)
+      const pointsMat = new THREE.PointsMaterial({
+        color: 0x00f0ff,
+        size: 0.15,
+        map: pointTexture,
+        transparent: true,
+        opacity: 0.92,
+        blending: THREE.AdditiveBlending,
+        depthTest: true,
+        depthWrite: false
+      });
+      headPoints = new THREE.Points(geometry, pointsMat);
+      headPoints.renderOrder = 2;
+      headGroup.add(headPoints);
+
+      // Initial angle: 3/4 Profile matching the reference image!
+      headGroup.rotation.y = 0.65; // Turned towards left profile
+      headGroup.rotation.x = 0.02;
+      headGroup.position.y = -0.2;
+    }
+
+    // High-Resolution Parametric Human Head Fallback
+    function createParametricHeadGeometry() {
+      const geom = new THREE.SphereGeometry(7, 64, 48);
+      const pos = geom.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        let x = pos.getX(i);
+        let y = pos.getY(i);
+        let z = pos.getZ(i);
+
+        // Shape into anatomical human head proportions
+        if (y < 0) {
+          // Jaw taper
+          x *= (1.0 + y * 0.06);
+        }
+        if (z > 0 && y > -1.5 && y < 2.0) {
+          // Nose bridge protrusion
+          z += Math.exp(-Math.pow(x * 1.5, 2)) * Math.exp(-Math.pow((y - 0.2) * 1.2, 2)) * 2.2;
+        }
+        if (z > 0 && y < -1.0 && y > -3.2) {
+          // Chin protrusion
+          z += Math.exp(-Math.pow(x * 1.2, 2)) * 1.1;
+        }
+        pos.setXYZ(i, x, y, z);
+      }
+      geom.computeVertexNormals();
+      return geom;
+    }
+
+    // Mouse Tracking & Drag Orbit
+    function setupHeadMouseInteraction(container) {
+      container.addEventListener('mousedown', (e) => {
+        headMouse.isDragging = true;
+        headMouse.prevMouseX = e.clientX;
+        headMouse.prevMouseY = e.clientY;
+      });
+
+      window.addEventListener('mouseup', () => {
+        headMouse.isDragging = false;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+
+        if (headMouse.isDragging) {
+          const dx = e.clientX - headMouse.prevMouseX;
+          const dy = e.clientY - headMouse.prevMouseY;
+          headMouse.targetX += dx * 0.008;
+          headMouse.targetY += dy * 0.008;
+          headMouse.prevMouseX = e.clientX;
+          headMouse.prevMouseY = e.clientY;
+        } else {
+          // Subtle mouse follow parallax
+          const nx = (e.clientX - cx) / (rect.width / 2);
+          const ny = (e.clientY - cy) / (rect.height / 2);
+          headMouse.targetX = 0.65 + nx * 0.35; // centered around left-profile 3/4 angle
+          headMouse.targetY = ny * 0.25;
+        }
+      });
+    }
+
+    // Interactive Button Handlers
+    function triggerNeuralPulse() {
+      headPulseStrength = 1.0;
+      showToast('⚡ Neural Synapse Pulse Fired!');
+    }
+
+    function triggerSpeechLipSyncDemo() {
+      headLipSyncActive = true;
+      headLipSyncUntil = Date.now() + 4500;
+      showToast('🗣️ Testing JoJo Speech Lip-Sync Mesh Articulation...');
+    }
+
+    function toggleNeuralPoints() {
+      showPoints = !showPoints;
+      if (headPoints) headPoints.visible = showPoints;
+      const btn = document.getElementById('btn-toggle-points');
+      if (btn) btn.innerText = showPoints ? '✨ Points: ON' : '✨ Points: OFF';
+    }
+
+    function toggleNeuralWireframe() {
+      showWireframe = !showWireframe;
+      if (headWireframe) headWireframe.visible = showWireframe;
+      const btn = document.getElementById('btn-toggle-mesh');
+      if (btn) btn.innerText = showWireframe ? '🌐 Wireframe: ON' : '🌐 Wireframe: OFF';
+    }
+
+    function resetHeadView() {
+      headMouse.targetX = 0.65;
+      headMouse.targetY = 0.05;
+      showToast('🎯 3D Perspective Reset to Profile');
+    }
+
+    // Status sync with live JoJo backend
+    function updateAvatarState(st) {
+      if (!st) return;
+      const s = st.status || 'sleeping';
+      currentNeuralColorKey = s;
+
+      const pal = neuralColors[s] || neuralColors.sleeping;
+      if (headPoints && headPoints.material) {
+        headPoints.material.color.setHex(pal.point);
+      }
+      if (headWireframe && headWireframe.material) {
+        headWireframe.material.color.setHex(pal.line);
+      }
+      if (headOcclusionMesh && headOcclusionMesh.material) {
+        headOcclusionMesh.material.color.setHex(pal.core);
+      }
+
+      if (s === 'speaking') {
+        headLipSyncActive = true;
+      } else {
+        if (Date.now() > headLipSyncUntil) {
+          headLipSyncActive = false;
+        }
+      }
+
+      if (s === 'wake_detected' || s === 'boss_verified') {
+        headPulseStrength = 1.0;
+      }
+    }
+
+    // ========================================================
+    // 🎨 THREE.JS 60 FPS ULTRA-SMOOTH RENDER LOOP (ZERO LAG)
+    // ========================================================
+    let headNeedsReset = false;
+
+    function animateThreeHead() {
+      requestAnimationFrame(animateThreeHead);
+      if (!headRenderer || !headScene || !headCamera) return;
+
+      headAnimTime += 0.025;
+
+      // Smooth camera/group rotation towards mouse target (3D Parallax)
+      headMouse.x += (headMouse.targetX - headMouse.x) * 0.08;
+      headMouse.y += (headMouse.targetY - headMouse.y) * 0.08;
+
+      if (headGroup) {
+        // Floating idle breathing
+        headGroup.rotation.y = headMouse.x;
+        headGroup.rotation.x = headMouse.y + Math.sin(headAnimTime * 1.2) * 0.025;
+        headGroup.position.y = -0.3 + Math.sin(headAnimTime * 1.5) * 0.15;
+      }
+
+      // Dynamic Speech Lip-Sync & Jaw Vertex Morphing - Only updates GPU buffer when speaking
+      const isSpeaking = headLipSyncActive || (currentNeuralColorKey === 'speaking');
+      if (headPositionAttr && headOrigPositions) {
+        if (isSpeaking) {
+          const t = headAnimTime * 16;
+          let jawDrop = (Math.sin(t) * 0.6 + Math.sin(t * 1.9) * 0.4);
+          jawDrop = Math.max(0, jawDrop) * 0.55; // downward displacement
+
+          // Apply dynamic displacements to lower lip and chin vertices
+          for (let idx of lowerLipIndices) {
+            const baseZ = headOrigPositions[idx * 3 + 2];
+            const baseY = headOrigPositions[idx * 3 + 1];
+            headPositionAttr.setY(idx, baseY - jawDrop * 0.85);
+            headPositionAttr.setZ(idx, baseZ + jawDrop * 0.2);
+          }
+          for (let idx of chinIndices) {
+            const baseY = headOrigPositions[idx * 3 + 1];
+            headPositionAttr.setY(idx, baseY - jawDrop * 0.95);
+          }
+          headPositionAttr.needsUpdate = true;
+          headNeedsReset = true;
+        } else if (headNeedsReset) {
+          // Reset lower lip and chin once back to rest position
+          for (let idx of lowerLipIndices) {
+            headPositionAttr.setY(idx, headOrigPositions[idx * 3 + 1]);
+            headPositionAttr.setZ(idx, headOrigPositions[idx * 3 + 2]);
+          }
+          for (let idx of chinIndices) {
+            headPositionAttr.setY(idx, headOrigPositions[idx * 3 + 1]);
+          }
+          headPositionAttr.needsUpdate = true;
+          headNeedsReset = false;
+        }
+      }
+
+      // Animate Point Size & Brightness Pulses efficiently
+      if (headPulseStrength > 0.01) {
+        headPulseStrength *= 0.95;
+        if (headPoints && headPoints.material) {
+          headPoints.material.size = 0.42 + headPulseStrength * 0.25;
+        }
+      }
+
+      headRenderer.render(headScene, headCamera);
+    }
+
+
+    // Initial load
+    fetchStatus();
+    loadReminders();
+    loadAudioDevices();
+    initVoiceCanvas();
+    initModalWaveCanvas();
+    initThreeNeuralFace();
+    pollVoiceState();
+    setInterval(fetchStatus, 5000);
+    setInterval(pollVoiceState, 350);
+  </script>
+
+</body>
+</html>

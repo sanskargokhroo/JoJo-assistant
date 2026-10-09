@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="JoJo logo">
+ <defs><linearGradient id="a" x2="1" y2="1"><stop stop-color="#63efe5"/><stop offset=".5" stop-color="#8a99ff"/><stop offset="1" stop-color="#d484ff"/></linearGradient></defs>
+ <rect width="256" height="256" rx="64" fill="#0b1020"/>
+ <circle cx="128" cy="128" r="96" fill="none" stroke="url(#a)" stroke-width="2" opacity=".4"/>
+ <path d="M111 67v96c0 35-55 35-55 0 M191 67v96c0 35-55 35-55 0" fill="none" stroke="url(#a)" stroke-width="19" stroke-linecap="round"/>
+ <circle cx="69" cy="87" r="9" fill="#63efe5"/><circle cx="149" cy="87" r="9" fill="#bab0ff"/>
+</svg>

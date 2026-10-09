@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>JoJo 3D Holographic System HUD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Local Three.js & GLTFLoader -->
+  <script src="/three.min.js"></script>
+  <script src="/GLTFLoader.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    :root {
+      --neon-cyan: #00f0ff;
+      --neon-blue: #0088ff;
+      --neon-purple: #9d4edd;
+      --neon-green: #00ff88;
+      --neon-amber: #ffb700;
+      --neon-red: #ff3366;
+      --bg-dark: rgba(5, 8, 22, 0.94);
+      --panel-border: rgba(0, 240, 255, 0.3);
+      --panel-bg: rgba(8, 14, 34, 0.75);
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #030612;
+      font-family: 'Outfit', sans-serif;
+      color: #e2e8f0;
+    }
+
+    /* Sci-Fi Fullscreen Grid & Vignette Overlay */
+    .hud-screen {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 18px 26px;
+      background: 
+        radial-gradient(circle at 50% 50%, rgba(13, 24, 60, 0.45) 0%, rgba(3, 6, 18, 0.98) 90%),
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 40px 40px, 40px 40px;
+    }
+
+    /* Ambient Scanline Effect */
+    .hud-screen::before {
+      content: " ";
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+      background-size: 100% 4px;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0.45;
+    }
+
+    /* Sci-Fi Corner Brackets */
+    .corner-bracket {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      border-color: var(--neon-cyan);
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0.8;
+    }
+    .corner-tl { top: 12px; left: 12px; border-top: 2px solid; border-left: 2px solid; }
+    .corner-tr { top: 12px; right: 12px; border-top: 2px solid; border-right: 2px solid; }
+    .corner-bl { bottom: 12px; left: 12px; border-bottom: 2px solid; border-left: 2px solid; }
+    .corner-br { bottom: 12px; right: 12px; border-bottom: 2px solid; border-right: 2px solid; }
+
+    /* ========================================================
+       TOP HUD BAR
+    ======================================================== */
+    .hud-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 5;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(0, 240, 255, 0.25);
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-core {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-shadow: 0 0 16px rgba(0, 240, 255, 0.8);
+    }
+
+    .brand-tag {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: rgba(0, 240, 255, 0.12);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+    }
+
+    .top-center {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 6px 18px;
+      border-radius: 24px;
+      background: rgba(4, 10, 28, 0.85);
+      border: 1.5px solid var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+      color: var(--neon-cyan);
+      transition: all 0.3s ease;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--neon-cyan);
+      box-shadow: 0 0 10px var(--neon-cyan);
+      animation: pulse-dot 1.4s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.75); }
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .boss-pill {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      color: #94a3b8;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 5px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .boss-pill span {
+      color: #00ff88;
+      font-weight: 800;
+    }
+
+    .hud-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #cbd5e1;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+    .hud-btn:hover {
+      background: rgba(0, 240, 255, 0.25);
+      border-color: var(--neon-cyan);
+      color: #fff;
+    }
+    .hud-btn.close:hover {
+      background: rgba(255, 51, 102, 0.4);
+      border-color: var(--neon-red);
+    }
+
+    /* ========================================================
+       MAIN BODY (LEFT TELEMETRY + CENTER 3D + RIGHT CONTROLS)
+    ======================================================== */
+    .hud-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 280px 1fr 280px;
+      gap: 20px;
+      align-items: center;
+      position: relative;
+      z-index: 5;
+      padding: 10px 0;
+      min-height: 0;
+    }
+
+    /* Glass Panels */
+    .panel {
+      background: var(--panel-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--panel-border);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 240, 255, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--neon-cyan);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(0, 240, 255, 0.15);
+      padding-bottom: 6px;
+    }
+
+    /* Left Panel Items */
+    .tele-stat {
+      display: flex;
+      justify-content: space-between;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .tele-stat .label { color: #94a3b8; }
+    .tele-stat .val { color: #f8fafc; font-family: 'Orbitron', sans-serif; font-size: 0.8rem; }
+
+    /* Match Meter Bar */
+    .meter-box {
+      width: 100%;
+      height: 10px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 5px;
+      overflow: hidden;
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      margin-top: 4px;
+    }
+    .meter-fill {
+      height: 100%;
+      width: 88%;
+      background: linear-gradient(90deg, #00f0ff, #00ff88);
+      box-shadow: 0 0 10px #00ff88;
+      transition: width 0.4s ease;
+    }
+
+    /* Right Panel Hardware Switches */
+    .hw-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(15, 23, 42, 0.7);
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .hw-card .hw-name { display: flex; align-items: center; gap: 8px; color: #cbd5e1; }
+    .hw-card .hw-state {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--neon-cyan);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+    }
+    .hw-card.active .hw-state {
+      background: rgba(0, 255, 136, 0.2);
+      color: var(--neon-green);
+      border-color: var(--neon-green);
+    }
+    .hw-card.inactive .hw-state {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border-color: rgba(148, 163, 184, 0.25);
+    }
+
+    /* ========================================================
+       CENTER 3D HOLOGRAPHIC VOICE CORE
+    ======================================================== */
+    .hud-center {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    #threeCanvasWrapper {
+      width: 100%;
+      height: 100%;
+      min-height: 380px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      cursor: grab;
+    }
+    #threeCanvasWrapper:active { cursor: grabbing; }
+
+    #threeCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Floating Holographic Reticles - Removed */
+    .reticle-ring {
+      display: none !important;
+    }
+
+    /* ========================================================
+       BOTTOM SUBTITLE & AUDIO EQUALIZER HUD
+    ======================================================== */
+    .hud-bottom {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 5;
+    }
+
+    .subtitles-panel {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      background: rgba(6, 12, 30, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1.5px solid rgba(0, 240, 255, 0.4);
+      border-radius: 20px;
+      padding: 14px 24px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 240, 255, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .sub-speaker-tag {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--neon-cyan);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sub-text-glow {
+      font-size: 1.15rem;
+      font-weight: 600;
+      line-height: 1.45;
+      color: #f8fafc;
+      text-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
+      min-height: 30px;
+    }
+
+    /* Sound Spectrum Waveform Canvas */
+    .waveform-bar-wrapper {
+      width: 100%;
+      max-width: 700px;
+      height: 32px;
+      margin: 0 auto;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .spectrum-bar {
+      flex: 1;
+      max-width: 8px;
+      height: 6px;
+      background: linear-gradient(to top, var(--neon-cyan), var(--neon-purple));
+      border-radius: 3px 3px 0 0;
+      transition: height 0.08s ease;
+    }
+
+    /* Quick Action Chips */
+    .quick-chips {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 2px;
+    }
+
+    .chip {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip:hover {
+      background: rgba(0, 240, 255, 0.2);
+      border-color: var(--neon-cyan);
+      color: #fff;
+    }
+
+    /* Responsive scaling */
+    @media (max-width: 990px) {
+      .hud-body {
+        grid-template-columns: 1fr;
+      }
+      .panel { display: none; }
+      .reticle-ring.outer { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hud-screen">
+  <!-- Corner Brackets -->
+  <div class="corner-bracket corner-tl"></div>
+  <div class="corner-bracket corner-tr"></div>
+  <div class="corner-bracket corner-bl"></div>
+  <div class="corner-bracket corner-br"></div>
+
+  <!-- Top Bar -->
+  <header class="hud-topbar">
+    <div class="top-left">
+      <div class="brand-core">
+        <span>🔮</span> JOJO
+      </div>
+      <div class="brand-tag">3D Voice System HUD</div>
+      <div class="brand-tag" style="border-color:rgba(0,255,136,0.4); color:#00ff88;">Auto-Start: Active</div>
+    </div>
+
+    <div class="top-center">
+      <div class="status-badge" id="statusBadge">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusLabel">LISTENING TO BOSS</span>
+      </div>
+    </div>
+
+    <div class="top-right">
+      <div class="boss-pill">MAALIK: <span>the configured owner</span></div>
+      <button class="hud-btn" onclick="toggleFullscreen()" title="Fullscreen / Windowed">🗖</button>
+      <button class="hud-btn" onclick="minimizeHUD()" title="Minimize to Background (Esc)">—</button>
+      <button class="hud-btn close" onclick="closeHUD()" title="Dismiss">✕</button>
+    </div>
+  </header>
+
+  <!-- Main Center Grid -->
+  <main class="hud-body">
+    <!-- Left Telemetry Column -->
+    <section class="panel">
+      <div class="panel-title">🛡️ Biometric Telemetry</div>
+      <div class="tele-stat">
+        <span class="label">Boss Verified:</span>
+        <span class="val" style="color:#00ff88;">AUTHENTICATED</span>
+      </div>
+      <div class="tele-stat">
+        <span class="label">Voice Similarity:</span>
+        <span class="val" id="bossSimVal">96.4%</span>
+      </div>
+      <div class="meter-box">
+        <div class="meter-fill" id="bossSimMeter"></div>
+      </div>
+      <div class="tele-stat" style="margin-top:6px;">
+        <span class="label">Vocal Tract Formant:</span>
+        <span class="val" style="color:#00f0ff;">CALIBRATED</span>
+      </div>
+      <div class="tele-stat">
+        <span class="label">Speech Band:</span>
+        <span class="val">16 kHz Real-Time</span>
+      </div>
+
+      <div class="panel-title" style="margin-top:10px;">🧠 Neural System</div>
+      <div class="tele-stat">
+        <span class="label">Voice Engine:</span>
+        <span class="val" style="color:#00f0ff;">Voice 2 (Madhur)</span>
+      </div>
+      <div class="tele-stat">
+        <span class="label">Device Context:</span>
+        <span class="val" style="color:#00ff88;">LAPTOP (Windows 11)</span>
+      </div>
+      <div class="tele-stat">
+        <span class="label">Active Memory:</span>
+        <span class="val">Permanent DB</span>
+      </div>
+    </section>
+
+    <!-- Center 3D Voice Core -->
+    <section class="hud-center">
+      <div id="threeCanvasWrapper" title="Interactive 3D Holographic Voice Core — Drag to rotate">
+        <canvas id="threeCanvas"></canvas>
+      </div>
+    </section>
+
+    <!-- Right Hardware & Controls Column -->
+    <section class="panel">
+      <div class="panel-title">⚡ Hardware Live Controls</div>
+      
+      <div class="hw-card" id="hwBluetooth">
+        <div class="hw-name"><span>📶</span> Bluetooth</div>
+        <div class="hw-state" id="btStateBadge">STANDBY</div>
+      </div>
+
+      <div class="hw-card active" id="hwWifi">
+        <div class="hw-name"><span>🌐</span> Wi-Fi Network</div>
+        <div class="hw-state">CONNECTED</div>
+      </div>
+
+      <div class="hw-card active" id="hwDisplay">
+        <div class="hw-name"><span>🔆</span> Brightness</div>
+        <div class="hw-state" id="brightVal">50%</div>
+      </div>
+
+      <div class="hw-card active" id="hwVolume">
+        <div class="hw-name"><span>🔊</span> Speaker Audio</div>
+        <div class="hw-state">UNMUTED</div>
+      </div>
+
+      <div class="panel-title" style="margin-top:10px;">🎙️ Quick Voice Commands</div>
+      <div style="font-size:0.75rem; color:#94a3b8; line-height:1.5;">
+        • "Bluetooth on kar"<br>
+        • "Bluetooth status"<br>
+        • "Brightness badhao"<br>
+        • "Setting open kr"<br>
+        • "Volume mute karo"
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Subtitle & Audio Waveform HUD -->
+  <footer class="hud-bottom">
+    <div class="subtitles-panel" id="subtitlePanel">
+      <div class="sub-speaker-tag" id="subSpeakerTag">
+        <span>●</span> JOJO (VOICE 2 MADHUR)
+      </div>
+      <div class="sub-text-glow" id="subTextGlow">
+        "बॉस, सब सेट है! बताओ आज क्या करना है?"
+      </div>
+    </div>
+
+    <!-- 32-Bar Real-Time Equalizer Waveform -->
+    <div class="waveform-bar-wrapper" id="eqBars"></div>
+
+    <div class="quick-chips">
+      <div class="chip" onclick="quickSend('bluetooth on kr')">📶 Bluetooth On</div>
+      <div class="chip" onclick="quickSend('bluetooth status')">ℹ️ Bluetooth Status</div>
+      <div class="chip" onclick="quickSend('setting open kr')">⚙️ Windows Settings</div>
+      <div class="chip" onclick="quickSend('brightness badhao')">🔆 Brightness +20%</div>
+      <div class="chip" onclick="quickSend('volume badhao')">🔊 Volume Up</div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  // ========================================================
+  // 1. DYNAMIC AUDIO EQUALIZER BARS
+  // ========================================================
+  const eqContainer = document.getElementById('eqBars');
+  const barCount = 36;
+  const bars = [];
+  for (let i = 0; i < barCount; i++) {
+    const b = document.createElement('div');
+    b.className = 'spectrum-bar';
+    eqContainer.appendChild(b);
+    bars.push(b);
+  }
+
+  let audioEnergy = 0.15;
+  function updateEqualizer() {
+    bars.forEach((bar, idx) => {
+      const centerDist = Math.abs(idx - barCount / 2) / (barCount / 2);
+      const curve = 1.0 - centerDist * 0.45;
+      const h = Math.max(6, Math.sin(Date.now() * 0.008 + idx * 0.3) * 12 * audioEnergy * curve + (audioEnergy * 24 * curve));
+      bar.style.height = `${Math.min(32, h)}px`;
+    });
+    requestAnimationFrame(updateEqualizer);
+  }
+  updateEqualizer();
+
+  // ========================================================
+  // 2. THREE.JS FULL-SCREEN 3D NEURAL VOICE CORE (FACE + SPHERE)
+  // ========================================================
+  let scene, camera, renderer, coreGroup;
+  let pointsMesh, wireframeMesh, occlusionMesh;
+  let particleSphere;
+  let origPositions = null, posAttr = null;
+  let lipIndices = [], chinIndices = [];
+  let isSpeaking = false, voiceIntensity = 0.0;
+
+  function init3DVoiceCore() {
+    const wrapper = document.getElementById('threeCanvasWrapper');
+    const canvas = document.getElementById('threeCanvas');
+
+    const W = wrapper.clientWidth || 800;
+    const H = wrapper.clientHeight || 500;
+
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 1000);
+    camera.position.set(0, 0, 18);
+
+    renderer = new THREE.WebGLRenderer({
+      canvas: canvas,
+      alpha: true,
+      antialias: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setSize(W, H);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+
+    coreGroup = new THREE.Group();
+    scene.add(coreGroup);
+
+    // Glow Point Particle Texture
+    const pCanvas = document.createElement('canvas');
+    pCanvas.width = 64; pCanvas.height = 64;
+    const pCtx = pCanvas.getContext('2d');
+    const grad = pCtx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    grad.addColorStop(0.2, 'rgba(0, 240, 255, 0.9)');
+    grad.addColorStop(0.6, 'rgba(0, 136, 255, 0.35)');
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    pCtx.fillStyle = grad;
+    pCtx.fillRect(0, 0, 64, 64);
+    const glowTexture = new THREE.CanvasTexture(pCanvas);
+
+    // 1. Holographic Neural Particle Sphere (Surrounding Ambient Voice Core)
+    const sphereGeo = new THREE.BufferGeometry();
+    const sphereN = 1400;
+    const spherePos = new Float32Array(sphereN * 3);
+    for (let i = 0; i < sphereN; i++) {
+      const phi = Math.acos(1 - 2 * (i + 0.5) / sphereN);
+      const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+      const r = 6.2 + (Math.random() - 0.5) * 0.6;
+      spherePos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      spherePos[i * 3 + 1] = r * Math.cos(phi);
+      spherePos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+    }
+    sphereGeo.setAttribute('position', new THREE.BufferAttribute(spherePos, 3));
+    const sphereMat = new THREE.PointsMaterial({
+      color: 0x00f0ff,
+      size: 0.22,
+      map: glowTexture,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending
+    });
+    particleSphere = new THREE.Points(sphereGeo, sphereMat);
+    coreGroup.add(particleSphere);
+
+    // 2. Gyroscopic Quantum Rings removed as requested
+
+    // 3. Load 3D Neural Head Model
+    const loader = new THREE.GLTFLoader();
+    loader.load('/head.glb', (gltf) => {
+      let geom = null;
+      gltf.scene.traverse((child) => {
+        if (child.isMesh && !geom) geom = child.geometry;
+      });
+      if (!geom) geom = new THREE.SphereGeometry(4.8, 48, 48);
+      buildFaceMesh(geom, glowTexture);
+    }, undefined, () => {
+      const fallbackGeo = new THREE.SphereGeometry(4.8, 48, 48);
+      buildFaceMesh(fallbackGeo, glowTexture);
+    });
+
+    // Handle Window Resize
+    window.addEventListener('resize', onResize);
+    setupInteraction(wrapper);
+    animate();
+  }
+
+  function buildFaceMesh(geometry, pointTexture) {
+    geometry.center();
+    geometry.computeVertexNormals();
+
+    posAttr = geometry.attributes.position;
+    const count = posAttr.count;
+    origPositions = new Float32Array(posAttr.array);
+
+    lipIndices = [];
+    chinIndices = [];
+    for (let i = 0; i < count; i++) {
+      const y = origPositions[i * 3 + 1];
+      const z = origPositions[i * 3 + 2];
+      const x = origPositions[i * 3];
+      if (y > -2.2 && y < -0.2 && z > 2.8 && Math.abs(x) < 2.5) lipIndices.push(i);
+      if (y <= -2.2 && y > -4.5 && z > 1.8 && Math.abs(x) < 3.0) chinIndices.push(i);
+    }
+
+    // Occlusion Mesh
+    const occMat = new THREE.MeshBasicMaterial({ color: 0x030713, depthWrite: true });
+    occlusionMesh = new THREE.Mesh(geometry, occMat);
+    occlusionMesh.renderOrder = 0;
+    coreGroup.add(occlusionMesh);
+
+    // Glowing Wireframe Mesh
+    const wireGeom = new THREE.WireframeGeometry(geometry);
+    const lineMat = new THREE.LineBasicMaterial({
+      color: 0x00c8ff,
+      transparent: true,
+      opacity: 0.65,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    wireframeMesh = new THREE.LineSegments(wireGeom, lineMat);
+    wireframeMesh.renderOrder = 1;
+    coreGroup.add(wireframeMesh);
+
+    // Glowing Points
+    const ptsMat = new THREE.PointsMaterial({
+      color: 0x00f0ff,
+      size: 0.22,
+      map: pointTexture,
+      transparent: true,
+      opacity: 0.95,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    pointsMesh = new THREE.Points(geometry, ptsMat);
+    pointsMesh.renderOrder = 2;
+    coreGroup.add(pointsMesh);
+  }
+
+  // Mouse & Touch Tracking for 3D Look-Around
+  let mouse = { x: 0, y: 0, targetX: 0, targetY: 0, isDragging: false, lastX: 0, lastY: 0 };
+  function setupInteraction(elem) {
+    elem.addEventListener('mousedown', (e) => {
+      mouse.isDragging = true;
+      mouse.lastX = e.clientX;
+      mouse.lastY = e.clientY;
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (mouse.isDragging) {
+        const dx = e.clientX - mouse.lastX;
+        const dy = e.clientY - mouse.lastY;
+        mouse.targetX += dx * 0.005;
+        mouse.targetY += dy * 0.005;
+        mouse.lastX = e.clientX;
+        mouse.lastY = e.clientY;
+      } else {
+        mouse.targetX = (e.clientX / window.innerWidth - 0.5) * 0.6;
+        mouse.targetY = (e.clientY / window.innerHeight - 0.5) * 0.4;
+      }
+    });
+    window.addEventListener('mouseup', () => { mouse.isDragging = false; });
+  }
+
+  function onResize() {
+    const wrapper = document.getElementById('threeCanvasWrapper');
+    if (!wrapper || !renderer) return;
+    const W = wrapper.clientWidth;
+    const H = wrapper.clientHeight;
+    camera.aspect = W / H;
+    camera.updateProjectionMatrix();
+    renderer.setSize(W, H);
+  }
+
+  let clock = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    clock += 0.015;
+
+    // Smooth Look-around Interpolation
+    mouse.x += (mouse.targetX - mouse.x) * 0.08;
+    mouse.y += (mouse.targetY - mouse.y) * 0.08;
+    if (coreGroup) {
+      coreGroup.rotation.y = mouse.x;
+      coreGroup.rotation.x = -mouse.y;
+    }
+
+
+    // Particle Sphere Voice Pulse
+    if (particleSphere) {
+      particleSphere.rotation.y += 0.002;
+      const targetScale = isSpeaking ? 1.0 + Math.sin(clock * 8) * 0.08 + voiceIntensity * 0.15 : 1.0 + Math.sin(clock * 1.5) * 0.02;
+      particleSphere.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+    }
+
+    // Lip Sync Movement on 3D Face
+    if (posAttr && origPositions && isSpeaking) {
+      const mouthOpen = (Math.sin(clock * 16) * 0.5 + 0.5) * (0.8 + voiceIntensity * 0.6);
+      const arr = posAttr.array;
+      for (let idx of lipIndices) {
+        arr[idx * 3 + 1] = origPositions[idx * 3 + 1] - mouthOpen * 0.65;
+        arr[idx * 3 + 2] = origPositions[idx * 3 + 2] + mouthOpen * 0.2;
+      }
+      for (let idx of chinIndices) {
+        arr[idx * 3 + 1] = origPositions[idx * 3 + 1] - mouthOpen * 0.45;
+      }
+      posAttr.needsUpdate = true;
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  // ========================================================
+  // 3. REAL-TIME API STATE SYNC & TELEMETRY
+  // ========================================================
+  const statusBadge = document.getElementById('statusBadge');
+  const statusDot = document.getElementById('statusDot');
+  const statusLabel = document.getElementById('statusLabel');
+  const subSpeakerTag = document.getElementById('subSpeakerTag');
+  const subTextGlow = document.getElementById('subTextGlow');
+  const bossSimVal = document.getElementById('bossSimVal');
+  const bossSimMeter = document.getElementById('bossSimMeter');
+  const btStateBadge = document.getElementById('btStateBadge');
+
+  let lastStatus = '';
+  async function syncVoiceState() {
+    try {
+      const res = await fetch('/api/voice_state', { signal: AbortSignal.timeout(1200) });
+      if (!res.ok) return;
+      const data = await res.json();
+      
+      const st = data.status || 'sleeping';
+      const spk = data.speaker || 'boss';
+      const rep = data.last_reply || '';
+      const tra = data.last_transcript || '';
+      const sim = data.boss_similarity || 0.88;
+
+      // Update Biometric Sim Meter
+      const simPct = Math.round(Math.max(10, Math.min(100, sim * 100)));
+      bossSimVal.textContent = `${simPct}%`;
+      bossSimMeter.style.width = `${simPct}%`;
+
+      // Update State Styles & 3D Core Reaction
+      if (st !== lastStatus) {
+        lastStatus = st;
+        switch(st) {
+          case 'speaking':
+            isSpeaking = true;
+            voiceIntensity = 0.85;
+            audioEnergy = 0.9;
+            statusLabel.textContent = '🔊 JOJO SPEAKING';
+            statusBadge.style.borderColor = '#00ff88';
+            statusBadge.style.boxShadow = '0 0 25px rgba(0,255,136,0.45)';
+            statusDot.style.background = '#00ff88';
+            statusDot.style.boxShadow = '0 0 10px #00ff88';
+            subSpeakerTag.innerHTML = '<span>●</span> JOJO (VOICE 2 MADHUR)';
+            subSpeakerTag.style.color = '#00ff88';
+            break;
+
+          case 'listening':
+            isSpeaking = false;
+            voiceIntensity = 0.2;
+            audioEnergy = 0.45;
+            statusLabel.textContent = '🎙️ LISTENING TO BOSS';
+            statusBadge.style.borderColor = '#00f0ff';
+            statusBadge.style.boxShadow = '0 0 25px rgba(0,240,255,0.45)';
+            statusDot.style.background = '#00f0ff';
+            statusDot.style.boxShadow = '0 0 10px #00f0ff';
+            subSpeakerTag.innerHTML = '<span>●</span> the configured owner (BOSS)';
+            subSpeakerTag.style.color = '#00f0ff';
+            break;
+
+          case 'authenticating':
+            isSpeaking = false;
+            voiceIntensity = 0.5;
+            audioEnergy = 0.65;
+            statusLabel.textContent = '🔒 AUTHENTICATING VOICE';
+            statusBadge.style.borderColor = '#ffb700';
+            statusBadge.style.boxShadow = '0 0 25px rgba(255,183,0,0.45)';
+            statusDot.style.background = '#ffb700';
+            statusDot.style.boxShadow = '0 0 10px #ffb700';
+            subSpeakerTag.innerHTML = '<span>●</span> BIOMETRIC GATE';
+            subSpeakerTag.style.color = '#ffb700';
+            break;
+
+          case 'access_denied':
+            isSpeaking = false;
+            voiceIntensity = 0.1;
+            audioEnergy = 0.2;
+            statusLabel.textContent = '⛔ ACCESS DENIED';
+            statusBadge.style.borderColor = '#ff3366';
+            statusBadge.style.boxShadow = '0 0 25px rgba(255,51,102,0.45)';
+            statusDot.style.background = '#ff3366';
+            statusDot.style.boxShadow = '0 0 10px #ff3366';
+            break;
+
+          case 'thinking':
+            isSpeaking = false;
+            voiceIntensity = 0.6;
+            audioEnergy = 0.8;
+            statusLabel.textContent = '🧠 JOJO AGI COGNITION ACTIVE';
+            statusBadge.style.borderColor = '#a855f7';
+            statusBadge.style.boxShadow = '0 0 25px rgba(168,85,247,0.55)';
+            statusDot.style.background = '#a855f7';
+            statusDot.style.boxShadow = '0 0 12px #a855f7';
+            subSpeakerTag.innerHTML = '<span>●</span> AGI REASONING & TOOLS';
+            subSpeakerTag.style.color = '#a855f7';
+            break;
+
+          case 'sleeping':
+          default:
+            isSpeaking = false;
+            voiceIntensity = 0.05;
+            audioEnergy = 0.15;
+            statusLabel.textContent = '💤 SLEEP MODE (BOLEIN "JOJO")';
+            statusBadge.style.borderColor = 'rgba(0, 240, 255, 0.3)';
+            statusBadge.style.boxShadow = 'none';
+            statusDot.style.background = '#94a3b8';
+            statusDot.style.boxShadow = 'none';
+            break;
+        }
+      }
+
+      // Update Subtitles
+      if (st === 'thinking') {
+        const agi = data.agi || {};
+        const thought = agi.current_thought || 'Reasoning through goal...';
+        subTextGlow.textContent = `⚡ [AGI]: ${thought}`;
+      } else if (st === 'speaking' && rep) {
+        subTextGlow.textContent = rep;
+      } else if ((st === 'listening' || st === 'authenticating') && tra) {
+        subTextGlow.textContent = `"${tra}"`;
+      } else if (st === 'sleeping') {
+        subTextGlow.textContent = '"JoJo" bolkar ya koi bhi command dekar baat karein...';
+      }
+
+    } catch (e) {}
+  }
+  setInterval(syncVoiceState, 150);
+
+  // Quick Action Dispatcher
+  async function quickSend(msg) {
+    subTextGlow.textContent = `Command: "${msg}"...`;
+    try {
+      await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg, source: 'laptop' })
+      });
+    } catch (e) {}
+  }
+
+  // Fullscreen & Window controls
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  function minimizeHUD() {
+    // In app mode, we can invoke window blur or minimize API
+    window.blur();
+    fetch('/api/hud/minimize').catch(() => {});
+  }
+
+  function closeHUD() {
+    window.close();
+  }
+
+  // Keyboard Shortcuts: Esc to minimize
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      minimizeHUD();
+    }
+  });
+
+  window.addEventListener('load', () => {
+    init3DVoiceCore();
+    syncVoiceState();
+  });
+</script>
+</body>
+</html>

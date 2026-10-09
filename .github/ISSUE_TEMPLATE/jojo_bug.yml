@@ -1,0 +1,20 @@
+name: Bug report
+description: Report a reproducible JoJo problem without personal data.
+body:
+  - type: markdown
+    attributes:
+      value: "Never upload keys, Firebase credentials, voice recordings, personal screenshots or memory databases."
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps, expected result and actual result
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: OS, Python, provider and model ID (no keys)
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized error output

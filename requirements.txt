@@ -1,0 +1,20 @@
+# Versions installed in the Windows environment during this upgrade.
+google-genai==2.22.0
+SpeechRecognition==3.17.0
+firebase-admin==7.5.0
+fastapi==0.141.1
+uvicorn==0.52.4
+PyAutoGUI==0.9.54
+pywinauto==0.6.9
+numpy==2.5.1
+sounddevice==0.5.6
+soundfile==0.14.0
+scipy==1.18.1
+Pillow==12.2.0
+beautifulsoup4==4.15.0
+edge-tts==7.2.8
+pyttsx3==2.99
+pyperclip==1.11.0
+sherpa-onnx==1.13.8
+pypdf==6.19.0
+psutil==7.2.2

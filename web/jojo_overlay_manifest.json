@@ -1,0 +1,16 @@
+﻿{
+  "name": "JoJo AGI Assistant",
+  "short_name": "JoJo",
+  "description": "JoJo - Your Personal AI Assistant by the configured owner",
+  "start_url": "/mobile_overlay",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#000410",
+  "theme_color": "#00c8ff",
+  "icons": [
+    {"src": "/icons/jojo_icon_192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/icons/jojo_icon_512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any"}
+  ],
+  "categories": ["utilities", "productivity"],
+  "lang": "hi-IN"
+}

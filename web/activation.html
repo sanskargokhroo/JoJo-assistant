@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#02040c" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>JoJo AGI &bull; Neural Activation Interface</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       1. CORE TOKENS & RESET
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --cyan-bright: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.7);
+      --blue-electric: #0066ff;
+      --purple-neon: #9d4edd;
+      --magenta-neon: #ff007f;
+      --emerald-neon: #00ff88;
+      --amber-gold: #ffaa00;
+      --red-alert: #ff3366;
+      --bg-deep: #02040c;
+      --edge-thickness: 4px;
+      --edge-blur: 24px;
+      --edge-spread: 60px;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      min-height: -webkit-fill-available;
+      overflow: hidden;
+      background: #000000;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #ffffff;
+      position: relative;
+    }
+
+    /* Transparent / Dimmed Backdrop */
+    .activation-backdrop {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(6, 12, 32, 0.75) 0%, rgba(2, 4, 12, 0.95) 100%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1;
+      transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Ambient Subtle Grid */
+    .ambient-grid {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0.6;
+    }
+
+    /* ==========================================================================
+       2. GLOWING EDGES (PERIMETER GLOW - APPLE INTELLIGENCE / SCI-FI STYLE)
+       ========================================================================== */
+    .glowing-edges-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+      overflow: hidden;
+    }
+
+    /* Primary Sharp Laser Border */
+    .edge-border-sharp {
+      position: absolute;
+      inset: 0;
+      border: 3px solid transparent;
+      border-image: linear-gradient(
+        var(--edge-angle, 0deg),
+        var(--cyan-bright),
+        var(--purple-neon),
+        var(--magenta-neon),
+        var(--blue-electric),
+        var(--cyan-bright)
+      ) 1;
+      opacity: 0.85;
+      transition: opacity 0.3s ease;
+    }
+
+    /* Intense Volumetric Ambient Glow along the 4 edges */
+    .edge-glow-top, .edge-glow-bottom, .edge-glow-left, .edge-glow-right {
+      position: absolute;
+      pointer-events: none;
+      transition: transform 0.08s ease, opacity 0.2s ease, filter 0.2s ease;
+    }
+
+    .edge-glow-top {
+      top: 0; left: 0; right: 0;
+      height: var(--edge-spread);
+      background: linear-gradient(to bottom, var(--edge-color-top, rgba(0, 240, 255, 0.65)), transparent);
+      filter: blur(var(--edge-blur));
+      transform-origin: top center;
+    }
+
+    .edge-glow-bottom {
+      bottom: 0; left: 0; right: 0;
+      height: var(--edge-spread);
+      background: linear-gradient(to top, var(--edge-color-bottom, rgba(157, 78, 221, 0.65)), transparent);
+      filter: blur(var(--edge-blur));
+      transform-origin: bottom center;
+    }
+
+    .edge-glow-left {
+      top: 0; bottom: 0; left: 0;
+      width: var(--edge-spread);
+      background: linear-gradient(to right, var(--edge-color-left, rgba(0, 102, 255, 0.65)), transparent);
+      filter: blur(var(--edge-blur));
+      transform-origin: left center;
+    }
+
+    .edge-glow-right {
+      top: 0; bottom: 0; right: 0;
+      width: var(--edge-spread);
+      background: linear-gradient(to left, var(--edge-color-right, rgba(255, 0, 127, 0.65)), transparent);
+      filter: blur(var(--edge-blur));
+      transform-origin: right center;
+    }
+
+    /* Screen Corner Accent Flares */
+    .edge-corner {
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      filter: blur(35px);
+      pointer-events: none;
+      opacity: 0.75;
+      animation: cornerPulse 4s ease-in-out infinite alternate;
+    }
+    .corner-top-left { top: -40px; left: -40px; background: var(--cyan-bright); }
+    .corner-top-right { top: -40px; right: -40px; background: var(--purple-neon); animation-delay: 1s; }
+    .corner-bottom-left { bottom: -40px; left: -40px; background: var(--blue-electric); animation-delay: 2s; }
+    .corner-bottom-right { bottom: -40px; right: -40px; background: var(--magenta-neon); animation-delay: 3s; }
+
+    @keyframes cornerPulse {
+      0% { transform: scale(0.9); opacity: 0.55; }
+      100% { transform: scale(1.3); opacity: 0.85; }
+    }
+
+    /* ==========================================================================
+       3. MAIN VIEWPORT & HUD LAYOUT
+       ========================================================================== */
+    .hud-layer {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: env(safe-area-inset-top, 24px) 24px env(safe-area-inset-bottom, 24px) 24px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* Top Bar: Title & Telemetry */
+    .top-telemetry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: auto;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon-pulse {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--cyan-bright);
+      box-shadow: 0 0 15px var(--cyan-bright);
+      position: relative;
+    }
+    .brand-icon-pulse::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 1px solid var(--cyan-bright);
+      animation: ripple 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+    }
+    @keyframes ripple {
+      0% { transform: scale(0.6); opacity: 1; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+
+    .brand-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      background: linear-gradient(135deg, #ffffff 0%, var(--cyan-bright) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+
+    .brand-sub {
+      font-size: 10px;
+      color: rgba(0, 240, 255, 0.6);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+    }
+
+    .top-badges {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-pill {
+      font-family: 'Rajdhani', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      color: var(--cyan-bright);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(8px);
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan-bright);
+      box-shadow: 0 0 8px var(--cyan-bright);
+    }
+
+    .close-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: all 0.2s ease;
+    }
+    .close-btn:hover {
+      background: rgba(255, 51, 102, 0.25);
+      border-color: var(--red-alert);
+      color: var(--red-alert);
+      transform: rotate(90deg);
+    }
+
+    /* ==========================================================================
+       4. GLOWING ORB CANVAS STAGE (CENTERPIECE)
+       ========================================================================== */
+    .orb-stage-wrapper {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      pointer-events: none;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Mobile Bottom-Anchor Switch Mode */
+    body.bottom-anchored .orb-stage-wrapper {
+      justify-content: flex-end;
+      padding-bottom: 90px;
+    }
+
+    .orb-canvas-container {
+      position: relative;
+      width: min(85vw, 460px);
+      height: min(85vw, 460px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    #orbCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      filter: drop-shadow(0 0 45px rgba(0, 240, 255, 0.4));
+      transition: filter 0.3s ease;
+    }
+
+    /* Ambient Core Backlight behind the canvas */
+    .orb-backlight {
+      position: absolute;
+      width: 70%;
+      height: 70%;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--cyan-glow) 0%, rgba(157, 78, 221, 0.3) 45%, transparent 70%);
+      filter: blur(40px);
+      pointer-events: none;
+      z-index: -1;
+      transform: scale(1);
+      transition: transform 0.15s ease, background 0.3s ease, opacity 0.3s ease;
+    }
+
+    /* Outer Dynamic Resonance Sound Ring */
+    .orb-sound-ring {
+      position: absolute;
+      inset: 15px;
+      border-radius: 50%;
+      border: 1.5px dashed rgba(0, 240, 255, 0.35);
+      pointer-events: none;
+      animation: spinRing 24s linear infinite;
+    }
+    .orb-sound-ring-2 {
+      position: absolute;
+      inset: 35px;
+      border-radius: 50%;
+      border: 1px solid rgba(157, 78, 221, 0.3);
+      pointer-events: none;
+      animation: spinRingReverse 16s linear infinite;
+    }
+    @keyframes spinRing {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes spinRingReverse {
+      0% { transform: rotate(360deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    /* ==========================================================================
+       5. CONTEXT CARDS, SUBTITLES & AUDIO WAVE
+       ========================================================================== */
+    .interaction-panel {
+      pointer-events: auto;
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      z-index: 20;
+    }
+
+    /* Live Voice Subtitle Bubble */
+    .subtitle-card {
+      width: 100%;
+      padding: 16px 22px;
+      border-radius: 20px;
+      background: rgba(10, 18, 42, 0.72);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .subtitle-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan-bright), transparent);
+    }
+
+    .state-indicator {
+      font-family: 'Rajdhani', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--cyan-bright);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .state-dot-live {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan-bright);
+      box-shadow: 0 0 10px var(--cyan-bright);
+      display: inline-block;
+      animation: pulseDot 1.4s ease-in-out infinite alternate;
+    }
+    @keyframes pulseDot {
+      0% { transform: scale(0.8); opacity: 0.5; }
+      100% { transform: scale(1.2); opacity: 1; }
+    }
+
+    .transcript-text {
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: #f1f5f9;
+      min-height: 24px;
+      word-break: break-word;
+    }
+
+    /* Real-Time Audio Frequency Bar Visualizer */
+    .frequency-bars {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 36px;
+      width: 220px;
+    }
+
+    .f-bar {
+      flex: 1;
+      height: 4px;
+      min-height: 4px;
+      border-radius: 3px;
+      background: linear-gradient(to top, var(--blue-electric), var(--cyan-bright));
+      transition: height 0.05s ease, background 0.2s ease;
+    }
+
+    /* Action Controls Bar */
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .action-btn {
+      padding: 12px 20px;
+      border-radius: 14px;
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+    }
+    .action-btn:hover {
+      background: rgba(0, 240, 255, 0.2);
+      border-color: var(--cyan-bright);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+      transform: translateY(-1px);
+    }
+    .action-btn:active {
+      transform: translateY(1px) scale(0.97);
+    }
+
+    /* Large Central Push-To-Talk Mic Button */
+    .mic-trigger-btn {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.2) 0%, rgba(157, 78, 221, 0.2) 100%);
+      border: 2px solid var(--cyan-bright);
+      color: #ffffff;
+      font-size: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.35);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+    .mic-trigger-btn::after {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      border-radius: 50%;
+      border: 1px dashed rgba(0, 240, 255, 0.5);
+      animation: spinRing 12s linear infinite;
+    }
+    .mic-trigger-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 45px rgba(0, 240, 255, 0.6);
+      border-color: #ffffff;
+    }
+    .mic-trigger-btn.active-listening {
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.3) 0%, rgba(0, 240, 255, 0.3) 100%);
+      border-color: var(--emerald-neon);
+      box-shadow: 0 0 50px rgba(0, 255, 136, 0.7);
+    }
+
+    /* Quick Prompt Suggestions */
+    .chips-carousel {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      max-width: 100%;
+      padding: 4px 2px;
+      scrollbar-width: none;
+    }
+    .chips-carousel::-webkit-scrollbar { display: none; }
+
+    .suggestion-chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .suggestion-chip:hover {
+      background: rgba(0, 240, 255, 0.15);
+      border-color: var(--cyan-bright);
+      color: #ffffff;
+    }
+
+    /* ==========================================================================
+       6. STATE THEMES (LISTENING / THINKING / SPEAKING / SLEEPING)
+       ========================================================================== */
+    body.state-listening {
+      --edge-color-top: rgba(0, 240, 255, 0.85);
+      --edge-color-bottom: rgba(0, 102, 255, 0.85);
+      --edge-color-left: rgba(0, 240, 255, 0.85);
+      --edge-color-right: rgba(157, 78, 221, 0.85);
+      --edge-blur: 32px;
+      --edge-spread: 90px;
+    }
+
+    body.state-thinking {
+      --edge-color-top: rgba(157, 78, 221, 0.9);
+      --edge-color-bottom: rgba(255, 0, 127, 0.9);
+      --edge-color-left: rgba(157, 78, 221, 0.9);
+      --edge-color-right: rgba(255, 170, 0, 0.9);
+      --edge-blur: 40px;
+      --edge-spread: 100px;
+    }
+
+    body.state-speaking {
+      --edge-color-top: rgba(0, 255, 136, 0.9);
+      --edge-color-bottom: rgba(0, 240, 255, 0.9);
+      --edge-color-left: rgba(0, 255, 136, 0.9);
+      --edge-color-right: rgba(0, 240, 255, 0.9);
+      --edge-blur: 35px;
+      --edge-spread: 95px;
+    }
+
+    body.state-denied {
+      --edge-color-top: rgba(255, 51, 102, 0.95);
+      --edge-color-bottom: rgba(255, 0, 50, 0.95);
+      --edge-color-left: rgba(255, 51, 102, 0.95);
+      --edge-color-right: rgba(255, 0, 50, 0.95);
+      --edge-blur: 45px;
+      --edge-spread: 110px;
+    }
+
+    /* Responsive Tweaks */
+    @media (max-width: 600px) {
+      .brand-sub { display: none; }
+      .orb-canvas-container {
+        width: min(92vw, 340px);
+        height: min(92vw, 340px);
+      }
+      .interaction-panel {
+        gap: 12px;
+      }
+      .action-btn span {
+        display: none;
+      }
+      .action-btn {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body class="state-listening">
+
+  <!-- Transparent / Blurred Sci-Fi Stage Backdrop -->
+  <div class="activation-backdrop" id="backdrop"></div>
+  <div class="ambient-grid"></div>
+
+  <!-- =========================================================================
+       GLOWING EDGES LAYER (PERIMETER GLOW - JOJO FLOW STYLE)
+       ========================================================================= -->
+  <div class="glowing-edges-container">
+    <div class="edge-border-sharp" id="edgeBorder"></div>
+    <div class="edge-glow-top" id="glowTop"></div>
+    <div class="edge-glow-bottom" id="glowBottom"></div>
+    <div class="edge-glow-left" id="glowLeft"></div>
+    <div class="edge-glow-right" id="glowRight"></div>
+
+    <div class="edge-corner corner-top-left"></div>
+    <div class="edge-corner corner-top-right"></div>
+    <div class="edge-corner corner-bottom-left"></div>
+    <div class="edge-corner corner-bottom-right"></div>
+  </div>
+
+  <!-- =========================================================================
+       CENTERSTAGE: 3D GLOWING FLUID ORB
+       ========================================================================= -->
+  <div class="orb-stage-wrapper">
+    <div class="orb-canvas-container" id="orbTouchArea" title="Tap / Click to Talk to JoJo">
+      <div class="orb-backlight" id="orbBacklight"></div>
+      <div class="orb-sound-ring"></div>
+      <div class="orb-sound-ring-2"></div>
+      <canvas id="orbCanvas" width="460" height="460"></canvas>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       HEADS-UP DISPLAY (HUD) INTERACTION LAYER
+       ========================================================================= -->
+  <div class="hud-layer">
+    
+    <!-- Top Telemetry & Controls -->
+    <header class="top-telemetry">
+      <div class="brand-cluster">
+        <div class="brand-icon-pulse"></div>
+        <div>
+          <div class="brand-title">JoJo AGI</div>
+          <div class="brand-sub">Neural Activation VUI</div>
+        </div>
+      </div>
+
+      <div class="top-badges">
+        <div class="badge-pill" id="deviceBadge">
+          <span class="badge-dot"></span>
+          <span id="deviceName">DESKTOP / LAPTOP</span>
+        </div>
+        <div class="badge-pill" id="dspBadge">
+          <span>DSP 60FPS</span>
+        </div>
+        <button class="close-btn" id="dismissBtn" title="Dismiss (Esc / Swipe)">✕</button>
+      </div>
+    </header>
+
+    <!-- Bottom Interaction Panel -->
+    <div class="interaction-panel">
+      
+      <!-- Live Subtitle & Transcript Card -->
+      <div class="subtitle-card" id="subtitleCard">
+        <div class="state-indicator">
+          <span class="state-dot-live" id="stateDot"></span>
+          <span id="stateLabel">LISTENING TO BOSS...</span>
+        </div>
+        <div class="transcript-text" id="transcriptOutput">Boliye Boss, sun raha hoon...</div>
+      </div>
+
+      <!-- Real-Time Audio Frequency Bar Visualizer -->
+      <div class="frequency-bars" id="freqBars">
+        <!-- 20 dynamic audio bars injected via JS -->
+      </div>
+
+      <!-- Quick Action Prompt Suggestions -->
+      <div class="chips-carousel">
+        <div class="suggestion-chip" onclick="sendQuickPrompt('Hey JoJo, aaj ka kya plan hai?')">📅 Aaj ka Plan</div>
+        <div class="suggestion-chip" onclick="sendQuickPrompt('Google par latest AI news search kar')">🌐 AI News</div>
+        <div class="suggestion-chip" onclick="sendQuickPrompt('Desktop screen dekho aur summarize karo')">👁️ Screen Dekho</div>
+        <div class="suggestion-chip" onclick="sendQuickPrompt('Ek badhiya sa desi joke sunao')">😂 Joke Sunao</div>
+        <div class="suggestion-chip" onclick="sendQuickPrompt('System diagnostics check karo')">⚡ PC Health</div>
+      </div>
+
+      <!-- Bottom Control Buttons -->
+      <div class="controls-bar">
+        <button class="action-btn" id="togglePosBtn" title="Toggle Orb Position">
+          <span>⚓</span> <span>Anchor</span>
+        </button>
+
+        <button class="mic-trigger-btn active-listening" id="micBtn" title="Push to Talk / Listen">
+          🎙️
+        </button>
+
+        <button class="action-btn" id="typeInputBtn" title="Type Command">
+          <span>⌨️</span> <span>Type</span>
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- =========================================================================
+       AUDIO DSP ENGINE & 3D PROCEDURAL GLOWING ORB SHADER SCRIPT
+       ========================================================================= -->
+  <script>
+    (function () {
+      'use strict';
+
+      // ─────────────────────────────────────────────────────────────────
+      // 1. STATE & AUDIO TELEMETRY VARIABLES
+      // ─────────────────────────────────────────────────────────────────
+      const STATE = {
+        status: 'listening', // 'sleeping', 'listening', 'thinking', 'speaking', 'denied'
+        transcript: 'Boliye Boss, sun raha hoon...',
+        reply: '',
+        audioLevel: 0.15,
+        bassEnergy: 0.2,
+        midEnergy: 0.15,
+        trebleEnergy: 0.1,
+        activeSession: true,
+        source: 'laptop',
+        micActive: false,
+        isThinking: false,
+        isSpeaking: false,
+        lastStateHash: ''
+      };
+
+      // Detect Device
+      const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth < 640;
+      document.getElementById('deviceName').textContent = isMobile ? '📱 ANDROID MOBILE' : '💻 WINDOWS LAPTOP';
+      STATE.source = isMobile ? 'mobile' : 'laptop';
+
+      // ─────────────────────────────────────────────────────────────────
+      // 2. REAL-TIME AUDIO DSP (WEB AUDIO API + FFT)
+      // ─────────────────────────────────────────────────────────────────
+      let audioCtx = null;
+      let analyser = null;
+      let dataArray = null;
+      let micStream = null;
+      let speechRecognizer = null;
+
+      function initAudioDSP() {
+        if (audioCtx) return;
+        try {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (!AudioContextClass) return;
+          audioCtx = new AudioContextClass();
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 128;
+          analyser.smoothingTimeConstant = 0.75;
+          const bufferLength = analyser.frequencyBinCount;
+          dataArray = new Uint8Array(bufferLength);
+
+          navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+            .then(stream => {
+              micStream = stream;
+              const source = audioCtx.createMediaStreamSource(stream);
+              source.connect(analyser);
+              STATE.micActive = true;
+              document.getElementById('dspBadge').textContent = 'MIC 120FPS FFT';
+              console.log('✅ Real-Time Web Audio DSP Stream Initialized');
+            })
+            .catch(err => {
+              console.warn('⚠️ Web Audio mic permission deferred, using core telemetry:', err);
+              document.getElementById('dspBadge').textContent = 'CORE TELEMETRY';
+            });
+        } catch (e) {
+          console.warn('AudioContext error:', e);
+        }
+      }
+
+      // Initialize on first user touch / click
+      window.addEventListener('click', () => {
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        if (!audioCtx) initAudioDSP();
+      }, { once: true });
+
+      // Build Frequency Bars
+      const freqContainer = document.getElementById('freqBars');
+      const barElements = [];
+      const NUM_BARS = 22;
+      for (let i = 0; i < NUM_BARS; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'f-bar';
+        freqContainer.appendChild(bar);
+        barElements.push(bar);
+      }
+
+      function sampleAudioData() {
+        if (analyser && dataArray && STATE.micActive) {
+          analyser.getByteFrequencyData(dataArray);
+
+          // Calculate energy bands
+          let sum = 0;
+          let bassSum = 0;
+          let midSum = 0;
+          let trebleSum = 0;
+
+          const n = dataArray.length;
+          for (let i = 0; i < n; i++) {
+            const val = dataArray[i] / 255.0;
+            sum += val;
+            if (i < n * 0.2) bassSum += val;
+            else if (i < n * 0.6) midSum += val;
+            else trebleSum += val;
+          }
+
+          STATE.audioLevel = Math.max(0.05, sum / n);
+          STATE.bassEnergy = (bassSum / (n * 0.2)) || 0.05;
+          STATE.midEnergy = (midSum / (n * 0.4)) || 0.05;
+          STATE.trebleEnergy = (trebleSum / (n * 0.4)) || 0.05;
+
+          // Update Bar Heights
+          for (let i = 0; i < NUM_BARS; i++) {
+            const binIdx = Math.floor((i / NUM_BARS) * n);
+            const val = dataArray[binIdx] / 255.0;
+            const h = Math.max(4, val * 34);
+            barElements[i].style.height = `${h}px`;
+          }
+        } else {
+          // Synthetic audio wave during speaking / idle
+          const t = performance.now() * 0.005;
+          const boost = STATE.isSpeaking ? 0.75 : (STATE.status === 'listening' ? 0.25 : 0.08);
+          STATE.audioLevel = 0.1 + Math.sin(t) * 0.06 * boost;
+          STATE.bassEnergy = 0.15 + Math.cos(t * 1.5) * 0.1 * boost;
+
+          for (let i = 0; i < NUM_BARS; i++) {
+            const wave = Math.sin(t + i * 0.35) * 0.5 + 0.5;
+            const h = Math.max(4, wave * 30 * boost + 4);
+            barElements[i].style.height = `${h}px`;
+          }
+        }
+      }
+
+      // ─────────────────────────────────────────────────────────────────
+      // 3. GLOWING EDGES REAL-TIME MODULATION
+      // ─────────────────────────────────────────────────────────────────
+      let edgeAngle = 0;
+      const edgeBorder = document.getElementById('edgeBorder');
+      const glowTop = document.getElementById('glowTop');
+      const glowBottom = document.getElementById('glowBottom');
+      const glowLeft = document.getElementById('glowLeft');
+      const glowRight = document.getElementById('glowRight');
+
+      function updateGlowingEdges() {
+        edgeAngle = (edgeAngle + 1.2 + STATE.audioLevel * 4) % 360;
+        document.documentElement.style.setProperty('--edge-angle', `${edgeAngle}deg`);
+
+        // Volumetric expansion based on bass audio energy
+        const expansion = 1.0 + STATE.bassEnergy * 0.9;
+        const opacity = 0.5 + STATE.audioLevel * 0.5;
+
+        glowTop.style.transform = `scaleY(${expansion})`;
+        glowBottom.style.transform = `scaleY(${expansion})`;
+        glowLeft.style.transform = `scaleX(${expansion})`;
+        glowRight.style.transform = `scaleX(${expansion})`;
+
+        glowTop.style.opacity = opacity;
+        glowBottom.style.opacity = opacity;
+        glowLeft.style.opacity = opacity;
+        glowRight.style.opacity = opacity;
+      }
+
+      // ─────────────────────────────────────────────────────────────────
+      // 4. THE PROCEDURAL 3D GLOWING FLUID ORB (CANVAS SHADER & PARTICLES)
+      // ─────────────────────────────────────────────────────────────────
+      const canvas = document.getElementById('orbCanvas');
+      const ctx = canvas.getContext('2d');
+      const orbBacklight = document.getElementById('orbBacklight');
+
+      const W = canvas.width;
+      const H = canvas.height;
+      const CX = W / 2;
+      const CY = H / 2;
+
+      // Particle system for floating energy corona
+      const NUM_ORB_PARTICLES = 160;
+      const particles = [];
+      for (let i = 0; i < NUM_ORB_PARTICLES; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 70 + Math.random() * 95;
+        particles.push({
+          angle: angle,
+          dist: dist,
+          baseDist: dist,
+          size: 1.2 + Math.random() * 2.8,
+          speed: (0.003 + Math.random() * 0.008) * (Math.random() > 0.5 ? 1 : -1),
+          hueOffset: Math.random() * 60 - 30,
+          pulse: Math.random() * Math.PI * 2
+        });
+      }
+
+      let time = 0;
+
+      function renderGlowingOrb() {
+        time += 0.02 + STATE.audioLevel * 0.04;
+        ctx.clearRect(0, 0, W, H);
+
+        const currentScale = 1.0 + STATE.audioLevel * 0.45;
+        const baseRadius = 85 * currentScale;
+
+        // Base color palettes based on State
+        let primaryHue = 186; // Cyan
+        let secondaryHue = 275; // Purple
+        if (STATE.status === 'thinking') {
+          primaryHue = 280; // Violet
+          secondaryHue = 330; // Magenta
+        } else if (STATE.status === 'speaking') {
+          primaryHue = 155; // Emerald Green
+          secondaryHue = 186; // Cyan
+        } else if (STATE.status === 'denied') {
+          primaryHue = 350; // Crimson
+          secondaryHue = 10; // Red-Orange
+        }
+
+        // 1. Draw Outer Atmospheric Plasma Bloom
+        const gradBloom = ctx.createRadialGradient(CX, CY, 10, CX, CY, baseRadius * 1.7);
+        gradBloom.addColorStop(0, `hsla(${primaryHue}, 100%, 75%, 0.85)`);
+        gradBloom.addColorStop(0.35, `hsla(${secondaryHue}, 90%, 55%, 0.4)`);
+        gradBloom.addColorStop(0.7, `hsla(${primaryHue}, 100%, 45%, 0.15)`);
+        gradBloom.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        ctx.fillStyle = gradBloom;
+        ctx.beginPath();
+        ctx.arc(CX, CY, baseRadius * 1.7, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Draw Multi-Layered Fluid Harmonic Rings (Waveform Surface)
+        const numLayers = 3;
+        for (let l = 0; l < numLayers; l++) {
+          ctx.beginPath();
+          const layerPoints = 80;
+          const layerOffset = l * 0.9;
+          const layerRad = baseRadius * (0.82 + l * 0.12);
+
+          for (let p = 0; p <= layerPoints; p++) {
+            const angle = (p / layerPoints) * Math.PI * 2;
+            
+            // Harmonic wave deformation driven by Bass, Mid and Time
+            const wave1 = Math.sin(angle * 3 + time * 2 + layerOffset) * (8 + STATE.bassEnergy * 24);
+            const wave2 = Math.cos(angle * 5 - time * 1.8) * (5 + STATE.midEnergy * 18);
+            const wave3 = Math.sin(angle * 8 + time * 3.5) * (3 + STATE.trebleEnergy * 10);
+            const totalR = layerRad + wave1 + wave2 + wave3;
+
+            const px = CX + Math.cos(angle) * totalR;
+            const py = CY + Math.sin(angle) * totalR;
+
+            if (p === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+
+          ctx.lineWidth = 2.2 + l * 0.6;
+          ctx.strokeStyle = `hsla(${primaryHue + l * 25}, 100%, 75%, ${0.6 - l * 0.15})`;
+          ctx.stroke();
+
+          if (l === 0) {
+            // Fill innermost fluid core
+            const innerGrad = ctx.createRadialGradient(CX, CY, 5, CX, CY, layerRad);
+            innerGrad.addColorStop(0, '#ffffff');
+            innerGrad.addColorStop(0.3, `hsla(${primaryHue}, 100%, 65%, 0.9)`);
+            innerGrad.addColorStop(0.8, `hsla(${secondaryHue}, 95%, 45%, 0.7)`);
+            innerGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = innerGrad;
+            ctx.fill();
+          }
+        }
+
+        // 3. Swirling Corona Energy Dust Particles
+        for (let i = 0; i < particles.length; i++) {
+          const pt = particles[i];
+          pt.angle += pt.speed * (1 + STATE.audioLevel * 3);
+          pt.pulse += 0.05;
+
+          const dynDist = pt.baseDist * currentScale + Math.sin(pt.pulse) * 8;
+          const x = CX + Math.cos(pt.angle) * dynDist;
+          const y = CY + Math.sin(pt.angle) * dynDist;
+
+          ctx.beginPath();
+          ctx.arc(x, y, pt.size * (1 + STATE.trebleEnergy * 0.8), 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${primaryHue + pt.hueOffset}, 100%, 80%, 0.75)`;
+          ctx.shadowColor = `hsla(${primaryHue}, 100%, 50%, 0.8)`;
+          ctx.shadowBlur = 8;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+
+        // 4. Update Backlight scaling
+        orbBacklight.style.transform = `scale(${currentScale * 1.25})`;
+      }
+
+      // ─────────────────────────────────────────────────────────────────
+      // 5. MASTER 60/120 FPS ANIMATION LOOP
+      // ─────────────────────────────────────────────────────────────────
+      function masterRenderLoop() {
+        sampleAudioData();
+        updateGlowingEdges();
+        renderGlowingOrb();
+        requestAnimationFrame(masterRenderLoop);
+      }
+      masterRenderLoop();
+
+      // ─────────────────────────────────────────────────────────────────
+      // 6. ON-DEVICE SPEECH RECOGNITION (WEB SPEECH API)
+      // ─────────────────────────────────────────────────────────────────
+      function initSpeechRecognition() {
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRec) return;
+
+        speechRecognizer = new SpeechRec();
+        speechRecognizer.continuous = true;
+        speechRecognizer.interimResults = true;
+        speechRecognizer.lang = 'hi-IN';
+
+        speechRecognizer.onstart = () => {
+          console.log('🎙️ Web Speech Recognizer Active');
+        };
+
+        speechRecognizer.onresult = (event) => {
+          let interim = '';
+          let final = '';
+
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              final += event.results[i][0].transcript;
+            } else {
+              interim += event.results[i][0].transcript;
+            }
+          }
+
+          const txt = final || interim;
+          if (txt) {
+            updateTranscriptUI(txt, true);
+            if (final) {
+              dispatchVoiceCommand(final.trim());
+            }
+          }
+        };
+
+        speechRecognizer.onerror = (e) => {
+          console.warn('SpeechRec status:', e.error);
+        };
+
+        speechRecognizer.onend = () => {
+          // Restart to keep always-on listening
+          if (STATE.activeSession) {
+            try { speechRecognizer.start(); } catch (err) {}
+          }
+        };
+
+        try { speechRecognizer.start(); } catch (e) {}
+      }
+
+      // ─────────────────────────────────────────────────────────────────
+      // 7. SYNC WITH JOJO AGI CORE SERVER TELEMETRY (/api/voice_state)
+      // ─────────────────────────────────────────────────────────────────
+      const API_BASE = window.location.origin;
+
+      async function syncServerVoiceState() {
+        try {
+          const res = await fetch(`${API_BASE}/api/voice_state`, {
+            headers: { 'Accept': 'application/json' },
+            signal: AbortSignal.timeout(1800)
+          });
+          if (!res.ok) return;
+
+          const data = await res.json();
+          const stateHash = `${data.status}_${data.last_transcript}_${data.last_reply}`;
+          if (stateHash === STATE.lastStateHash) return;
+          STATE.lastStateHash = stateHash;
+
+          applySystemState(data);
+        } catch (e) {
+          // Offline / local simulator fallback
+        }
+      }
+
+      function applySystemState(data) {
+        const s = data.status || 'listening';
+        STATE.status = s;
+        STATE.isSpeaking = (s === 'speaking');
+        STATE.isThinking = (s === 'thinking' || s === 'authenticating');
+
+        document.body.className = '';
+        document.body.classList.add(`state-${s}`);
+
+        const micBtn = document.getElementById('micBtn');
+        const stateLabel = document.getElementById('stateLabel');
+        const stateDot = document.getElementById('stateDot');
+
+        if (s === 'speaking') {
+          stateLabel.textContent = 'JOJO AGI IS SPEAKING';
+          stateDot.style.background = 'var(--emerald-neon)';
+          micBtn.classList.remove('active-listening');
+          updateTranscriptUI(data.last_reply || data.reply || 'Main bol raha hoon...', false);
+        } else if (s === 'thinking' || s === 'authenticating') {
+          stateLabel.textContent = 'NEURAL AGI PROCESSING...';
+          stateDot.style.background = 'var(--purple-neon)';
+          micBtn.classList.remove('active-listening');
+          updateTranscriptUI(data.last_transcript || 'Soch raha hoon...', true);
+        } else if (s === 'access_denied') {
+          stateLabel.textContent = 'ACCESS DENIED (NOT BOSS)';
+          stateDot.style.background = 'var(--red-alert)';
+          updateTranscriptUI('Aap mere boss nahi ho!', false);
+        } else {
+          stateLabel.textContent = 'LISTENING TO BOSS...';
+          stateDot.style.background = 'var(--cyan-bright)';
+          micBtn.classList.add('active-listening');
+          if (data.last_transcript) {
+            updateTranscriptUI(data.last_transcript, true);
+          }
+        }
+      }
+
+      function updateTranscriptUI(text, isUser) {
+        const out = document.getElementById('transcriptOutput');
+        out.textContent = text;
+      }
+
+      async function dispatchVoiceCommand(command) {
+        if (!command) return;
+        applySystemState({ status: 'thinking', last_transcript: command });
+
+        try {
+          const res = await fetch(`${API_BASE}/api/voice_command`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              command: command,
+              speaker: 'boss',
+              source: STATE.source
+            })
+          });
+          const data = await res.json();
+          if (data && data.reply) {
+            applySystemState({ status: 'speaking', last_reply: data.reply });
+          }
+        } catch (err) {
+          console.error('Command dispatch error:', err);
+          applySystemState({ status: 'listening' });
+        }
+      }
+
+      window.sendQuickPrompt = function (text) {
+        updateTranscriptUI(text, true);
+        dispatchVoiceCommand(text);
+      };
+
+      // Periodic state poll (every 350ms)
+      setInterval(syncServerVoiceState, 350);
+      syncServerVoiceState();
+
+      // ─────────────────────────────────────────────────────────────────
+      // 8. CONTROLS, EVENTS & INTERACTION HANDLERS
+      // ─────────────────────────────────────────────────────────────────
+      const micBtn = document.getElementById('micBtn');
+      const orbTouchArea = document.getElementById('orbTouchArea');
+      const togglePosBtn = document.getElementById('togglePosBtn');
+      const dismissBtn = document.getElementById('dismissBtn');
+      const typeInputBtn = document.getElementById('typeInputBtn');
+
+      function triggerActivationListening() {
+        initAudioDSP();
+        initSpeechRecognition();
+        applySystemState({ status: 'listening', last_transcript: '' });
+        document.getElementById('transcriptOutput').textContent = 'Sun raha hoon Boss, boliye...';
+
+        // Play subtle futuristic activation chime using Web Audio
+        playActivationChime();
+
+        // Haptic feedback on mobile
+        if (navigator.vibrate) navigator.vibrate([20, 30, 20]);
+      }
+
+      micBtn.addEventListener('click', triggerActivationListening);
+      orbTouchArea.addEventListener('click', triggerActivationListening);
+
+      // Toggle Position (Center vs Bottom Anchor)
+      togglePosBtn.addEventListener('click', () => {
+        document.body.classList.toggle('bottom-anchored');
+      });
+
+      // Type command modal
+      typeInputBtn.addEventListener('click', () => {
+        const promptText = window.prompt('Type command for JoJo AGI:');
+        if (promptText) {
+          sendQuickPrompt(promptText);
+        }
+      });
+
+      // Dismiss / Close
+      function dismissActivation() {
+        fetch('/api/hud/minimize').catch(() => {});
+        if (window.pywebview) {
+          try { window.pywebview.api.minimize(); } catch(e) {}
+        }
+        try { window.close(); } catch(e) {}
+      }
+      dismissBtn.addEventListener('click', dismissActivation);
+
+      // Keyboard Shortcuts: Space to listen, Esc to dismiss
+      window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && e.target === document.body) {
+          e.preventDefault();
+          triggerActivationListening();
+        } else if (e.code === 'Escape') {
+          dismissActivation();
+        }
+      });
+
+      // Subtle Web Audio Activation Sound Chime
+      function playActivationChime() {
+        try {
+          const ctx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+          osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+          gain.gain.setValueAtTime(0.08, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + 0.35);
+        } catch (e) {}
+      }
+
+      // Initialize speech recognition after short delay
+      setTimeout(() => {
+        initSpeechRecognition();
+      }, 1000);
+
+    })();
+  </script>
+</body>
+</html>
