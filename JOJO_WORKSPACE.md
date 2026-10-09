@@ -64,6 +64,15 @@ this persistence. Device-scoped conversation recall reduces phone/laptop confusi
 Owner corrections and ambiguous references reach the planner, which must clarify
 uncertain recipients before messaging.
 
+Desktop task requests support a stable `request_id`: repeating that ID returns the
+same task rather than executing it again. Changing the command/device while reusing
+an ID is rejected. Retained journal records preserve this protection across restarts;
+clearing history or using private sessions removes the durable record. Handoff
+acceptance keeps its context if queue submission fails. Long recovery traces are
+reduced to marked excerpts while retaining every step's outcome state and the full
+original goal. An oversized goal asks for a narrower remaining task instead of being
+silently truncated. This does not make external application actions transactional.
+
 Desktop Settings includes **Headphone interruption**. When enabled, say JoJo while
 it speaks; the owner voice check still applies before following a command. This is
 an opt-in microphone path, not acoustic echo cancellation. Use headphones. It needs

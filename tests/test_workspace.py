@@ -62,6 +62,18 @@ class WorkspaceTests(unittest.TestCase):
         self.assertIn('corrected title',prompt)
         self.assertEqual(self.ws.task_actions('x')[0]['state'],'started')
 
+    def test_long_action_history_resumes_with_all_step_statuses(self):
+        self.journal.record({'id':'long','source':'laptop','message':'Finish the fixture','reply':'Need more work','status':'incomplete'})
+        with self.ws.connect() as db:
+            for step in range(1,25):db.execute('INSERT INTO actions VALUES(?,?,?,?,?,?)',('long',step,'fixture','started' if step==24 else 'returned','x'*4000,step))
+        prompt=self.ws.resume_prompt('long','Use the corrected title')
+        self.assertLessEqual(len(prompt),12000)
+        payload=json.loads(prompt.split('\n',1)[1])
+        self.assertEqual(len(payload['actions']),24)
+        self.assertEqual(payload['actions'][-1]['state'],'started')
+        self.assertTrue(payload['actions'][-1]['truncated'])
+        self.assertEqual(payload['original_request'],'Finish the fixture')
+
     def test_private_task_remains_private_after_toggle_off(self):
         from jojo_runtime import TaskManager,report_progress
         self.ws.set_private(True)
@@ -136,6 +148,61 @@ class WorkspaceTests(unittest.TestCase):
         self.assertEqual(len(pending('mobile')),1)
         self.assertIn('File not yet copied',take(item['id'],'mobile'))
         with self.assertRaises(ValueError):take(item['id'],'mobile')
+
+    def test_handoff_survives_full_queue(self):
+        from jojo_handoff import create,accept,pending
+        from unittest.mock import Mock
+        import queue
+        item=create('mobile','laptop','Continue the fixture')
+        consumer=Mock(side_effect=queue.Full)
+        with self.assertRaises(queue.Full):accept(item['id'],'laptop',consumer)
+        self.assertEqual(len(pending('laptop')),1)
+        self.assertEqual(accept(item['id'],'laptop',lambda prompt:{'id':'accepted'}),{'id':'accepted'})
+        self.assertEqual(pending('laptop'),[])
+
+    def test_private_mode_cannot_consume_saved_handoff(self):
+        from jojo_handoff import create,take,pending
+        item=create('laptop','mobile','Private fixture context')
+        self.ws.set_private(True)
+        with self.assertRaises(ValueError):take(item['id'],'mobile')
+        self.assertEqual(len(pending('mobile')),1)
+
+    def test_retried_request_survives_restart_without_reexecution(self):
+        from jojo_runtime import TaskManager
+        from unittest.mock import Mock
+        handler=Mock(return_value='done')
+        manager=TaskManager(handler,journal=self.journal.record,lookup=self.journal.task_record)
+        first=manager.submit('Fixture','laptop',False,request_id='fixture-stable')
+        self.assertTrue(manager.tasks[first['id']].done.wait(3))
+        retry=manager.submit('Fixture','laptop',False,request_id='fixture-stable')
+        self.assertEqual(first['id'],retry['id']);self.assertEqual(handler.call_count,1)
+        restarted=TaskManager(handler,journal=self.journal.record,lookup=self.journal.task_record)
+        recovered=restarted.submit('Fixture','laptop',False,request_id='fixture-stable')
+        self.assertEqual(recovered['status'],'completed');self.assertEqual(handler.call_count,1)
+        self.assertIsNone(restarted.worker)
+        with self.assertRaises(ValueError):restarted.submit('Changed request',request_id='fixture-stable')
+        with self.assertRaises(ValueError):restarted.submit('Fixture','mobile',request_id='fixture-stable')
+
+    def test_duplicate_request_while_running_is_not_enqueued_twice(self):
+        from jojo_runtime import TaskManager
+        release=threading.Event();entered=threading.Event();calls=[]
+        def handle(message,source):calls.append(message);entered.set();release.wait(3);return 'done'
+        manager=TaskManager(handle)
+        first=manager.submit('Fixture',request_id='in-flight')
+        try:
+            self.assertTrue(entered.wait(2))
+            duplicate=manager.submit('Fixture',request_id='in-flight')
+            self.assertEqual(first['id'],duplicate['id']);self.assertEqual(manager.queue.qsize(),0)
+        finally:release.set();manager.tasks[first['id']].done.wait(3)
+        self.assertEqual(calls,['Fixture'])
+
+    def test_worker_binds_device_before_calling_handler(self):
+        from jojo_runtime import TaskManager,target_platform
+        observed=[]
+        def handle(message,source):observed.append(target_platform());return 'done'
+        manager=TaskManager(handle)
+        manager.run_sync('Phone fixture','mobile');manager.run_sync('Laptop fixture','laptop')
+        self.assertEqual(observed,['mobile','desktop'])
 
     def test_document_search_does_not_cross_device_context(self):
         self.journal.record({'id':'l','source':'laptop','message':'Laptop fixture','reply':'ok','status':'completed'})

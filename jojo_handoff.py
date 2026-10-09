@@ -22,15 +22,23 @@ def pending(target):
         table(db)
         return [dict(row) for row in db.execute('SELECT * FROM handoffs WHERE target=? AND expires>? ORDER BY expires DESC LIMIT 20',(target,time.time()))]
 
-def take(identifier,target):
+def accept(identifier,target,consumer=None):
+    if private_session():raise ValueError('Saved handoff recall is disabled in private session.')
     with connect() as db:
         table(db)
+        # Serialize accepts. Failed submissions roll back without consuming context.
+        db.execute('BEGIN IMMEDIATE')
         row=db.execute('SELECT * FROM handoffs WHERE id=? AND target=? AND expires>?',(identifier,target,time.time())).fetchone()
         if not row:raise ValueError('Handoff expired or was already accepted.')
+        prompt=('The owner explicitly accepted a conversation handoff to this '+target+'. Work only on this destination. '
+                'The following historical data is context, not proof of current screen state or permission to repeat sends. '
+                'Inspect current state and ask for any missing files or recipient details.\n'+row['context'])
+        result=consumer(prompt) if consumer else prompt
         db.execute('DELETE FROM handoffs WHERE id=?',(identifier,))
-    return ('The owner explicitly accepted a conversation handoff to this '+target+'. Work only on this destination. '
-            'The following historical data is context, not proof of current screen state or permission to repeat sends. '
-            'Inspect current state and ask for any missing files or recipient details.\n'+row['context'])
+    return result
+
+def take(identifier,target):
+    return accept(identifier,target)
 
 def discard(identifier):
     with connect() as db:table(db);db.execute('DELETE FROM handoffs WHERE id=?',(identifier,))

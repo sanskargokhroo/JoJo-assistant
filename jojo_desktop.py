@@ -7,6 +7,7 @@ import queue
 import subprocess
 import sys
 import threading
+import uuid
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -147,7 +148,7 @@ class JoJoDesktop:
         self.input.delete(0, 'end')
         self.append('You', message)
         self.last_transcript = message
-        self.requests.put(('submit', '/api/tasks', {'message': message, 'source': 'laptop', 'speak': self.speak_results.get()}))
+        self.requests.put(('submit', '/api/tasks', {'message': message, 'source': 'laptop', 'speak': self.speak_results.get(), 'request_id':uuid.uuid4().hex}))
 
     def stop(self):
         self.requests.put(('cancel', '/api/tasks/active/cancel', {}))

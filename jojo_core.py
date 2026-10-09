@@ -2070,6 +2070,8 @@ def listen_command(duration=3.0):
     return get_vad_listener().listen(timeout=duration, max_speech_duration=30)
 
 def dispatch_command(message, source="laptop"):
+    from jojo_runtime import bind_device
+    bind_device(source)
     from jojo_workspace import set_private
     if message.strip().casefold() in ('privacy on', 'private mode on', 'privacy mode on', 'ye yaad mat rakhna'):
         set_private(True)
@@ -2085,8 +2087,6 @@ def dispatch_command(message, source="laptop"):
         return ask_jojo_brain(message)
     global last_interaction_time
     checkpoint()
-    from jojo_runtime import bind_device
-    bind_device(source)
     from jojo_device_lock import desktop_command
     lock_reply=desktop_command(message,source)
     if lock_reply is not None:return lock_reply
@@ -2132,7 +2132,8 @@ def dispatch_command(message, source="laptop"):
 from jojo_journal import record as record_conversation
 from jojo_journal import recover_interrupted
 recover_interrupted()
-task_manager = TaskManager(dispatch_command, speaker=lambda text: speak(text), journal=record_conversation)
+from jojo_journal import task_record
+task_manager = TaskManager(dispatch_command, speaker=lambda text: speak(text), journal=record_conversation, lookup=task_record)
 
 
 # ==========================================
@@ -3038,6 +3039,7 @@ def strip_wake_word(text):
     return re.sub(pattern, "", text.strip(), count=1, flags=re.IGNORECASE).strip()
 
 class DesktopTaskReq(BaseModel):
+    request_id: str = ''
     message: str
     source: str = "laptop"
     speak: bool = True
@@ -3087,7 +3089,7 @@ def api_submit_task(req: DesktopTaskReq):
         task = task_manager.cancel_task()
         return {"status": "cancel_requested", "task": task}
     try:
-        return task_manager.submit(req.message, req.source, req.speak)
+        return task_manager.submit(req.message, req.source, req.speak,request_id=req.request_id)
     except ValueError as exc:
         raise HTTPException(400, str(exc))
     except queue.Full:

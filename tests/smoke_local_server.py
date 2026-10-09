@@ -48,7 +48,9 @@ def main():
                 api('/api/workspace',{'action':'delete_memory','id':card['id']})
                 assert api('/api/workspace')['cards']==[]
                 # A blocked command exercises the worker without doing any external work.
-                task = api('/api/tasks', {'message': 'otp', 'speak': False})
+                command={'message':'otp','speak':False,'request_id':'smoke-deduplication'}
+                task = api('/api/tasks', command)
+                assert api('/api/tasks',command)['id']==task['id']
                 deadline = time.monotonic() + 5
                 while time.monotonic() < deadline:
                     result = api('/api/tasks/' + task['id'])

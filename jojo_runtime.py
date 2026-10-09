@@ -108,9 +108,10 @@ class Task:
             )} | {'events': list(self.events)}
 
 class TaskManager:
-    def __init__(self, handler, speaker=None, max_pending=8, task_seconds=300, journal=None):
+    def __init__(self, handler, speaker=None, max_pending=8, task_seconds=300, journal=None, lookup=None):
         self.handler, self.speaker = handler, speaker
         self.journal = journal
+        self.lookup = lookup
         self.task_seconds = task_seconds
         self.queue = queue.Queue(maxsize=max_pending)
         self.tasks = {}
@@ -119,16 +120,25 @@ class TaskManager:
         self.worker = None
         self.closed = False
 
-    def submit(self, message, source='laptop', speak=False):
+    def submit(self, message, source='laptop', speak=False, request_id=''):
         message = message.strip()
         if not message or len(message) > 12000:
             raise ValueError('Command must contain 1 to 12000 characters.')
         if source not in ('laptop', 'mobile'):
             raise ValueError('Unknown device source.')
+        if not isinstance(request_id,str) or len(request_id)>200:
+            raise ValueError('Request ID must be a string of at most 200 characters.')
+        identifier=uuid.uuid5(uuid.NAMESPACE_URL,'jojo-task:'+request_id).hex if request_id else uuid.uuid4().hex
         from jojo_config import read_preferences
-        task = Task(uuid.uuid4().hex, message, source, speak,
+        task = Task(identifier, message, source, speak,
                     private=bool(read_preferences().get('private_session', False)), persist=self._remember)
         with self.lock:
+            if request_id:
+                previous=self.get(identifier)
+                if previous:
+                    if previous['message']!=message or previous['source']!=source:
+                        raise ValueError('Request ID was already used for a different command or device.')
+                    return previous
             if self.closed:
                 raise ValueError('JoJo is shutting down; no new task was started.')
             self.queue.put_nowait(task)
@@ -155,7 +165,7 @@ class TaskManager:
     def get(self, task_id):
         with self.lock:
             task = self.tasks.get(task_id)
-        return task.snapshot() if task else None
+        return task.snapshot() if task else (self.lookup(task_id) if self.lookup else None)
 
     def cancel_task(self, task_id=None):
         with self.lock:
@@ -201,6 +211,7 @@ class TaskManager:
                     task.deadline = time.monotonic() + self.task_seconds
                 self._remember(task)
                 token = _context.set(task)
+                device_token = _device.set(task.source)
                 try:
                     checkpoint()
                     reply = self.handler(task.message, task.source)
@@ -218,6 +229,7 @@ class TaskManager:
                         task.reply = 'Kaam poora nahi hua. ' + task.error
                 finally:
                     _context.reset(token)
+                    _device.reset(device_token)
                     self._remember(task)
                     task.done.set()
                 if task.speak and self.speaker and not task.cancel.is_set():

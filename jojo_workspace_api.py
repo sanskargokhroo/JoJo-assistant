@@ -66,8 +66,8 @@ def register(app, manager, stop_speech):
                 if not row or row['source']!='laptop':raise ValueError('Select a laptop conversation.')
                 return create('laptop','mobile',row['message'],row['reply'])
             if value.action == 'accept_handoff':
-                from jojo_handoff import take
-                return manager.submit(take(value.id,'laptop'),'laptop',False)
+                from jojo_handoff import accept
+                return accept(value.id,'laptop',lambda prompt:manager.submit(prompt,'laptop',False,request_id='handoff:'+value.id))
             if value.action == 'discard_handoff':
                 from jojo_handoff import discard
                 discard(value.id);return {'ok':True}

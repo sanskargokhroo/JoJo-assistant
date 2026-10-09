@@ -96,3 +96,14 @@ def history(limit=60):
     with connect() as db:
         rows=db.execute('SELECT id,created,source,request,reply,status FROM turns ORDER BY created DESC LIMIT ?', (max(1,min(limit,200)),)).fetchall()
     return [dict(zip(('id','created_at','source','message','reply','status'),row)) for row in reversed(rows)]
+
+
+def task_record(identifier):
+    """Retrieve a durable task for status/retry deduplication, never replay it."""
+    with connect() as db:
+        row=db.execute('SELECT id,created,source,request,reply,status,steps FROM turns WHERE id=?',(identifier,)).fetchone()
+    if not row:return None
+    result=dict(zip(('id','created_at','source','message','reply','status','events'),row))
+    result['events']=json.loads(result['events'] or '[]')
+    result.update(progress=result['status'].replace('_',' ').capitalize(),error='',speak=False,private=False)
+    return result
