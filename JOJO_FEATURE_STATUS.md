@@ -54,3 +54,9 @@ scan found no issues. The published Windows installer also passed isolated fresh
 venv/dependency/model installation, model checksum, pip check and a no-voice,
 no-cloud backend startup/API/shutdown smoke test. This used the current Windows
 machine, not an independent clean PC. Existing APK hash remained unchanged.
+
+Voice-session recovery: an unclear or nonmatching utterance is rejected without
+ending an already active laptop session. Each subsequent command still requires
+owner voice verification. Commands captured after speech ends no longer inherit
+an obsolete speaking flag. Settings launch variants have local-handler tests;
+physical microphone recognition still needs the owner's interactive trial.

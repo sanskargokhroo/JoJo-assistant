@@ -3184,7 +3184,7 @@ def start_services():
         if not api_thread.is_alive() or time.monotonic() > deadline:
             raise RuntimeError(f"JoJo API did not start. Check whether port {port} is already in use.")
         time.sleep(.05)
-    threading.Thread(target=idle_session_watchdog, name='JoJo session timeout', daemon=True).start()
+    threading.Thread(target=idle_session_watchdog, name='JoJo manual stop watcher', daemon=True).start()
     threading.Thread(target=run_proactive_daemon, name="JoJo reminders", daemon=True).start()
     threading.Thread(target=run_cloud_remote_listener, name="JoJo cloud", daemon=True).start()
     from jojo_security import start_security_monitor
@@ -3200,7 +3200,6 @@ def run_voice_loop():
             if microphone_paused.is_set():
                 time.sleep(.15)
                 continue
-            was_speaking=is_speaking
             text, mono_audio = listen_command(duration=3.0)
             if not text:
                 expire_idle_session()
@@ -3208,6 +3207,8 @@ def run_voice_loop():
             update_voice_state(transcript=text)
             clean = strip_wake_word(text)
             wake_detected = clean != text.strip()
+            # Speech may have finished while capture/transcription was waiting.
+            was_speaking=is_speaking
             if was_speaking and not wake_detected:
                 continue
             if is_stop_command(clean):
@@ -3225,10 +3226,11 @@ def run_voice_loop():
             update_voice_state(similarity=res.similarity)
             if not res.is_match:
                 if was_speaking:continue
-                is_active_session = False
-                refusal = "आप मेरे बॉस नहीं हो" if boss_profile is not None else "Pehle desktop Settings mein apni voice enroll kijiye."
-                update_voice_state(status="access_denied", speaker="stranger", reply=refusal, active=False)
-                if wake_detected:
+                # Reject this audio, not the entire session. Every next command
+                # still needs its own voice match; silence never ends a session.
+                refusal = "Voice match clear nahi hua. Command execute nahi ki; dobara poora command boliye." if boss_profile is not None else "Pehle desktop Settings mein apni voice enroll kijiye."
+                update_voice_state(status="listening" if is_active_session else "access_denied", speaker="unverified", reply=refusal, active=is_active_session)
+                if wake_detected or is_active_session:
                     speak(refusal)
                 continue
             is_active_session = True
