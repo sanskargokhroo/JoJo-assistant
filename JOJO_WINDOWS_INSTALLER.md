@@ -31,9 +31,13 @@ backend and its child processes; it does not terminate unrelated Python programs
 
 The initial dependencies/model download is not an offline installation. This is an
 alpha, unsigned installer, not a Microsoft Store or signed production release.
-Bundled-runtime extraction, venv/pip creation and source tests have been checked;
+Bundled-runtime extraction, fresh venv creation, full dependency/model installation,
+model checksum, pip dependency consistency and isolated no-voice/no-cloud backend
+startup/API/shutdown passed on October 15 using the published installer;
 installation on an independent clean Windows PC is still needed.
 
 Build: python jojo_build_windows.py using an installed CPython 3.14 Windows x64
 runtime and .NET Framework C# compiler. Output: jojo_release/windows/JoJo-Setup.exe.
-The APK remains Android 11+; this installer does not add Android 8.1 support.
+The existing APK remains Android 11+. Updated Android source targets 8.1+, but
+a new APK and physical-phone tests are deferred. The Windows installer does not
+install the phone companion.

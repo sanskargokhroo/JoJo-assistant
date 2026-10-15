@@ -20,6 +20,8 @@ def run(*args):
 gradle = (ROOT/'app/build.gradle').read_text(encoding='utf-8')
 version_code = re.search(r'versionCode\s+(\d+)', gradle).group(1)
 version_name = re.search(r"versionName\s+'([^']+)'", gradle).group(1)
+min_sdk = re.search(r'minSdk\s+(\d+)', gradle).group(1)
+target_sdk = re.search(r'targetSdk\s+(\d+)', gradle).group(1)
 
 # Fresh intermediates prevent deleted Java classes leaking into the new APK.
 # Preserve the signing key and replace the old APK only after verification.
@@ -31,11 +33,11 @@ with tempfile.TemporaryDirectory(prefix='jojo-build-', dir=OUT) as temporary:
     manifest = (ROOT/'app/src/main/AndroidManifest.xml').read_text(encoding='utf-8').replace('<manifest ', '<manifest package="app.jojo.nativevoice" ', 1)
     (work/'AndroidManifest.xml').write_text(manifest, encoding='utf-8')
     run(TOOLS/'aapt2.exe', 'link', '-o', work/'base.apk', '--manifest', work/'AndroidManifest.xml',
-        '-I', ANDROID, '--min-sdk-version', '30', '--target-sdk-version', '35', '--version-code', version_code, '--version-name', version_name, work/'resources.zip')
+        '-I', ANDROID, '--min-sdk-version', min_sdk, '--target-sdk-version', target_sdk, '--version-code', version_code, '--version-name', version_name, work/'resources.zip')
     sources = sorted((ROOT/'app/src/main/java').rglob('*.java'))
     run(JAVA/'javac.exe','-encoding','UTF-8','-source','17','-target','17','-classpath',ANDROID,'-d',work/'classes',*sources)
     run(JAVA/'jar.exe','cf',work/'classes.jar','-C',work/'classes','.')
-    run(JAVA/'java.exe','-cp',TOOLS/'lib/d8.jar','com.android.tools.r8.D8','--lib',ANDROID,'--min-api','30','--output',work/'dex',work/'classes.jar')
+    run(JAVA/'java.exe','-cp',TOOLS/'lib/d8.jar','com.android.tools.r8.D8','--lib',ANDROID,'--min-api',min_sdk,'--output',work/'dex',work/'classes.jar')
     with zipfile.ZipFile(work/'base.apk','a') as apk:
         for dex in (work/'dex').glob('*.dex'): apk.write(dex, dex.name)
     run(TOOLS/'zipalign.exe','-f','4',work/'base.apk',work/'aligned.apk')

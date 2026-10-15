@@ -75,6 +75,11 @@ public class ScreenService extends AccessibilityService {
         }
         return value;
     }
+    private boolean heading(AccessibilityNodeInfo node){
+        if(android.os.Build.VERSION.SDK_INT>=28)return node.isHeading();
+        AccessibilityNodeInfo.CollectionItemInfo item=node.getCollectionItemInfo();
+        return item!=null&&item.isHeading();
+    }
     String label(AccessibilityNodeInfo node){return String.valueOf(node.getText()==null?"":node.getText())+" "+String.valueOf(node.getContentDescription()==null?"":node.getContentDescription());}
     boolean authScreen(AccessibilityNodeInfo node,int depth){
         if(node==null||depth>25)return false;
@@ -87,7 +92,7 @@ public class ScreenService extends AccessibilityService {
         if(node.isVisibleToUser()){
             String s=label(node).toLowerCase(Locale.ROOT).trim();
             if(node.isPassword() || s.matches(".*(card number|cvv|expiry date|upi pin|enter otp|one.time password|unlock with fingerprint|use fingerprint|authenticate to unlock|whatsapp locked|कार्ड नंबर|ओटीपी|फिंगरप्रिंट).*"))return true;
-            if(s.matches("(secure )?(checkout|payment|payment method|payment options|select payment method|भुगतान|पेमेंट)")||(node.isHeading()&&Policy.payment(s)))return true;
+            if(s.matches("(secure )?(checkout|payment|payment method|payment options|select payment method|भुगतान|पेमेंट)")||(heading(node)&&Policy.payment(s)))return true;
         }
         for(int i=0;i<node.getChildCount();i++)if(sensitiveScreen(node.getChild(i),depth+1))return true;
         return false;
@@ -144,6 +149,7 @@ public class ScreenService extends AccessibilityService {
             if(type.equals("unlock_saved"))return savedUnlock.execute(action);
             if(type.equals("lock_device")){
                 clearInstall();lastReplyAction=null;show("sleeping");
+                if(android.os.Build.VERSION.SDK_INT<28)return "handoff: Android 8.1 requires the power button to lock this phone";
                 return performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)?"lock requested; verify device state":"failed: system rejected lock";
             }
             android.app.KeyguardManager keyguard=getSystemService(android.app.KeyguardManager.class);
@@ -235,7 +241,7 @@ public class ScreenService extends AccessibilityService {
         for(AccessibilityNodeInfo n:nodes){
             if(!n.refresh()||!n.isVisibleToUser())continue;
             String id=n.getViewIdResourceName()==null?"":n.getViewIdResourceName();
-            if((n.isHeading()||id.matches(".*(conversation_contact_name|conversation_name|conversation_title|toolbar_title)$"))&&label(n).trim().equalsIgnoreCase(action.optString("reply_recipient")))title=true;
+            if((heading(n)||id.matches(".*(conversation_contact_name|conversation_name|conversation_title|toolbar_title)$"))&&label(n).trim().equalsIgnoreCase(action.optString("reply_recipient")))title=true;
             if(n.isEditable()&&!n.isPassword()&&String.valueOf(n.getText()).equals(action.optString("reply_body")))body=true;
         }
         return title&&body;

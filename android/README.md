@@ -1,6 +1,6 @@
 # JoJo native Android companion
 
-Native Java/Canvas app for Android 11+. No browser/WebView. The APK currently uses
+Native Java/Canvas source targets Android 8.1+ (API 27). No browser/WebView. The companion uses
 the laptop's AI service over a USB connection; standalone phone reasoning and
 wireless deployment are not implemented.
 
@@ -8,6 +8,18 @@ Included feature: optional phone-local encrypted numeric PIN vault and
 saved-PIN entry on supported normal authentication screens. See
 `../JOJO_PIN_AND_SYNC.md` for opt-in setup, security tradeoffs, supported targets,
 Firestore synchronization and remaining device tests. The local test APK built on 10 October 2026 includes this change; physical-device validation is pending.
+
+## Source versus available APK
+
+The October 15 source adds Android 8.1 compatibility guards, border-only overlay
+by default and speech emoji filtering. Java compilation was checked; no new APK
+was generated. The existing October 10 APK still requires Android 11 and does
+not contain these changes. Do not use it to test Android 8.1. A fresh APK and
+physical-phone tests are deferred until requested.
+
+On Android 8.1, locking requires the physical power button; accessibility lock
+requires Android 9+. On-device speech for local essentials requires Android 12+
+and an available recognizer; typed local commands remain available on older OSes.
 
 ## Install
 
@@ -22,7 +34,7 @@ Firestore synchronization and remaining device tests. The local test APK built o
    to JoJo, tap **Start listening**, grant microphone permission, then tap Start
    again. Allow notifications to keep the Stop control easy to find.
 6. Leave the setup screen and say **JoJo**. A verified wake starts the animated
-   edge lights and center orb. Say a complete command, e.g. “JoJo calculator kholo”.
+   edge fog. The center animation is optional in the phone dashboard. Say a complete command, e.g. “JoJo calculator kholo”.
 
 `adb reverse tcp:8000 tcp:8000` must be repeated after disconnect/reboot. No public
 tunnel is required. The default API stays on laptop loopback. The companion only

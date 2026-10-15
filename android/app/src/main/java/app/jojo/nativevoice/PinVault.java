@@ -29,8 +29,16 @@ final class PinVault {
     private String identity(String scope) throws Exception {
         String pkg=scope.equals("device")?"com.android.systemui":scope;
         if(!scope.equals("device")&&Policy.blocked(scope))throw new SecurityException("Restricted app");
-        android.content.pm.PackageInfo info=context.getPackageManager().getPackageInfo(pkg,android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES);
-        byte[] cert=info.signingInfo.getApkContentsSigners()[0].toByteArray();
+        android.content.pm.Signature[] signatures;
+        if(android.os.Build.VERSION.SDK_INT>=28){
+            android.content.pm.PackageInfo info=context.getPackageManager().getPackageInfo(pkg,android.content.pm.PackageManager.GET_SIGNING_CERTIFICATES);
+            signatures=info.signingInfo==null?null:info.signingInfo.getApkContentsSigners();
+        }else{
+            android.content.pm.PackageInfo info=context.getPackageManager().getPackageInfo(pkg,android.content.pm.PackageManager.GET_SIGNATURES);
+            signatures=info.signatures;
+        }
+        if(signatures==null||signatures.length!=1)throw new SecurityException("Unsupported app signing identity");
+        byte[] cert=signatures[0].toByteArray();
         return scope+":"+Base64.encodeToString(MessageDigest.getInstance("SHA-256").digest(cert),Base64.NO_WRAP);
     }
     boolean configured(String scope){return context.getSharedPreferences("pin_vault",0).contains(scope);}

@@ -55,6 +55,7 @@ public class JojoOfflineActivity extends Activity implements RecognitionListener
             if(text.equals("time")||text.equals("date")){status.setText(java.text.DateFormat.getDateTimeInstance().format(new Date()));return;}
             if(text.equals("battery")){status.setText("Battery: "+getSystemService(BatteryManager.class).getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)+"%");return;}
             if(text.equals("lock phone")){
+                if(Build.VERSION.SDK_INT<28){status.setText("Android 8.1: use the power button to lock this phone.");return;}
                 boolean ok=Build.VERSION.SDK_INT>=28&&ScreenService.instance!=null&&ScreenService.instance.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN);
                 status.setText(ok?"Lock requested. Check the lock screen.":"Enable JoJo accessibility or use the power button.");return;
             }

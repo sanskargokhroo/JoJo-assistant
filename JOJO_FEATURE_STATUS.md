@@ -7,14 +7,14 @@ Android notification summaries and local essentials are detailed in
 
 | Request | Implemented | Remaining real-device check |
 | --- | --- | --- |
-| Native laptop edge fog and center orb | Windows alpha-composited animated fog; click-through; listening/thinking/working/speaking; primary display | Live wake/session timing with owner's mic |
-| Native Android overlay and control | Java/Canvas fog and orb, accessibility text reading, observed-node click/type/scroll/back, installed-app launch; APK built and signed | User chose to install/test the APK later; USB laptop connection currently required |
+| Native laptop edge fog and center orb | Windows alpha-composited animated fog; optional center, off by default; click-through; listening/thinking/working/speaking; primary display | Live wake/session timing with owner's mic |
+| Native Android overlay and control | Java/Canvas fog, optional center off by default, accessibility text reading, observed-node click/type/scroll/back, installed-app launch; API 27 source guards | New source is not in the existing Android 11+ APK; fresh APK and phone tests deferred; USB laptop connection currently required |
 | Wake only on JoJo | Direct-command auto-wake removed; owner verification required; idle/pause hides overlay; mobile sleep revokes session | Hindi/Hinglish wake recognition in user's environment |
 | Shopping / restricted apps | Amazon and Flipkart browsing/search allowed; Paytm/Binance/Trust Wallet blocked; Android payment/credential detection and target checks hand control to user; desktop title/action and local UI Automation checks | Text/package heuristics can miss custom UI; this is not an OS sandbox |
 | Calls, messages, gallery, settings | Native intents open system apps; agent operates observed controls, verifies results and asks about ambiguous contacts/photos; no blind image selection | App-specific accessibility behavior and actual calls/messages are not phone-tested |
 | Missing apps | Official Play Store title lookup, owner-verified yes scoped to app/session/device, exact details page and one free Install click, observed installation progress | Account prompts/paid or incompatible apps require manual action; unknown package needs Play Store link |
 | Device identity | Android installation ID/session binding, device-scoped recall and explicit destination-approved conversation handoffs | File/attachment transfer and unattended cross-device delegation are not implemented |
-| Unread messages / recent calls / reply conversation | Observed sender/text reports, source-app checks, read-only actions, reply offer → recipient → dictated body, same-session owner verification, No → Home, native recipient/body check and single send attempt | Source updated only; no new APK requested. Physical WhatsApp/SMS/dialer tests pending; no background notification announcements or complete inbox guarantee |
+| Unread messages / recent calls / reply conversation | Observed sender/text reports, source-app checks, read-only actions, reply offer → recipient → dictated body, same-session owner verification, No → Home, native recipient/body check and single send attempt | October 10 APK includes inbox source, but physical WhatsApp/SMS/dialer tests pending; no background notification announcements or complete inbox guarantee |
 | Owner voice | Local trained WeSpeaker model, 256-D embeddings, 3-part enrollment consistency, checksum, atomic profile, fail-closed verification; refusal phrase implemented | Owner must enroll for 9 seconds; false accepts/rejects and phone/laptop mic differences require real recordings; no replay/liveness detection |
 | Conversation and skill memory | SQLite journal, saved workflow instructions, old-history retrieval, native history restore, interrupted-task marking, mobile task records | No automatic replay of unfinished system actions; generated executable skills remain disabled under app restrictions |
 
@@ -35,3 +35,22 @@ profile is preserved on disk but no longer grants voice access.
 
 Android build: `python android/build_local.py`; APK:
 `android/app/build/local/JoJo-debug.apk`. Instructions: `android/README.md`.
+
+## October 15 source validation
+
+Desktop manual controls are implemented: Ctrl+Shift+J cancels tasks and speech
+and returns to wake mode; Ctrl+Shift+Q deactivates JoJo and disables login startup.
+Silence does not cancel laptop work. Current-screen clicks, direct shopping
+search and speech text cleanup have regression coverage. Real voice timing and
+third-party app reliability still require interactive trials.
+
+Android source now targets API 27 with guarded signing, heading and lock APIs.
+Mobile center UI is optional and off by default; speech removes emoji symbols
+while preserving Hindi text and numbers. Java compilation does not establish
+runtime compatibility on a physical Android 8.1 phone. No APK was rebuilt.
+
+Validation: 198 regression tests passed, native Java compiled, and source privacy
+scan found no issues. The published Windows installer also passed isolated fresh
+venv/dependency/model installation, model checksum, pip check and a no-voice,
+no-cloud backend startup/API/shutdown smoke test. This used the current Windows
+machine, not an independent clean PC. Existing APK hash remained unchanged.

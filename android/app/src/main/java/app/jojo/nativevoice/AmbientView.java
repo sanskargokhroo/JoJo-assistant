@@ -51,6 +51,9 @@ final class AmbientView extends View {
         t*=speed;
         paint.setStyle(Paint.Style.FILL);
         drawFog(c,t);
+        if(!getContext().getSharedPreferences("jojo",0).getBoolean("overlay_center",false)){
+            postInvalidateDelayed(33);return;
+        }
         paint.setShader(null);paint.setStyle(Paint.Style.FILL);paint.setColor(0xf20d1529);c.drawCircle(x,y,r*1.35f,paint);
         paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(2*d);paint.setShader(new SweepGradient(x,y,colors,null));
         for(int j=0;j<7;j++) { Path p=new Path();for(int n=0;n<=100;n++){double a=n*Math.PI*2/100;float radius=r*(.8f+.12f*(float)Math.sin(3*a+t*2+j*.35)+.1f*(float)Math.cos(a*2-t+j*.4));float px=x+(float)Math.cos(a)*radius,py=y+(float)Math.sin(a)*radius;if(n==0)p.moveTo(px,py);else p.lineTo(px,py);}p.close();c.drawPath(p,paint);}

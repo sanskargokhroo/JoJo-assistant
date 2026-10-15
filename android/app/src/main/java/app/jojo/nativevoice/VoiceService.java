@@ -35,7 +35,7 @@ public class VoiceService extends Service {
     private final Handler main=new Handler(Looper.getMainLooper());
     private TextToSpeech tts;
     private volatile boolean ttsReady=false;
-    private String session="";
+    private volatile String session="";
     private long lastActive=0;
     private Thread worker;
     private PowerManager.WakeLock listeningLock;
@@ -77,9 +77,10 @@ public class VoiceService extends Service {
     private JSONObject screen() throws Exception {return onMain(()->{
         if(ScreenService.instance==null)throw new IllegalStateException("Enable screen control");return ScreenService.instance.snapshot();});}
     private void say(String text) throws Exception {
-        if(text.isEmpty())return;show("speaking");
+        final String spoken=JojoSpeechText.clean(text);
+        if(!running||spoken.isEmpty())return;show("speaking");
         if(!ttsReady){main.post(()->android.widget.Toast.makeText(this,text,android.widget.Toast.LENGTH_LONG).show());return;}
-        onMain(()->tts.speak(text,TextToSpeech.QUEUE_FLUSH,null,"jojo"));
+        onMain(()->running?tts.speak(spoken,TextToSpeech.QUEUE_FLUSH,null,"jojo"):TextToSpeech.ERROR);
         Thread.sleep(300);long deadline=SystemClock.elapsedRealtime()+30000;
         while(running&&tts.isSpeaking()&&SystemClock.elapsedRealtime()<deadline)Thread.sleep(100);
         Thread.sleep(350);

@@ -36,6 +36,10 @@ public class MainActivity extends Activity {
         button(panel,"Background battery settings",()->startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)));
         button(panel,"Local encrypted PIN vault",()->startActivity(new Intent(this,PinVaultActivity.class)));
         button(panel,"Local essentials • without laptop",()->startActivity(new Intent(this,JojoOfflineActivity.class)));
+        Switch centerToggle=new Switch(this);centerToggle.setText("Show center animation and status (optional)");
+        centerToggle.setTextColor(Color.WHITE);
+        centerToggle.setChecked(getSharedPreferences("jojo",0).getBoolean("overlay_center",false));panel.addView(centerToggle);
+        centerToggle.setOnCheckedChangeListener((button,enabled)->getSharedPreferences("jojo",0).edit().putBoolean("overlay_center",enabled).apply());
         EditText notificationApps=new EditText(this);notificationApps.setHint("Notification package allowlist, comma separated");
         notificationApps.setText(getSharedPreferences("jojo",0).getString("notification_apps","com.whatsapp"));panel.addView(notificationApps);
         Switch notificationToggle=new Switch(this);notificationToggle.setText("Notification summaries (unlocked phone only)");
