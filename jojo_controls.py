@@ -19,29 +19,15 @@ def disable_startup(root=None, startup=None):
 
 def terminate_backend(root=None):
     """Kill only this installation's core tree, resolving Windows short paths."""
-    import json
+    import psutil
     import subprocess
     root=Path(root or Path(__file__).resolve().parent).resolve()
-    script = ("Get-CimInstance Win32_Process -Filter \"name = 'python.exe'\" | "
-              "Select-Object ProcessId,CommandLine | ConvertTo-Json -Compress")
-    result=subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-Command',script],
-        capture_output=True,text=True,timeout=8,check=True,
-        creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
-    records=json.loads(result.stdout or '[]')
-    if isinstance(records,dict):records=[records]
-    shell=ctypes.windll.shell32
-    shell.CommandLineToArgvW.argtypes=[wintypes.LPCWSTR,ctypes.POINTER(ctypes.c_int)]
-    shell.CommandLineToArgvW.restype=ctypes.POINTER(wintypes.LPWSTR)
-    kernel=ctypes.windll.kernel32
-    kernel.LocalFree.argtypes=[ctypes.c_void_p]
-    for record in records or []:
-        command=record.get('CommandLine')
-        if not command:continue
-        count=ctypes.c_int()
-        argv=shell.CommandLineToArgvW(command,ctypes.byref(count))
-        if not argv:continue
-        try:arguments=[argv[i] for i in range(count.value)]
-        finally:kernel.LocalFree(argv)
+    # Direct process metadata avoids a cold PowerShell/CIM startup on every stop.
+    # Missing/inaccessible command lines must never become a broad name-based kill.
+    for process in psutil.process_iter(['name', 'cmdline']):
+        if (process.info.get('name') or '').casefold() != 'python.exe':continue
+        arguments=process.info.get('cmdline') or []
+        if not arguments:continue
         expected=root/'jojo_core.py'
         matches=False
         for argument in arguments[1:]:
@@ -50,8 +36,8 @@ def terminate_backend(root=None):
                 if path.is_absolute() and path.resolve()==expected:
                     matches=True
             except (ValueError,OSError):pass
-        if matches:
-            subprocess.run(['taskkill.exe','/PID',str(int(record['ProcessId'])),'/T','/F'],
+        if matches and process.is_running():
+            subprocess.run(['taskkill.exe','/PID',str(process.pid),'/T','/F'],
                 capture_output=True,timeout=5,check=True,
                 creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
 
