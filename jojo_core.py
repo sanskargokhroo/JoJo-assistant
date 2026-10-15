@@ -1580,9 +1580,15 @@ VOICE_PARAMS = {
     "pitch": "+4Hz"
 }
 
+def speech_cache_key(text):
+    import json
+    identity = json.dumps({'text': text.strip(), 'voice': VOICE_PARAMS}, sort_keys=True)
+    return hashlib.sha256(identity.encode('utf-8')).hexdigest()
+
+
 def get_cached_speech_path(text):
     clean = text.strip()
-    h = hashlib.md5(clean.encode("utf-8")).hexdigest()
+    h = speech_cache_key(clean)
     path = os.path.join(VOICE_CACHE_DIR, f"{h}.mp3")
     if os.path.exists(path) and os.path.getsize(path) > 400:
         return path
@@ -1622,16 +1628,8 @@ async def synthesize_madhur_audio(text, out_path):
             last_err = e
             await asyncio.sleep(0.25 * (attempt + 1))
 
-    # Fallback retry without rate/pitch if parameter was rejected
-    try:
-        comm = edge_tts.Communicate(text, VOICE_PARAMS["voice"])
-        await comm.save(out_path)
-        if os.path.exists(out_path) and os.path.getsize(out_path) > 400:
-            return True
-    except Exception as e:
-        last_err = e
-
-    print(f"⚠️ Voice 2 Synthesis Error: {last_err}")
+    # Keep the selected voice, rate and pitch; never silently change delivery.
+    print(f"Voice synthesis failed: {type(last_err).__name__}")
     return False
 
 def synthesize_sync(text, out_path):
@@ -1848,7 +1846,7 @@ def _speak_now(text, engine=None, epoch=None):
                         continue
 
                 # 2. Synthesize with Voice 2 (safe async wrapper)
-                h = hashlib.md5(chunk.encode("utf-8")).hexdigest()
+                h = speech_cache_key(chunk)
                 target_path = os.path.join(VOICE_CACHE_DIR, f"{h}.mp3")
 
                 try:
@@ -1862,25 +1860,10 @@ def _speak_now(text, engine=None, epoch=None):
                 if success and os.path.exists(target_path) and os.path.getsize(target_path) > 400:
                     played = play_audio_file(target_path)
 
-                # 3. Fallback: pyttsx3 offline TTS if playback did not succeed
+                # Respect the selected voice instead of silently substituting Windows TTS.
                 if not played:
-                    try:
-                        fallback = subprocess.Popen([sys.executable, str(ROOT / "jojo_speech_fallback.py")],
-                            stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-                        fallback.stdin.write(chunk.encode("utf-8"))
-                        fallback.stdin.close()
-                        deadline = time.monotonic() + min(120, max(20, len(chunk) / 8))
-                        while fallback.poll() is None:
-                            if speech_cancel.is_set() or time.monotonic() > deadline:
-                                fallback.terminate()
-                                fallback.wait(timeout=3)
-                                break
-                            time.sleep(.1)
-                        if fallback.returncode:
-                            report_audio_error("Offline speech failed; the full reply is visible in the desktop window.")
-                    except Exception as fb_err:
-                        print(f"⚠️ All TTS failed for chunk: {fb_err}")
+                    report_audio_error("Selected Madhur voice is unavailable. Reply is visible here; no substitute voice was used.")
+                    break
 
         except Exception as e:
             print(f"⚠️ Speak Error: {e}")
@@ -2413,7 +2396,7 @@ async def api_tts(text: str):
     cached = get_cached_speech_path(clean)
     if cached:
         return FileResponse(cached, media_type="audio/mpeg")
-    h = hashlib.md5(clean.encode("utf-8")).hexdigest()
+    h = speech_cache_key(clean)
     out = os.path.join(VOICE_CACHE_DIR, f"{h}.mp3")
     success = await synthesize_madhur_audio(clean, out)
     if success and os.path.exists(out):

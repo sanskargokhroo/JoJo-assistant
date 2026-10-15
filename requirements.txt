@@ -12,7 +12,7 @@ soundfile==0.14.0
 scipy==1.18.1
 Pillow==12.2.0
 beautifulsoup4==4.15.0
-edge-tts==7.2.8
+edge-tts==7.3.1
 pyttsx3==2.99
 pyperclip==1.11.0
 sherpa-onnx==1.13.8
