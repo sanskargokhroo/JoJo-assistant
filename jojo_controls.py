@@ -18,18 +18,42 @@ def disable_startup(root=None, startup=None):
     (root/'.no_autostart').touch()
 
 def terminate_backend(root=None):
-    """Kill only this installation's core process tree; no optional dependency."""
+    """Kill only this installation's core tree, resolving Windows short paths."""
+    import json
     import subprocess
     root=Path(root or Path(__file__).resolve().parent).resolve()
-    # Match a whole command-line argument; avoid other installations and other Python apps.
-    pattern = r'(?i)(?:^|[\s"])' + __import__('re').escape(str(root/'jojo_core.py')) + r'(?=[\s"]|$)'
-    script = "$pattern = '" + pattern.replace("'", "''") + "'; "
-    script += ("Get-CimInstance Win32_Process -Filter \"name = 'python.exe'\" | "
-        "Where-Object { $_.CommandLine -match $pattern } | ForEach-Object { "
-        "& taskkill.exe /PID $_.ProcessId /T /F | Out-Null }")
-    subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-Command',script],
-        capture_output=True,timeout=8,check=True,
+    script = ("Get-CimInstance Win32_Process -Filter \"name = 'python.exe'\" | "
+              "Select-Object ProcessId,CommandLine | ConvertTo-Json -Compress")
+    result=subprocess.run(['powershell.exe','-NoProfile','-NonInteractive','-Command',script],
+        capture_output=True,text=True,timeout=8,check=True,
         creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+    records=json.loads(result.stdout or '[]')
+    if isinstance(records,dict):records=[records]
+    shell=ctypes.windll.shell32
+    shell.CommandLineToArgvW.argtypes=[wintypes.LPCWSTR,ctypes.POINTER(ctypes.c_int)]
+    shell.CommandLineToArgvW.restype=ctypes.POINTER(wintypes.LPWSTR)
+    kernel=ctypes.windll.kernel32
+    kernel.LocalFree.argtypes=[ctypes.c_void_p]
+    for record in records or []:
+        command=record.get('CommandLine')
+        if not command:continue
+        count=ctypes.c_int()
+        argv=shell.CommandLineToArgvW(command,ctypes.byref(count))
+        if not argv:continue
+        try:arguments=[argv[i] for i in range(count.value)]
+        finally:kernel.LocalFree(argv)
+        expected=root/'jojo_core.py'
+        matches=False
+        for argument in arguments[1:]:
+            try:
+                path=Path(argument)
+                if path.is_absolute() and path.resolve()==expected:
+                    matches=True
+            except (ValueError,OSError):pass
+        if matches:
+            subprocess.run(['taskkill.exe','/PID',str(int(record['ProcessId'])),'/T','/F'],
+                capture_output=True,timeout=5,check=True,
+                creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
 
 
 class GlobalHotkeys:

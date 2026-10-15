@@ -1787,8 +1787,10 @@ def update_voice_state(status=None, speaker=None, transcript=None, reply=None, s
 
 last_speaking_time = 0
 
-def _speak_now(text, engine=None):
+def _speak_now(text, engine=None, epoch=None):
     global is_speaking, is_active_session, last_speaking_time
+    if epoch is not None and epoch != _speech_epoch:
+        return
     from jojo_dialogue import speech_text
     checkpoint()
     clean_text = speech_text(text)
@@ -1804,7 +1806,10 @@ def _speak_now(text, engine=None):
     acquired = voice_lock.acquire()
     try:
         checkpoint()
-        speech_cancel.clear()
+        with _speech_start_lock:
+            if epoch is not None and epoch != _speech_epoch:
+                return
+            speech_cancel.clear()
         is_speaking = True
         last_speaking_time = time.time()
         if private:
@@ -2023,13 +2028,14 @@ import queue
 from jojo_runtime import TaskCancelled
 _speech_queue = queue.Queue(maxsize=12)
 _speech_thread = None
+_speech_epoch = 0
 _speech_start_lock = threading.Lock()
 
 def _speech_worker():
     while True:
-        text, engine, context = _speech_queue.get()
+        text, engine, context, epoch = _speech_queue.get()
         try:
-            context.run(_speak_now, text, engine)
+            context.run(_speak_now, text, engine, epoch)
         except TaskCancelled:
             pass
         except Exception as exc:
@@ -2047,12 +2053,16 @@ def speak(text, engine=None):
             _speech_thread.start()
     try:
         from contextvars import copy_context
-        _speech_queue.put_nowait((str(text), engine, copy_context()))
+        with _speech_start_lock:
+            _speech_queue.put_nowait((str(text), engine, copy_context(), _speech_epoch))
     except queue.Full:
         report_audio_error("Speech queue full; the full response is available in the desktop chat.")
 
 def stop_speech():
-    speech_cancel.set()
+    global _speech_epoch
+    with _speech_start_lock:
+        _speech_epoch += 1
+        speech_cancel.set()
     while True:
         try:
             _speech_queue.get_nowait()

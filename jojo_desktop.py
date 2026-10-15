@@ -191,14 +191,16 @@ class JoJoDesktop:
         def shutdown():
             try:
                 request('/api/shutdown', {}, timeout=5)
-                from jojo_controls import terminate_backend
-                self.closed.wait(1)
-                terminate_backend(ROOT)
-                self.events.put(('shutdown', {}))
+                self.closed.wait(.5)
             except Exception:
+                pass
+            try:
                 from jojo_controls import terminate_backend
                 terminate_backend(ROOT)
-                self.events.put(('shutdown', {}))
+            except Exception:
+                self.events.put(('stop_failed', {}))
+                return
+            self.events.put(('shutdown', {}))
         # Do not put emergency stop behind queued commands or enrollment requests.
         threading.Thread(target=shutdown, daemon=True, name='JoJo stop').start()
 

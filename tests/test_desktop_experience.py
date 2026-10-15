@@ -43,3 +43,28 @@ class DesktopExperienceTests(unittest.TestCase):
         import jojo_core as core
         with patch.object(core,'control_hardware',return_value=(False,'DeniedByUser')),patch.object(core,'open_windows_settings'):
             self.assertIn('off nahi hua',core.execute_pc_tasks('bluetooth off karo'))
+
+    def test_stale_speech_generation_cannot_restart_audio(self):
+        import jojo_core as core
+        with patch.object(core,'_speech_epoch',2),patch.object(core,'update_voice_state') as state:
+            core._speak_now('old acknowledgement',epoch=1)
+            state.assert_not_called()
+
+    @unittest.skipUnless(__import__('os').name=='nt','Windows process matching')
+    def test_emergency_exit_only_stops_matching_installation(self):
+        import subprocess,sys
+        from jojo_controls import terminate_backend
+        with tempfile.TemporaryDirectory(prefix='jojo-stop-fixture-') as directory:
+            root=Path(directory)
+            (root/'jojo_core.py').write_text('import time; time.sleep(30)')
+            (root/'other.py').write_text('import time; time.sleep(30)')
+            core=subprocess.Popen([sys.executable,str(root/'jojo_core.py')])
+            other=subprocess.Popen([sys.executable,str(root/'other.py')])
+            try:
+                terminate_backend(root)
+                core.wait(timeout=5)
+                self.assertIsNone(other.poll())
+            finally:
+                for process in (core,other):
+                    if process.poll() is None:process.terminate()
+                    process.wait(timeout=5)
