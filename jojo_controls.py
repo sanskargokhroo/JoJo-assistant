@@ -72,7 +72,7 @@ class GlobalHotkeys:
         self.thread_id=thread_id
         registered=[]
         try:
-            for identifier,key in ((1,0x4A),(2,0x51),(3,0x20)):
+            for identifier,key in ((1,0x4A),(2,0x51)):
                 if user.RegisterHotKey(None,identifier,0x0002|0x0004|0x4000,key):
                     registered.append(identifier)
                 else:

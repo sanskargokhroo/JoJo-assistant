@@ -67,6 +67,7 @@ class JoJoSetup {
         var t=shortcut.GetType();
         t.InvokeMember("TargetPath",BindingFlags.SetProperty,null,shortcut,new object[]{Path.Combine(Root,"JoJo.exe")});
         t.InvokeMember("WorkingDirectory",BindingFlags.SetProperty,null,shortcut,new object[]{Root});
+        t.InvokeMember("Hotkey",BindingFlags.SetProperty,null,shortcut,new object[]{"CTRL+ALT+J"});
         t.InvokeMember("Save",BindingFlags.InvokeMethod,null,shortcut,new object[]{});
     }
     static void Launch(bool setup,bool cli) {

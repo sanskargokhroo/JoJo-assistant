@@ -54,7 +54,10 @@ try {
         Assert-PlainTree $jojoShortcut
         $jojoShell = New-Object -ComObject WScript.Shell
         $jojoLink = $jojoShell.CreateShortcut($jojoShortcut)
-        if ($jojoLink.TargetPath -eq (Join-Path $targetRoot 'JoJo.exe')) {
+        $jojoLaunchScript = Join-Path $targetRoot 'jojo_start.py'
+        $jojoLaunchArgs = @("$jojoLaunchScript --no-autostart", ('"' + $jojoLaunchScript + '" --no-autostart'))
+        if (($jojoLink.TargetPath -eq (Join-Path $targetRoot 'JoJo.exe')) -or
+            ((Split-Path -Leaf $jojoLink.TargetPath) -eq 'pythonw.exe' -and $jojoLink.Arguments -in $jojoLaunchArgs)) {
             Remove-Item -LiteralPath $jojoShortcut -Force
         }
     }

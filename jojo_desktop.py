@@ -130,7 +130,7 @@ class JoJoDesktop:
         self.speak_results = tk.BooleanVar(value=True)
         tk.Checkbutton(footer, text='Speak replies', variable=self.speak_results, bg=BG, fg=MUTED,
             selectcolor=PANEL, activebackground=BG, font=('Segoe UI', 9)).pack(side='left')
-        tk.Label(footer, text='Ctrl+Shift+Space: activate • Ctrl+Shift+J: stop • Ctrl+Shift+Q: deactivate', bg=BG, fg=MUTED,
+        tk.Label(footer, text='Ctrl+Alt+J: launch • Ctrl+Shift+J: stop • Ctrl+Shift+Q: deactivate', bg=BG, fg=MUTED,
             font=('Segoe UI', 8)).pack(side='right')
 
     def append(self, who, message):
@@ -171,13 +171,6 @@ class JoJoDesktop:
 
     def toggle_mic(self):
         self.requests.put(('config', '/api/config', {'microphone_paused': not self.mic_paused}))
-
-    def activate(self):
-        if self.stopping:return
-        def arm():
-            try:self.events.put(('cancel',request('/api/keyboard_wake',{},timeout=5)))
-            except Exception:self.events.put(('error','Could not activate JoJo. Check the backend connection.'))
-        threading.Thread(target=arm,name='JoJo keyboard wake',daemon=True).start()
 
     def deactivate(self):
         from jojo_controls import disable_startup
@@ -277,7 +270,7 @@ class JoJoDesktop:
             selectcolor=PANEL, command=lambda: self.root.attributes('-topmost', topmost.get())).pack(pady=4)
         center=tk.BooleanVar(value=self.ambient.show_center)
         tk.Checkbutton(panel,text='Show center orb and status (off = borders only)',variable=center,bg=BG,fg=TEXT,selectcolor=PANEL).pack(pady=4)
-        tk.Label(panel,text='No silence timer. Work continues until completed or stopped.\nCtrl+Shift+Space: activate, then speak (voice verified)\nCtrl+Shift+J: stop work/speech, wait for JoJo\nCtrl+Shift+Q: deactivate and disable login startup',bg=BG,fg=MUTED,justify='left').pack(pady=6)
+        tk.Label(panel,text='No silence timer. Work continues until completed or stopped.\nCtrl+Alt+J: start JoJo even after deactivation\nCtrl+Shift+J: stop work/speech, wait for JoJo\nCtrl+Shift+Q: deactivate and disable login startup',bg=BG,fg=MUTED,justify='left').pack(pady=6)
         def save():
             from jojo_config import save_preferences
             save_preferences({'overlay_center':center.get(),'session_timeout':0})
@@ -494,7 +487,6 @@ class JoJoDesktop:
             elif kind == 'hotkey':
                 if data == 1:self.stop()
                 elif data == 2:self.deactivate()
-                elif data == 3:self.activate()
             elif kind == 'cancel':
                 self.detail.set(data.get('progress', data.get('reply', 'Stop requested.')))
             elif kind == 'enroll':

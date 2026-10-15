@@ -1753,8 +1753,6 @@ def auto_trigger_desktop_hud():
         print(f"⚠️ Could not auto-launch desktop HUD: {e}")
 
 is_active_session = False
-keyboard_wake_deadline = 0.0
-keyboard_wake_lock = threading.Lock()
 last_interaction_time = 0
 SESSION_TIMEOUT = 0  # Manual sleep only: never cancel work because the owner is quiet.
 
@@ -2871,26 +2869,6 @@ def api_wake_session(speaker: str = "boss"):
     # A caller-supplied speaker label is not authentication.
     return {"status": "denied", "reply": "Use /api/voice_command with owner audio and the JoJo wake word."}
 
-@app.post('/api/keyboard_wake')
-def api_keyboard_wake():
-    """Arm one spoken command, never grant owner authentication from a keypress."""
-    global keyboard_wake_deadline
-    microphone_paused.clear()
-    if is_active_session:
-        return {'status':'active','reply':'Already active. Speak your next command.'}
-    with keyboard_wake_lock:
-        keyboard_wake_deadline = time.monotonic() + 15
-    if vad_listener is not None:vad_listener.flush()
-    update_voice_state(status='authenticating',active=False,speaker='none',reply='Speak your command; owner voice verification is required.')
-    return {'status':'armed','reply':'Speak within 15 seconds. No need to say JoJo; owner voice will be verified.'}
-
-def consume_keyboard_wake():
-    global keyboard_wake_deadline
-    with keyboard_wake_lock:
-        armed = time.monotonic() < keyboard_wake_deadline
-        keyboard_wake_deadline = 0.0
-    return armed
-
 @app.get("/reminder")
 @app.post("/reminder")
 def create_reminder_api(key: str, message: str, delay_seconds: int = 5):
@@ -3172,8 +3150,7 @@ def expire_idle_session(now=None):
 
 
 def pause_session():
-    global is_active_session, keyboard_wake_deadline
-    with keyboard_wake_lock:keyboard_wake_deadline = 0.0
+    global is_active_session
     is_active_session = False
     task_manager.cancel_pending('laptop')
     stop_speech()
@@ -3181,14 +3158,9 @@ def pause_session():
     if vad_listener is not None: vad_listener.flush()
 
 def idle_session_watchdog():
-    global keyboard_wake_deadline
     signal = DATA_DIR / 'jojo_stop.signal'
     last = signal.read_text() if signal.exists() else ''
     while not shutdown_requested.wait(.1):
-        with keyboard_wake_lock:
-            if keyboard_wake_deadline and time.monotonic() >= keyboard_wake_deadline:
-                keyboard_wake_deadline = 0.0
-                if not is_active_session:update_voice_state(status='sleeping',active=False,reply='')
         try:
             value = signal.read_text() if signal.exists() else ''
             if value != last:
@@ -3236,7 +3208,6 @@ def run_voice_loop():
             update_voice_state(transcript=text)
             clean = strip_wake_word(text)
             wake_detected = clean != text.strip()
-            wake_detected = consume_keyboard_wake() or wake_detected
             if was_speaking and not wake_detected:
                 continue
             if is_stop_command(clean):

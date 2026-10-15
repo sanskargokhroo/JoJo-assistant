@@ -15,10 +15,9 @@ checks the embedded payload. Installation does not enable login startup by itsel
 the setup launch step can enable it unless previously disabled.
 
 Controls:
-- **Ctrl+Shift+Space**: while the dashboard is running, resume the mic and arm one
-  spoken command for 15 seconds without saying JoJo. Owner voice verification
-  still applies. The window expires without cancelling work. After full exit or
-  deactivation, reopen JoJo first; no shortcut listener remains running.
+- **Ctrl+Alt+J**: Windows Start menu launch shortcut. Starts JoJo even after
+  deactivation, without re-enabling login startup. Say JoJo after it starts;
+  this shortcut does not bypass the wake word or owner verification.
 - **Ctrl+Shift+J**: stop current and queued laptop tasks and speech, hide overlay,
   return to JoJo wake-word mode. Already executed actions are not undone.
 - **Ctrl+Shift+Q**: deactivate, stop the app, remove JoJo's login startup entry.
@@ -28,7 +27,8 @@ Controls:
 - **Stop JoJo** exits for this session. **Deactivate** also disables login startup.
 - **Uninstall JoJo** is a separate destructive workflow with confirmation.
 
-Global shortcuts require the dashboard process to be running. If Windows reports a
+Stop/deactivate shortcuts require the dashboard process to be running. The launch
+shortcut is handled by Windows Explorer while signed in. If Windows reports a
 shortcut conflict, use the dashboard buttons. Shortcuts do not operate on the Windows
 secure desktop. The emergency exit scopes process termination to this installation's
 backend and its child processes; it does not terminate unrelated Python programs.
