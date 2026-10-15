@@ -72,11 +72,11 @@ class GlobalHotkeys:
         self.thread_id=thread_id
         registered=[]
         try:
-            for identifier,key in ((1,0x4A),(2,0x51)):
+            for identifier,key in ((1,0x4A),(2,0x51),(3,0x20)):
                 if user.RegisterHotKey(None,identifier,0x0002|0x0004|0x4000,key):
                     registered.append(identifier)
                 else:
-                    self.callback('error','Shortcut unavailable: Ctrl+Shift+'+chr(key)+'. Another app may own it.')
+                    self.callback('error','Shortcut unavailable: Ctrl+Shift+'+('Space' if key==0x20 else chr(key))+'. Another app may own it.')
             while user.GetMessageW(ctypes.byref(msg),None,0,0)>0:
                 if msg.message==0x0312:
                     self.callback('hotkey',int(msg.wParam))

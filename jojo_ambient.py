@@ -13,6 +13,8 @@ def overlay_state(state):
     status = state.get('status', 'sleeping')
     if status == 'access_denied':
         return 'access_denied'
+    if status == 'authenticating':
+        return 'authenticating'
     if not state.get('active_session'):
         return None
     if status == 'speaking':

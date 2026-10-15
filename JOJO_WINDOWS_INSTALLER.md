@@ -15,6 +15,10 @@ checks the embedded payload. Installation does not enable login startup by itsel
 the setup launch step can enable it unless previously disabled.
 
 Controls:
+- **Ctrl+Shift+Space**: while the dashboard is running, resume the mic and arm one
+  spoken command for 15 seconds without saying JoJo. Owner voice verification
+  still applies. The window expires without cancelling work. After full exit or
+  deactivation, reopen JoJo first; no shortcut listener remains running.
 - **Ctrl+Shift+J**: stop current and queued laptop tasks and speech, hide overlay,
   return to JoJo wake-word mode. Already executed actions are not undone.
 - **Ctrl+Shift+Q**: deactivate, stop the app, remove JoJo's login startup entry.
