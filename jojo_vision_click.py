@@ -1,3 +1,4 @@
+from jojo_runtime import checkpoint, TaskCancelled, wait_for_model
 from jojo_config import api_keys, make_client, MODEL, DATA_DIR
 """
 👁️ JoJo Vision Click & GUI Automation Engine
@@ -158,16 +159,18 @@ Return ONLY valid JSON:
                     temperature=0.1
                 )
             )
-            resp = chat.send_message([
+            resp = wait_for_model(lambda: chat.send_message([
                 types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg"),
                 prompt
-            ])
+            ]))
             text = resp.text.strip()
             # Clean possible markdown block
             text = re.sub(r"^```json\s*", "", text, flags=re.IGNORECASE)
             text = re.sub(r"\s*```$", "", text)
             data = json.loads(text)
             return data
+        except TaskCancelled:
+            raise
         except Exception as e:
             print(f"⚠️ Gemini Vision locator error: {e}")
             rotate_gemini_key()
@@ -206,7 +209,8 @@ def ai_click_element(target_name, action="click"):
         from jojo_desktop_guard import guard_point
         guard_desktop(elem_name)
         guard_point(x,y)
-        pyautogui.moveTo(x, y, duration=0.35, tween=pyautogui.easeInOutQuad)
+        checkpoint()
+        pyautogui.moveTo(x, y, duration=0.15, tween=pyautogui.easeInOutQuad)
         time.sleep(0.08)
 
         if action == "double" or action == "double_click":

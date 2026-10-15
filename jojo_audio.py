@@ -58,6 +58,7 @@ class MicrophoneListener:
         self.q = queue.Queue(maxsize=64)
         self.stream = None
         self._running = False
+        self.last_speech_time = 0
         self._next_start = 0
         self.lock = threading.RLock()
 
@@ -152,6 +153,8 @@ class MicrophoneListener:
             if last_block - timestamp > 2.5:
                 continue
             audio = self.segmenter.feed(block)
+            if self.segmenter.active or audio is not None:
+                self.last_speech_time = time.monotonic()
             if audio is not None:
                 break
             if not self.segmenter.active and time.monotonic() >= deadline:

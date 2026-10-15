@@ -156,3 +156,7 @@ reproducible issues help more than inflated claims.
 
 Licensed under [MIT](LICENSE). Third-party code, models and dependencies retain
 their own terms; see [third-party provenance](JOJO_THIRD_PARTY_NOTICES.md).
+
+## Windows installer and shortcuts
+
+See [Windows installation and controls](JOJO_WINDOWS_INSTALLER.md) for the setup EXE, CLI setup, border-only overlay, and manual stop/deactivate shortcuts. Silence no longer cancels running work.

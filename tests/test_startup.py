@@ -39,4 +39,17 @@ class StartupTests(unittest.TestCase):
                          SimpleNamespace(returncode=0,stdout='UsbFfs tcp:8000 tcp:8000\n')]
         jojo_usb.restore('adb');self.assertEqual(run.call_count,3)
 
+    def test_startup_disable_and_marker(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            startup = root / 'Startup'
+            startup.mkdir()
+            vbs = startup / 'jojo_autostart.vbs'
+            vbs.write_text('dummy')
+            marker = root / '.no_autostart'
+            vbs.unlink(missing_ok=True)
+            marker.touch()
+            self.assertFalse(vbs.exists())
+            self.assertTrue(marker.exists())
+
 if __name__=='__main__':unittest.main()

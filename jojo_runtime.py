@@ -41,6 +41,24 @@ def checkpoint():
     if task and time.monotonic() > task.deadline:
         raise TimeoutError('Task time limit reached; unfinished work was not replayed.')
 
+def wait_for_model(call):
+    """Abandon a read-only model response on cancellation; never detach OS actions."""
+    if current_task() is None:
+        return call()
+    result = queue.Queue(maxsize=1)
+    def worker():
+        try: result.put((True, call()))
+        except Exception as exc: result.put((False, exc))
+    checkpoint()
+    threading.Thread(target=worker, name='JoJo model response', daemon=True).start()
+    while True:
+        checkpoint()
+        try: ok, value = result.get(timeout=.1)
+        except queue.Empty: continue
+        checkpoint()
+        if not ok: raise value
+        return value
+
 def report_progress(message, tool=None):
     checkpoint()
     task = _context.get()
@@ -120,7 +138,7 @@ class TaskManager:
         self.worker = None
         self.closed = False
 
-    def submit(self, message, source='laptop', speak=False, request_id=''):
+    def submit(self, message, source='laptop', speak=False, request_id='', replace_pending=False):
         message = message.strip()
         if not message or len(message) > 12000:
             raise ValueError('Command must contain 1 to 12000 characters.')
@@ -141,6 +159,8 @@ class TaskManager:
                     return previous
             if self.closed:
                 raise ValueError('JoJo is shutting down; no new task was started.')
+            if replace_pending:
+                self.cancel_pending(source)
             self.queue.put_nowait(task)
             self.tasks[task.id] = task
             self._remember(task)
@@ -154,6 +174,22 @@ class TaskManager:
                 self.worker = threading.Thread(target=self._run, name='JoJo tasks', daemon=True)
                 self.worker.start()
         return task.snapshot()
+
+    def cancel_pending(self, source=None):
+        with self.lock:
+            for task in self.tasks.values():
+                if source is None or task.source == source:
+                    task.cancel.set()  # Also suppress a completed task's queued speech.
+                    self.cancel_task(task.id)
+            retained = []
+            while True:
+                try: queued = self.queue.get_nowait()
+                except queue.Empty: break
+                self.queue.task_done()
+                if not queued.cancel.is_set(): retained.append(queued)
+            for queued in retained:
+                self.queue.put_nowait(queued)
+            return {'status': 'cancel_requested', 'reply': 'Stopped active and queued tasks.'}
 
     def stop_all(self):
         """Stop active and queued work before shutdown, without replaying anything."""

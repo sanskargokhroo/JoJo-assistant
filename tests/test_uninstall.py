@@ -57,8 +57,8 @@ class UninstallTests(unittest.TestCase):
         from jojo_desktop import JoJoDesktop
         desktop=JoJoDesktop.__new__(JoJoDesktop)
         desktop.stopping=False;desktop.launch_core=True;desktop.detail=Mock();desktop.ambient=Mock()
-        desktop.events=queue.Queue();desktop.requests=Mock()
-        with patch('jojo_desktop.request',return_value={'status':'shutting_down'}) as api,patch('jojo_desktop.threading.Thread') as thread:
+        desktop.events=queue.Queue();desktop.requests=Mock();desktop.closed=Mock()
+        with patch('jojo_controls.terminate_backend') as terminate,patch('jojo_desktop.request',return_value={'status':'shutting_down'}) as api,patch('jojo_desktop.threading.Thread') as thread:
             desktop.stop_assistant();thread.call_args.kwargs['target']()
             desktop.stop_assistant()
         api.assert_called_once_with('/api/shutdown',{},timeout=5)

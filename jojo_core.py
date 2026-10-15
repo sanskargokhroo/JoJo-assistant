@@ -557,7 +557,7 @@ def ask_jojo_brain(prompt_text):
         return skill_resp
 
     # 4. ⚡ Instant Memory Cache
-    cached_reply = search_cached_memory(prompt_text)
+    cached_reply = None  # Dialogue must reflect the current turn, not replay a previous answer.
     if cached_reply:
         print("⚡ [Instant Recall from Memory - No API Call]")
         return cached_reply
@@ -613,6 +613,10 @@ def ask_jojo_brain(prompt_text):
 
     from jojo_journal import context as memory_context
     system_prompt += memory_context(prompt_text)
+    system_prompt += ("\nAvoid stock greetings or repeatedly saying Boss. Answer the actual request. "
+        "Use light humor only when appropriate; no jokes while the user is frustrated. "
+        "Ask one useful next-step question after navigation, never invent actions or products. "
+        "Do not describe emoji names. Keep spoken answers short and varied.")
     attempts = 0
     while attempts < min(2, len(GEMINI_KEYS)):
         attempts += 1
@@ -630,13 +634,16 @@ def ask_jojo_brain(prompt_text):
                     max_output_tokens=400
                 )
             )
-            response = chat.send_message(prompt_text)
+            from jojo_runtime import wait_for_model
+            response = wait_for_model(lambda: chat.send_message(prompt_text))
             reply = (response.text or "").strip()
             if reply:
                 from contextvars import copy_context
                 threading.Thread(target=copy_context().run, args=(save_memory_and_cache, prompt_text, reply), daemon=True).start()
                 return reply
             raise RuntimeError("Model returned an empty answer")
+        except TaskCancelled:
+            raise
         except Exception as err:
             print(f"⚠️ Gemini Key {current_gemini_index + 1} Error: {err}")
             current_gemini_index = (current_gemini_index + 1) % max(1, len(GEMINI_KEYS))
@@ -1277,7 +1284,7 @@ def execute_pc_tasks(text_command, source: str = None):
             if ok:
                 return "ब्लूटूथ ऑन कर दिया बॉस! 📶"
             open_windows_settings("bluetooth")
-            return "बॉस, ब्लूटूथ ऑन करने के लिए सेटिंग्स खोल दी है!"
+            return "⚠️ Bluetooth on nahi hua: " + msg + ". Settings kholi hai; Windows radio permission check kijiye."
 
         # 3. Turn OFF
         if any(f in cmd for f in ["off", "band", "stop", "disable", "deactivate", "ऑफ", "बंद"]):
@@ -1285,7 +1292,7 @@ def execute_pc_tasks(text_command, source: str = None):
             if ok:
                 return "ब्लूटूथ बंद कर दिया बॉस!"
             open_windows_settings("bluetooth")
-            return "बॉस, ब्लूटूथ सेटिंग्स खोल दी है, वहां से बंद कर सकते हैं!"
+            return "⚠️ Bluetooth off nahi hua: " + msg + ". Windows radio access check kijiye; settings kholi hai."
 
         # 4. Toggle
         if any(t in cmd for t in ["toggle", "switch", "टॉगल", "बदलो"]):
@@ -1411,7 +1418,7 @@ def execute_pc_tasks(text_command, source: str = None):
     if any(k in cmd for k in ["apps setting", "installed apps", "app list", "ऐप सेटिंग", "ऐप्स सेटिंग"]):
         ok = open_windows_settings("appsfeatures")
         if ok:
-            return "ऐप्स सेटिंग्स खोल दिया बॉस! 📱"
+            return "Installed apps kholne ka request bheja hai. Kis app ke baare mein check karna hai?"
         return "बॉस, ऐप्स सेटिंग्स खोलने में दिक्कत आई!"
 
     # G. 🖥️ GENERAL WINDOWS SETTINGS — Full Dual-Script Coverage (English + Devanagari)
@@ -1749,7 +1756,7 @@ def auto_trigger_desktop_hud():
 
 is_active_session = False
 last_interaction_time = 0
-SESSION_TIMEOUT = int(read_preferences().get("session_timeout", 120))
+SESSION_TIMEOUT = 0  # Manual sleep only: never cancel work because the owner is quiet.
 
 voice_state_lock = threading.Lock()
 voice_state = {
@@ -1782,8 +1789,9 @@ last_speaking_time = 0
 
 def _speak_now(text, engine=None):
     global is_speaking, is_active_session, last_speaking_time
-    clean_text = text.replace("*", "").replace("#", "").replace("`", "")\
-                     .replace('"', '').replace("'", "").strip()
+    from jojo_dialogue import speech_text
+    checkpoint()
+    clean_text = speech_text(text)
 
     if not clean_text:
         return
@@ -1794,8 +1802,9 @@ def _speak_now(text, engine=None):
     update_voice_state(status="speaking", reply=clean_text)
 
     acquired = voice_lock.acquire()
-    speech_cancel.clear()
     try:
+        checkpoint()
+        speech_cancel.clear()
         is_speaking = True
         last_speaking_time = time.time()
         if private:
@@ -2011,6 +2020,7 @@ def get_local_ip():
         return "127.0.0.1"
 
 import queue
+from jojo_runtime import TaskCancelled
 _speech_queue = queue.Queue(maxsize=12)
 _speech_thread = None
 _speech_start_lock = threading.Lock()
@@ -2020,6 +2030,8 @@ def _speech_worker():
         text, engine, context = _speech_queue.get()
         try:
             context.run(_speak_now, text, engine)
+        except TaskCancelled:
+            pass
         except Exception as exc:
             report_audio_error("Speech playback failed: " + type(exc).__name__)
         finally:
@@ -2027,6 +2039,7 @@ def _speech_worker():
 
 def speak(text, engine=None):
     global _speech_thread
+    checkpoint()
     update_voice_state(reply=str(text))
     with _speech_start_lock:
         if _speech_thread is None or not _speech_thread.is_alive():
@@ -2109,6 +2122,21 @@ def dispatch_command(message, source="laptop"):
     if not is_safe_command(message):
         set_outcome("needs_input")
         return SECURITY_REFUSAL_MSG
+    from jojo_screen_actions import visible_target, click_visible
+    target = visible_target(message) if source == 'laptop' else None
+    if target:
+        ok, result = click_visible(target)
+        if not ok: set_outcome('needs_input')
+        return result
+    from jojo_navigation import shopping_navigation
+    navigation = shopping_navigation(message) if source == 'laptop' else None
+    if navigation:
+        shop, query, url = navigation
+        checkpoint()
+        open_url_in_chrome(url)
+        checkpoint()
+        followup = ' Kya search karna hai?' if not query else ''
+        return f"{shop}: {query or 'homepage'} ek tab mein kholne ka request bheja hai." + followup
     # Compound commands must not stop at the first substring match.
     if is_explanation_request(message):
         reply = ask_jojo_brain(message)
@@ -2125,7 +2153,6 @@ def dispatch_command(message, source="laptop"):
             else:
                 reply = ask_jojo_brain(message)
     checkpoint()
-    last_interaction_time = time.time()
     update_voice_state(reply=reply, status="listening" if is_active_session else "sleeping")
     return reply
 
@@ -2708,7 +2735,7 @@ def api_update_config(req: ConfigReq):
     if req.boss_threshold is not None:
         BOSS_SIMILARITY_THRESHOLD = max(0.50, min(0.95, req.boss_threshold))
     if req.session_timeout is not None:
-        SESSION_TIMEOUT = max(10, min(300, req.session_timeout))
+        SESSION_TIMEOUT = 0  # Automatic silence cancellation is disabled.
     if req.audio_device_id is not None:
         AUDIO_DEVICE_ID = None if req.audio_device_id == -1 else req.audio_device_id
         if vad_listener is not None:
@@ -2819,7 +2846,7 @@ def api_process_voice_command(req: VoiceCommandReq, request: Request = None):
 
     # Boss verified
     is_active_session = True
-    last_interaction_time = time.time()
+    last_interaction_time = time.monotonic()
     auto_trigger_desktop_hud()
     update_voice_state(status="authenticating", speaker="boss", transcript=cmd, active=True)
 
@@ -2827,7 +2854,7 @@ def api_process_voice_command(req: VoiceCommandReq, request: Request = None):
     clean_cmd = cmd
     clean_cmd = strip_wake_word(clean_cmd)
     if not clean_cmd:
-        greeting = "हाँ बॉस, बोलिए!"
+        greeting = __import__("jojo_dialogue").wake_reply()
         update_voice_state(status="boss_verified", speaker="boss", reply=greeting, active=True)
         threading.Thread(target=speak, args=(greeting,), daemon=True).start()
         return {"reply": greeting, "allowed": True}
@@ -2840,7 +2867,8 @@ def api_process_voice_command(req: VoiceCommandReq, request: Request = None):
         threading.Thread(target=speak, args=(refusal,), daemon=True).start()
         return {"reply": refusal, "allowed": False}
 
-    task = task_manager.submit(cmd, dev_source, True)
+    stop_speech()
+    task = task_manager.submit(cmd, dev_source, True,replace_pending=True)
     return {"reply": "Command received; progress is available in the task status.", "allowed": True, "task_id": task["id"], "status": "queued"}
 
 @app.post("/api/wake_session")
@@ -3086,10 +3114,11 @@ def api_security_quick_scan():
 def api_submit_task(req: DesktopTaskReq):
     if is_stop_command(req.message):
         stop_speech()
-        task = task_manager.cancel_task()
+        task = task_manager.cancel_pending()
         return {"status": "cancel_requested", "task": task}
     try:
-        return task_manager.submit(req.message, req.source, req.speak,request_id=req.request_id)
+        stop_speech()
+        return task_manager.submit(req.message, req.source, req.speak,request_id=req.request_id,replace_pending=True)
     except ValueError as exc:
         raise HTTPException(400, str(exc))
     except queue.Full:
@@ -3105,7 +3134,11 @@ def api_task_status(task_id: str):
 @app.post("/api/tasks/{task_id}/cancel")
 def api_cancel_task(task_id: str):
     stop_speech()
-    result = task_manager.cancel_task(None if task_id == "active" else task_id)
+    if task_id == "active":
+        pause_session()
+        result = {"status":"cancel_requested","reply":"Stopped. Say JoJo when needed."}
+    else:
+        result = task_manager.cancel_task(task_id)
     return result or {"status": "idle", "reply": "No active task."}
 
 @app.post("/api/shutdown")
@@ -3117,6 +3150,32 @@ def api_shutdown():
     if vad_listener is not None:
         vad_listener.close()
     return {"status": "shutting_down"}
+
+def expire_idle_session(now=None):
+    """Compatibility hook: silence never cancels work or ends a session."""
+    return False
+
+
+def pause_session():
+    global is_active_session
+    is_active_session = False
+    task_manager.cancel_pending('laptop')
+    stop_speech()
+    update_voice_state(status='sleeping', active=False, speaker='none', reply='')
+    if vad_listener is not None: vad_listener.flush()
+
+def idle_session_watchdog():
+    signal = DATA_DIR / 'jojo_stop.signal'
+    last = signal.read_text() if signal.exists() else ''
+    while not shutdown_requested.wait(.1):
+        try:
+            value = signal.read_text() if signal.exists() else ''
+            if value != last:
+                last = value
+                pause_session()
+        except OSError:
+            pass
+
 
 def start_services():
     from jojo_routines import start as start_routines
@@ -3132,6 +3191,7 @@ def start_services():
         if not api_thread.is_alive() or time.monotonic() > deadline:
             raise RuntimeError(f"JoJo API did not start. Check whether port {port} is already in use.")
         time.sleep(.05)
+    threading.Thread(target=idle_session_watchdog, name='JoJo session timeout', daemon=True).start()
     threading.Thread(target=run_proactive_daemon, name="JoJo reminders", daemon=True).start()
     threading.Thread(target=run_cloud_remote_listener, name="JoJo cloud", daemon=True).start()
     from jojo_security import start_security_monitor
@@ -3150,9 +3210,7 @@ def run_voice_loop():
             was_speaking=is_speaking
             text, mono_audio = listen_command(duration=3.0)
             if not text:
-                if is_active_session and not task_manager.active_id and time.time() - last_interaction_time > SESSION_TIMEOUT:
-                    is_active_session = False
-                    update_voice_state(status="sleeping", active=False)
+                expire_idle_session()
                 continue
             update_voice_state(transcript=text)
             clean = strip_wake_word(text)
@@ -3161,7 +3219,7 @@ def run_voice_loop():
                 continue
             if is_stop_command(clean):
                 # Stop is deliberately available without speaker authentication.
-                task_manager.cancel_task()
+                task_manager.cancel_pending()
                 stop_speech()
                 continue
             if clean.casefold().strip(" .!।") in SLEEP_WORDS:
@@ -3182,12 +3240,13 @@ def run_voice_loop():
                 continue
             is_active_session = True
             if was_speaking:stop_speech()
-            last_interaction_time = time.time()
+            last_interaction_time = time.monotonic()
             update_voice_state(status="listening", speaker="boss", active=True)
             if not clean:
-                speak("हाँ बॉस, बोलिए!")
+                speak(__import__("jojo_dialogue").wake_reply())
                 continue
-            task_manager.submit(clean, "laptop", True)
+            stop_speech()
+            task_manager.submit(clean, "laptop", True,replace_pending=True)
         except queue.Full:
             report_audio_error("Task queue full. Let the current task finish, or say stop.")
         except Exception as exc:

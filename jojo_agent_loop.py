@@ -4,7 +4,7 @@ import json
 import time
 from google.genai import types
 from jojo_config import MODEL, MAX_AGENT_STEPS, MAX_TASK_SECONDS, api_keys
-from jojo_runtime import checkpoint, report_progress, TaskCancelled
+from jojo_runtime import checkpoint, report_progress, TaskCancelled, wait_for_model
 from jojo_policy import guard_tool
 
 @dataclass
@@ -79,8 +79,10 @@ For partial work use incomplete and name what remains. Never invent a successful
         for attempt in range(2):
             checkpoint()
             try:
-                response = client.models.generate_content(model=MODEL, contents=contents, config=config)
+                response = wait_for_model(lambda: client.models.generate_content(model=MODEL, contents=contents, config=config))
                 break
+            except TaskCancelled:
+                raise
             except Exception as exc:
                 code = getattr(exc, 'code', None)
                 if attempt == 0 and (code in (429, 500, 502, 503, 504) or isinstance(exc, (ConnectionError, TimeoutError))):

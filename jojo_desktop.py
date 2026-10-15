@@ -61,6 +61,10 @@ class JoJoDesktop:
         root.protocol('WM_DELETE_WINDOW', self.close)
         self.build()
         self.ambient = AmbientOverlay(root)
+        from jojo_controls import GlobalHotkeys
+        self.hotkeys = GlobalHotkeys(lambda kind, data: self.events.put((kind,data)))
+        if not preview: self.hotkeys.start()
+        root.bind('<Destroy>', lambda event: self.hotkeys.close() if event.widget == root else None, add='+')
         self.append('JoJo', 'Namaste! Boliye “JoJo” ya neeche apna kaam likhiye. Task ki progress yahin dikhegi.')
         root.after(50, self.animate)
         root.after(80, self.drain_events)
@@ -98,6 +102,7 @@ class JoJoDesktop:
         lifecycle = tk.Frame(self.root, bg=BG)
         lifecycle.pack(fill='x', padx=24, pady=(8,0))
         self.button(lifecycle, 'Stop JoJo', self.stop_assistant).pack(side='left')
+        self.button(lifecycle, 'Deactivate', self.deactivate).pack(side='left',padx=6)
         self.button(lifecycle, 'Uninstall JoJo', self.uninstall).pack(side='right')
         setup_controls=tk.Frame(self.root,bg=BG);setup_controls.pack(fill='x',padx=24,pady=(8,0))
         self.button(setup_controls,'Owner setup',self.owner_setup).pack(side='left')
@@ -125,7 +130,7 @@ class JoJoDesktop:
         self.speak_results = tk.BooleanVar(value=True)
         tk.Checkbutton(footer, text='Speak replies', variable=self.speak_results, bg=BG, fg=MUTED,
             selectcolor=PANEL, activebackground=BG, font=('Segoe UI', 9)).pack(side='left')
-        tk.Label(footer, text='Enter to send • Stop prevents the next action', bg=BG, fg=MUTED,
+        tk.Label(footer, text='Ctrl+Shift+J: stop • Ctrl+Shift+Q: deactivate', bg=BG, fg=MUTED,
             font=('Segoe UI', 8)).pack(side='right')
 
     def append(self, who, message):
@@ -151,11 +156,30 @@ class JoJoDesktop:
         self.requests.put(('submit', '/api/tasks', {'message': message, 'source': 'laptop', 'speak': self.speak_results.get(), 'request_id':uuid.uuid4().hex}))
 
     def stop(self):
-        self.requests.put(('cancel', '/api/tasks/active/cancel', {}))
-        self.detail.set('Stopping after the current action. Completed actions are not undone.')
+        from jojo_controls import signal_stop
+        signal_stop()
+        self.ambient.update({'status':'sleeping','active_session':False})
+        # Stop must not wait behind device enumeration or slow task polling.
+        def cancel():
+            try:
+                result = request('/api/tasks/active/cancel', {}, timeout=5)
+                self.events.put(('cancel', result))
+            except Exception as exc:
+                self.events.put(('error', 'Stop could not be confirmed: ' + type(exc).__name__))
+        threading.Thread(target=cancel, name='JoJo stop', daemon=True).start()
+        self.detail.set('Stopping speech and work. Say JoJo to start a new session.')
 
     def toggle_mic(self):
         self.requests.put(('config', '/api/config', {'microphone_paused': not self.mic_paused}))
+
+    def deactivate(self):
+        from jojo_controls import disable_startup
+        try:
+            disable_startup()
+        except OSError as exc:
+            self.append('Startup', 'Could not disable login startup: ' + str(exc))
+            return
+        self.stop_assistant()
 
     def stop_assistant(self):
         if self.stopping:
@@ -167,9 +191,14 @@ class JoJoDesktop:
         def shutdown():
             try:
                 request('/api/shutdown', {}, timeout=5)
+                from jojo_controls import terminate_backend
+                self.closed.wait(1)
+                terminate_backend(ROOT)
                 self.events.put(('shutdown', {}))
             except Exception:
-                self.events.put(('stop_failed', {}))
+                from jojo_controls import terminate_backend
+                terminate_backend(ROOT)
+                self.events.put(('shutdown', {}))
         # Do not put emergency stop behind queued commands or enrollment requests.
         threading.Thread(target=shutdown, daemon=True, name='JoJo stop').start()
 
@@ -212,31 +241,46 @@ class JoJoDesktop:
         win.title('JoJo Settings')
         win.configure(bg=BG)
         win.transient(self.root)
-        win.geometry(f'460x540+{max(0, self.root.winfo_x()+30)}+{max(0, self.root.winfo_y()+50)}')
+        win.geometry(f'490x640+{max(0, self.root.winfo_x()+30)}+{max(0, self.root.winfo_y()+50)}')
+        viewport=tk.Canvas(win,bg=BG,highlightthickness=0)
+        scrollbar=ttk.Scrollbar(win,orient='vertical',command=viewport.yview)
+        scrollbar.pack(side='right',fill='y')
+        viewport.pack(side='left',fill='both',expand=True)
+        viewport.configure(yscrollcommand=scrollbar.set)
+        panel=tk.Frame(viewport,bg=BG)
+        item=viewport.create_window((0,0),window=panel,anchor='nw')
+        panel.bind('<Configure>',lambda event:viewport.configure(scrollregion=viewport.bbox('all')))
+        viewport.bind('<Configure>',lambda event:viewport.itemconfigure(item,width=event.width))
         from jojo_install import gui as account_setup
-        self.button(win,'My model & Firebase setup',lambda:account_setup(self.root)).pack(pady=5)
-        tk.Label(win, text='VOICE & WINDOW', bg=BG, fg=ACCENT, font=('Segoe UI', 13, 'bold')).pack(pady=(20, 16))
-        tk.Label(win, text='Microphone', bg=BG, fg=TEXT).pack()
-        mic = ttk.Combobox(win, state='readonly', values=list(self.microphones), width=48)
+        self.button(panel,'My model & Firebase setup',lambda:account_setup(self.root)).pack(pady=5)
+        tk.Label(panel, text='VOICE & WINDOW', bg=BG, fg=ACCENT, font=('Segoe UI', 13, 'bold')).pack(pady=(20, 16))
+        tk.Label(panel, text='Microphone', bg=BG, fg=TEXT).pack()
+        mic = ttk.Combobox(panel, state='readonly', values=list(self.microphones), width=48)
         mic.set(next((name for name, id in self.microphones.items() if id == self.audio_device_id), 'Windows default'))
         mic.pack(pady=7)
-        language = ttk.Combobox(win, state='readonly', values=['Hindi / Hinglish', 'English (India)'])
+        language = ttk.Combobox(panel, state='readonly', values=['Hindi / Hinglish', 'English (India)'])
         language.current(0 if self.speech_language == 'hi-IN' else 1)
         language.pack(pady=8)
         barge=tk.BooleanVar(value=self.barge_in_enabled)
-        tk.Checkbutton(win,text='Headphone interruption (say JoJo while speaking)',variable=barge,bg=BG,fg=TEXT,selectcolor=PANEL).pack(pady=4)
+        tk.Checkbutton(panel,text='Headphone interruption (say JoJo while speaking)',variable=barge,bg=BG,fg=TEXT,selectcolor=PANEL).pack(pady=4)
         topmost = tk.BooleanVar(value=bool(self.root.attributes('-topmost')))
-        tk.Checkbutton(win, text='Keep window on top', variable=topmost, bg=BG, fg=TEXT,
+        tk.Checkbutton(panel, text='Keep window on top', variable=topmost, bg=BG, fg=TEXT,
             selectcolor=PANEL, command=lambda: self.root.attributes('-topmost', topmost.get())).pack(pady=4)
+        center=tk.BooleanVar(value=self.ambient.show_center)
+        tk.Checkbutton(panel,text='Show center orb and status (off = borders only)',variable=center,bg=BG,fg=TEXT,selectcolor=PANEL).pack(pady=4)
+        tk.Label(panel,text='No silence timer. Work continues until completed or stopped.\nCtrl+Shift+J: stop work/speech, wait for JoJo\nCtrl+Shift+Q: deactivate and disable login startup',bg=BG,fg=MUTED,justify='left').pack(pady=6)
         def save():
+            from jojo_config import save_preferences
+            save_preferences({'overlay_center':center.get(),'session_timeout':0})
+            self.ambient.show_center=center.get()
             self.requests.put(('config', '/api/config', {'audio_device_id': self.microphones.get(mic.get(), -1),
                 'speech_language': 'hi-IN' if language.current() == 0 else 'en-IN', 'barge_in_enabled':barge.get()}))
             win.destroy()
-        self.button(win, 'Save settings', save, True).pack(pady=12)
+        self.button(panel, 'Save settings', save, True).pack(pady=12)
         def enroll():
             self.append('Voice enrollment', 'Ab 9 seconds tak normal awaaz mein bolte rahiye: JoJo, main aapka boss hoon, meri awaaz yaad rakho.')
             self.requests.put(('enroll', '/api/enroll_boss', {}))
-        self.button(win, 'Enroll owner voice (9 seconds)', enroll).pack()
+        self.button(panel, 'Enroll owner voice (9 seconds)', enroll).pack()
         def pair():
             def fetch():
                 try:
@@ -244,9 +288,9 @@ class JoJoDesktop:
                 except Exception as exc:
                     self.events.put(('error', 'Pairing unavailable: ' + type(exc).__name__))
             threading.Thread(target=fetch, daemon=True).start()
-        self.button(win, 'Pair native Android companion', pair).pack(pady=8)
-        self.button(win, 'Quit assistant & microphone', self.stop_assistant).pack(pady=8)
-        tk.Label(win, text='Local neural voice match • Re-enroll after this upgrade.', bg=BG, fg=MUTED,
+        self.button(panel, 'Pair native Android companion', pair).pack(pady=8)
+        self.button(panel, 'Quit assistant & microphone', self.stop_assistant).pack(pady=8)
+        tk.Label(panel, text='Local neural voice match • Re-enroll after this upgrade.', bg=BG, fg=MUTED,
             font=('Segoe UI', 9)).pack(pady=8)
 
     def animate(self):
@@ -438,6 +482,8 @@ class JoJoDesktop:
                     self.status.set(data['status'].replace('_', ' ').capitalize())
             elif kind == 'error':
                 self.append('Connection', data)
+            elif kind == 'hotkey':
+                self.stop() if data == 1 else self.deactivate()
             elif kind == 'cancel':
                 self.detail.set(data.get('progress', data.get('reply', 'Stop requested.')))
             elif kind == 'enroll':

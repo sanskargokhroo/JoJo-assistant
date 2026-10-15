@@ -4,11 +4,10 @@ Native Java/Canvas app for Android 11+. No browser/WebView. The APK currently us
 the laptop's AI service over a USB connection; standalone phone reasoning and
 wireless deployment are not implemented.
 
-Latest source-only feature: optional phone-local encrypted numeric PIN vault and
+Included feature: optional phone-local encrypted numeric PIN vault and
 saved-PIN entry on supported normal authentication screens. See
 `../JOJO_PIN_AND_SYNC.md` for opt-in setup, security tradeoffs, supported targets,
-Firestore synchronization and remaining device tests. The existing APK does not
-include this change; the user deferred APK generation until the final build.
+Firestore synchronization and remaining device tests. The local test APK built on 10 October 2026 includes this change; physical-device validation is pending.
 
 ## Install
 
@@ -63,7 +62,7 @@ allows cleartext to localhost, not arbitrary remote hosts.
 
 ## Limits and validation
 
-### Inbox conversation (source changes after the last APK)
+### Inbox conversation
 
 - Say “JoJo WhatsApp par kiski chats unread hain, messages padh kar batao”. JoJo
   navigates the requested app's visible unread list/chats and reads observed sender
@@ -84,19 +83,19 @@ allows cleartext to localhost, not arbitrary remote hosts.
   reports uncertainty rather than retrying a send. This does not prove delivery/read.
   Apps with inaccessible headings/composers require manual help.
 
-No new APK has been generated for this inbox change, per the user's instruction.
+The 0.2.0-alpha.2 local test APK includes these inbox changes.
 Java-only validation: `python android/check_java.py --sdk PATH_TO_ANDROID_SDK`.
 This compiles classes and parses the manifest without packaging/signing an APK.
 
 Default-app identification uses Android's
 [SMS package API](https://developer.android.com/reference/android/provider/Telephony.Sms)
 and [dialer package API](https://developer.android.com/reference/android/telecom/TelecomManager).
-No SMS database/call-log permissions or notification-listener access are requested.
+No SMS database or call-log permissions are requested. Notification-listener access is optional and must be enabled manually for notification summaries.
 
-APK compilation and signing verification passed on 8 October 2026. Physical phone
+APK compilation, signing and alignment verification passed on 10 October 2026 for version 0.2.0-alpha.2 (version code 2). Physical phone
 installation, microphone quality, manufacturer battery restrictions and actual
 accessibility behavior still require a connected phone test. Apps can refuse
-accessibility actions. No lock-screen unlocking or payment automation is included.
+accessibility actions. Saved-PIN entry is opt-in and limited to supported authentication screens; first unlock after reboot remains manual. Payment automation is blocked by policy.
 
 The laptop now uses a trained local WeSpeaker neural speaker embedding model.
 Re-enroll your voice for 9 seconds in desktop Settings after this upgrade. It does
@@ -126,7 +125,7 @@ Platform references: [Android intents](https://developer.android.com/guide/compo
 [AccessibilityService](https://developer.android.com/reference/android/accessibilityservice/AccessibilityService),
 [Android Gradle plugin 8.13](https://developer.android.com/build/releases/agp-8-13-0-release-notes).
 
-## Stop and uninstall (source only)
+## Stop and uninstall
 
 New source controls include **Local essentials — without laptop** and opt-in
 **Notification summaries**. See [commands, permissions and limitations](../JOJO_WORKSPACE.md#android-source-additions).
@@ -135,5 +134,5 @@ These additions have Java/manifest validation but still need physical-phone test
 The native dashboard now has **Stop JoJo** and **Uninstall JoJo**. Stop disables
 listening/resume until Start is tapped. Uninstall opens Android's system removal
 confirmation; it does not erase the laptop or Firestore. See
-[removal scope](../JOJO_UNINSTALL.md). No APK has been generated for these changes.
+[removal scope](../JOJO_UNINSTALL.md). These controls are included in the 0.2.0-alpha.2 local test APK.
 

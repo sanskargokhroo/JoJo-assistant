@@ -1,4 +1,4 @@
-from jojo_runtime import checkpoint, report_progress
+from jojo_runtime import checkpoint, report_progress, wait_for_model, TaskCancelled
 from jojo_config import api_keys, make_client, MODEL, DATA_DIR
 """
 🧠 JoJo AGI: UI-TARS Agent & Universal Action Parser
@@ -327,6 +327,12 @@ class UITarsAgent:
 
         # 6. Execute action
         checkpoint()
+        # A single GUI task must not keep opening tabs while waiting for a page.
+        raw_action = primary_action.get('raw_line', '')
+        if primary_action.get('action_type') == 'hotkey' and any(key in raw_action.casefold() for key in ('ctrl t', 'ctrl n', 'ctrl+t', 'ctrl+n')):
+            if any(item.get('action_str') == raw_action for item in self.history):
+                return {'action_type': 'call_user', 'exec_result': {'status': 'need_assistance',
+                        'message': 'A new tab/window was already requested. Stopped instead of opening duplicates.'}}
         exec_result = self.operator.execute_action(primary_action)
 
         step_record = {
@@ -407,7 +413,7 @@ class UITarsAgent:
                 with open(image_path, "rb") as f:
                     img_bytes = f.read()
 
-                response = client.models.generate_content(
+                response = wait_for_model(lambda: client.models.generate_content(
                     model=MODEL,
                     contents=[
                         types.Part.from_bytes(data=img_bytes, mime_type="image/png"),
@@ -418,7 +424,10 @@ class UITarsAgent:
                         max_output_tokens=700
                     )
                 )
+                )
                 return response.text.strip()
+            except TaskCancelled:
+                raise
             except Exception as e:
                 print(f"⚠️ Gemini Vision key error in UI-TARS Agent: {e}")
                 rotate_key()

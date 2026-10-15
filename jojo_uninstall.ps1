@@ -49,6 +49,15 @@ try {
         }
     }
     if (Test-Path -LiteralPath $startup) { Remove-Item -LiteralPath $startup -Force }
+    $jojoShortcut = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\JoJo\JoJo.lnk'
+    if (Test-Path -LiteralPath $jojoShortcut) {
+        Assert-PlainTree $jojoShortcut
+        $jojoShell = New-Object -ComObject WScript.Shell
+        $jojoLink = $jojoShell.CreateShortcut($jojoShortcut)
+        if ($jojoLink.TargetPath -eq (Join-Path $targetRoot 'JoJo.exe')) {
+            Remove-Item -LiteralPath $jojoShortcut -Force
+        }
+    }
     if ($plan.erase_cloud) {
         $cloud = Join-Path $targetRoot 'jojo_uninstall_cloud.py'
         & ([string]$plan.python) $cloud --confirmed-erase-jojo *> (Join-Path $PSScriptRoot 'cloud-result.txt')

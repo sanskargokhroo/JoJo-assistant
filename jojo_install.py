@@ -17,6 +17,12 @@ def install_dependencies(status=print):
     python=directory/'Scripts/python.exe'
     if not python.exists():
         status('Creating an isolated Python environment…');venv.EnvBuilder(with_pip=True).create(directory)
+    # Repair an interrupted venv bootstrap before installing dependencies.
+    check=subprocess.run([str(python),'-m','pip','--version'],capture_output=True,
+        creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+    if check.returncode:
+        subprocess.run([str(python),'-m','ensurepip','--upgrade'],check=True,
+            creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
     private_dir().mkdir(parents=True,exist_ok=True)
     with (private_dir()/'jojo_install.log').open('a',encoding='utf-8') as log:
         status('Installing requirements. This may take several minutes…')

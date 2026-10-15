@@ -120,8 +120,8 @@ speech fallback is used in this mode. It stops the paired background listener an
 does not implement autonomous offline wake-word or speaker-embedding authentication.
 Leaving the activity ends local authentication. Restricted apps remain blocked.
 
-No APK was generated for these changes. Java compile and manifest checks do not
-replace phone tests. Full standalone Android reasoning, offline background wake,
+A local Android 11+ test APK was built on 10 October 2026. Compilation and signing checks do not
+replace phone tests. Android 8.1 compatibility is not implemented. Full standalone Android reasoning, offline background wake,
 file transfer, Android voice barge-in, universal smart-device support and automatic
 self-training are **not** implemented by this upgrade.
 
@@ -129,3 +129,27 @@ Platform references: [on-device speech](https://developer.android.com/reference/
 [notification access](https://developer.android.com/reference/android/service/notification/NotificationListenerService),
 [device authentication](https://developer.android.com/reference/android/app/KeyguardManager),
 [timer intents](https://developer.android.com/reference/android/provider/AlarmClock).
+
+## Laptop trial reliability updates
+
+- New interactive desktop/voice commands replace pending tasks from the same device.
+  Scheduled work retains its queue behavior unless cancelled. Stop task cancels active
+  and queued work and suppresses cancelled tasks' pending speech.
+- Stop uses a separate dashboard request instead of waiting behind normal polling.
+  Tool-loop model waits can be abandoned on cancellation; the remote model request
+  may still finish or incur usage, but its late response is discarded. An OS action
+  already executing cannot be rolled back.
+- Simple Amazon/Flipkart navigation and searches use a direct URL with the parsed
+  product query. Complex requests still use planning. Repeated identical new-tab
+  shortcuts in a single visual task stop for assistance instead of opening more tabs.
+- Automatic silence cancellation has been removed. Long work is never cancelled
+  just because the owner is quiet. Ctrl+Shift+J stops current/queued laptop work and
+  speech, hides the overlay and returns to wake-word listening. Ctrl+Shift+Q exits
+  JoJo and disables login startup until explicitly enabled again. The second
+  shortcut retains account settings and memory; it is not uninstall.
+- Center orb/status is off by default. Settings can enable it without changing the
+  border fog. Emoji symbols are stripped from speech; visible chat retains them.
+- Exact current-screen click requests use foreground accessibility controls first,
+  then a screen-only visual fallback. They never substitute a Run dialog or Settings URI.
+- This change is for Windows desktop. Voice recognition still depends on the
+  microphone and speech service; misrecognitions remain possible.

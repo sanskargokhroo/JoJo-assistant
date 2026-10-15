@@ -25,6 +25,8 @@ def overlay_state(state):
 class AmbientOverlay:
     def __init__(self, root):
         self.root = root
+        from jojo_config import read_preferences
+        self.show_center = bool(read_preferences().get("overlay_center",False))
         self.window = tk.Toplevel(root)
         self.window.withdraw()
         self.window.title('JoJo Ambient')
@@ -100,7 +102,7 @@ class AmbientOverlay:
             return
         if self.visible and self.surface:
             began = time.monotonic()
-            self.surface.present(self.renderer.render(began, self.status))
+            self.surface.present(self.renderer.render(began, self.status, center=self.show_center))
             # Account for render time rather than adding it to every frame interval.
             self.root.after(max(8, round(50-(time.monotonic()-began)*1000)), self.animate)
             return
@@ -117,6 +119,9 @@ class AmbientOverlay:
                     c.create_line(w-1, a*h, w-1, b*h+1, fill=self.color(hue+.2, bright), width=thick)
                     c.create_line(a*w, h-1, b*w+1, h-1, fill=self.color(hue+.4, bright), width=thick)
                     c.create_line(1, a*h, 1, b*h+1, fill=self.color(hue+.6, bright), width=thick)
+            if not self.show_center:
+                self.root.after(33, self.animate)
+                return
             x, y = w/2, h/2
             scale = max(.8, min(1.6, h/1000))
             r = 58*scale

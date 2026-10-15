@@ -28,6 +28,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--install-only', action='store_true')
     parser.add_argument('--disable-autostart', action='store_true')
+    parser.add_argument('--enable-autostart', action='store_true')
+    parser.add_argument('--no-autostart', action='store_true')
     args = parser.parse_args()
     if os.name != 'nt':
         raise SystemExit('This launcher supports Windows only.')
@@ -37,12 +39,20 @@ def main():
         gui()
         return
     startup = Path(os.environ['APPDATA']) / 'Microsoft/Windows/Start Menu/Programs/Startup'
+    no_autostart_marker = ROOT / '.no_autostart'
     if args.disable_autostart:
         (startup / 'jojo_autostart.vbs').unlink(missing_ok=True)
+        no_autostart_marker.touch()
         print('JoJo login startup disabled. A running assistant is unchanged.')
         return
-    target = install(startup)
-    print('JoJo will start after Windows sign-in. Startup entry:', target)
+    if args.enable_autostart or args.install_only:
+        no_autostart_marker.unlink(missing_ok=True)
+
+    if not args.no_autostart and not no_autostart_marker.exists():
+        target = install(startup)
+        print('JoJo will start after Windows sign-in. Startup entry:', target)
+    else:
+        print('JoJo autostart is disabled. Running only for this session.')
     if not args.install_only:
         subprocess.Popen([str(Path(sys.executable).with_name('pythonw.exe')), str(ROOT / 'jojo_desktop.py'), '--start-core'], cwd=ROOT)
 
