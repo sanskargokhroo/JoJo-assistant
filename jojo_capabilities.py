@@ -2,6 +2,7 @@
 from jojo_config import read_preferences, save_preferences
 
 CATALOG={
+ 'playbooks':('Workflow guidance','Original research, debugging, writing and verification guides.'),
  'desktop':('Desktop control','Read screens and operate allowed desktop apps.'),
  'mobile':('Android companion','Read and operate the paired phone; USB/backend required.'),
  'web':('Web & research','Search, read pages, weather and research.'),
@@ -11,6 +12,7 @@ CATALOG={
  'smart_home':('Home Assistant','Only configured, allowlisted devices.'),
 }
 GROUPS={
+ 'playbooks':{'get_skill_guidance'},
  'smart_home':{'list_smart_devices','control_smart_device'},
  'security':{'audit_device_security','inspect_link','inspect_app_file','wifi_security_guidance'},
  'memory':{'remember_workflow','search_semantic_memories','save_semantic_fact','draft_workflow'},
@@ -25,15 +27,17 @@ def allowed_tool(name):
     return enabled(group) and read_preferences().get('capabilities',{}).get('tool:'+name,True)
 def update(values):
     from jojo_agi.jojo_tools_registry import get_all_tools
-    valid=set(CATALOG)|{'tool:'+tool.__name__ for tool in get_all_tools(include_disabled=True)}
+    from jojo_playbooks import PLAYBOOKS
+    valid={'playbook:'+key for key in PLAYBOOKS}|set(CATALOG)|{'tool:'+tool.__name__ for tool in get_all_tools(include_disabled=True)}
     if set(values)-valid or any(type(v) is not bool for v in values.values()):raise ValueError('Unknown skill or invalid switch')
     current=read_preferences().get('capabilities',{});current.update(values);save_preferences({'capabilities':current})
 def catalog():
     return [{'id':key,'name':value[0],'description':value[1],'enabled':enabled(key)} for key,value in CATALOG.items()]
 
 def tool_catalog():
+    from jojo_playbooks import catalog as playbook_catalog
     from jojo_agi.jojo_tools_registry import get_all_tools
     flags=read_preferences().get('capabilities',{})
     return [{'id':'tool:'+tool.__name__,'name':tool.__name__.replace('_',' '),
              'description':(tool.__doc__ or '').strip().split('\n')[0],
-             'enabled':flags.get('tool:'+tool.__name__,True)} for tool in get_all_tools(include_disabled=True)]
+             'enabled':flags.get('tool:'+tool.__name__,True)} for tool in get_all_tools(include_disabled=True)] + playbook_catalog()

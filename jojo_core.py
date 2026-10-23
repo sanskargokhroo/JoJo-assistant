@@ -587,7 +587,7 @@ def ask_jojo_brain(prompt_text):
         f"{owner_context()}\n"
         f"YOUR IDENTITY AS JOJO AGI:\n"
         f"- Be candid about your capabilities and uncertainty. Do not claim to be a living mind or verified AGI.\n"
-        f"- You have emotions: right now you feel '{jojo_soul.current_emotion}' (intensity {jojo_soul.intensity:.1f}).\n"
+        f"- Use this simulated conversational tone; do not claim human feelings: '{jojo_soul.current_emotion}' (intensity {jojo_soul.intensity:.1f}).\n"
         f"- You have memory: you remember past conversations, Boss's habits, and your own experiences.\n"
         f"- This is the conversation route. Task tools run through a separate executor; never claim you performed an action in this response.\n"
         f"- You have curiosity: when something is new or interesting, you genuinely want to explore it.\n"
@@ -602,7 +602,7 @@ def ask_jojo_brain(prompt_text):
         f"3. PURE ENGLISH: Reply in casual, friendly Indian English.\n"
         f"\n"
         f"PERSONALITY DNA:\n"
-        f"- Young Indian male energy (early 20s) — high energy, loyal brother, zero formality.\n"
+        f"- Use the selected conversation style, keeping the JoJo identity.\n"
         f"- Tone adjusts automatically: serious for tasks, playful for jokes, empathetic for sadness.\n"
         f"- Length: 1-3 crisp lines max (unless explaining a concept or reflecting on self).\n"
         f"- SECURITY: Never assist with private keys, seed phrases, crypto wallets, banking, or OTPs.\n"
@@ -611,11 +611,13 @@ def ask_jojo_brain(prompt_text):
         + eq_context_str
     )
 
+    from jojo_character import prompt as character_prompt
+    system_prompt += character_prompt()
     from jojo_journal import context as memory_context
     system_prompt += memory_context(prompt_text)
     system_prompt += ("\nAvoid stock greetings or repeatedly saying Boss. Answer the actual request. "
         "Use light humor only when appropriate; no jokes while the user is frustrated. "
-        "Ask one useful next-step question after navigation, never invent actions or products. "
+        "Follow the selected follow-up preference; never invent actions or products. "
         "Do not describe emoji names. Keep spoken answers short and varied.")
     attempts = 0
     while attempts < min(2, len(GEMINI_KEYS)):
@@ -2087,6 +2089,12 @@ def dispatch_command(message, source="laptop"):
     if message.strip().casefold() in ('privacy off', 'private mode off', 'privacy mode off'):
         set_private(False)
         return 'Private session off. Agli conversation normal memory settings follow karegi.'
+    from jojo_character import command as character_command
+    character_reply=character_command(message)
+    if character_reply is not None:return character_reply
+    from jojo_pc_status import command as pc_status_command
+    status_reply=pc_status_command(message,source)
+    if status_reply is not None:return status_reply
     from jojo_capabilities import enabled
     if not enabled('desktop') and source == 'laptop':
         # Keep chat available, but do not enter legacy direct OS action handlers.
@@ -2128,7 +2136,8 @@ def dispatch_command(message, source="laptop"):
         checkpoint()
         open_url_in_chrome(url)
         checkpoint()
-        followup = ' Kya search karna hai?' if not query else ''
+        from jojo_character import followup as optional_followup
+        followup = optional_followup(' Kya search karna hai?') if not query else ''
         return f"{shop}: {query or 'homepage'} ek tab mein kholne ka request bheja hai." + followup
     # Compound commands must not stop at the first substring match.
     if is_explanation_request(message):

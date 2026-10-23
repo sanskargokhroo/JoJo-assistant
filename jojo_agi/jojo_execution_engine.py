@@ -121,35 +121,6 @@ def execute_python_code(code: str, timeout: int = 30) -> str:
             pass
 
 def get_system_diagnostics() -> str:
-    """Retrieves live system diagnostics: CPU, Memory, Disk, and top processes."""
-    diag = []
-    # Try using psutil if installed, or powershell
-    try:
-        import psutil
-        cpu_pct = psutil.cpu_percent(interval=0.2)
-        mem = psutil.virtual_memory()
-        disk = psutil.disk_usage('C:\\')
-        diag.append(f"💻 CPU Usage: {cpu_pct}%")
-        diag.append(f"🧠 RAM Usage: {mem.percent}% ({mem.used // (1024**2)}MB / {mem.total // (1024**2)}MB)")
-        diag.append(f"💾 C: Drive: {disk.percent}% used ({disk.free // (1024**3)}GB free)")
-        
-        # Battery if available
-        battery = psutil.sensors_battery()
-        if battery:
-            diag.append(f"🔋 Battery: {battery.percent}% ({'Charging' if battery.power_plugged else 'Discharging'})")
-            
-        # Top 5 CPU processes
-        procs = sorted(
-            [p for p in psutil.process_iter(['name', 'cpu_percent']) if p.info['name']],
-            key=lambda p: p.info.get('cpu_percent') or 0,
-            reverse=True
-        )[:5]
-        top_str = ", ".join([f"{p.info['name']} ({p.info['cpu_percent']}%)" for p in procs if p.info.get('cpu_percent')])
-        if top_str:
-            diag.append(f"📊 Top Processes: {top_str}")
-    except Exception:
-        # Fallback to PowerShell
-        ps_out = execute_powershell("Get-CimInstance Win32_OperatingSystem | Select-Object TotalVisibleMemorySize, FreePhysicalMemory")
-        diag.append(f"OS Diagnostics: {ps_out}")
-        
-    return "\n".join(diag)
+    """Read CPU, available RAM, system storage and battery without a shell."""
+    from jojo_pc_status import snapshot, describe
+    return describe(snapshot())

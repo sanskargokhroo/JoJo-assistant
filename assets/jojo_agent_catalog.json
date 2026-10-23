@@ -1,0 +1,1595 @@
+[
+  {
+    "rank": 1,
+    "repo": "obra/superpowers",
+    "url": "https://github.com/obra/superpowers",
+    "description": "An agentic skills framework & software development methodology that works.",
+    "license": "MIT",
+    "commit": "2ce8aa15d05bd57213e6f746f953aafb7ded7a8b",
+    "tree_truncated": false,
+    "file_count": 231,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "skills/brainstorming/scripts/helper.js"
+    ]
+  },
+  {
+    "rank": 2,
+    "repo": "NousResearch/hermes-agent",
+    "url": "https://github.com/NousResearch/hermes-agent",
+    "description": "The agent that grows with you",
+    "license": "MIT",
+    "commit": "db1fa153fe24a051af44ef8ee862b93e27998060",
+    "tree_truncated": false,
+    "file_count": 20790,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "agent/tool_executor.py"
+    ]
+  },
+  {
+    "rank": 3,
+    "repo": "firecrawl/firecrawl",
+    "url": "https://github.com/firecrawl/firecrawl",
+    "description": "Supercharge your AI agents with data from the web and beyond. Building the library for superintelligence. 🔥",
+    "license": "AGPL-3.0",
+    "commit": "a779ddac4316a2b82522116cee70c6e32046f9ca",
+    "tree_truncated": false,
+    "file_count": 2162,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "apps/api/src/controllers/v2/agent-skill.ts"
+    ]
+  },
+  {
+    "rank": 4,
+    "repo": "Significant-Gravitas/AutoGPT",
+    "url": "https://github.com/Significant-Gravitas/AutoGPT",
+    "description": "AutoGPT is the vision of accessible AI for everyone, to use and to build on. Our mission is to provide the tools, so that you can focus on what matters.",
+    "license": "NOASSERTION",
+    "commit": "438b03d0ba939b7db5490ecf8ba5e3b4cfc71e3b",
+    "tree_truncated": false,
+    "file_count": 9866,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "autogpt_platform/backend/backend/copilot/tools/fix_agent.py"
+    ]
+  },
+  {
+    "rank": 5,
+    "repo": "DietrichGebert/ponytail",
+    "url": "https://github.com/DietrichGebert/ponytail",
+    "description": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote.",
+    "license": "MIT",
+    "commit": "09c434ab73ca43761c5d8b0c5d341926c2fba710",
+    "tree_truncated": false,
+    "file_count": 214,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "benchmarks/agentic/run.py"
+    ]
+  },
+  {
+    "rank": 6,
+    "repo": "msitarzewski/agency-agents",
+    "url": "https://github.com/msitarzewski/agency-agents",
+    "description": "A complete AI agency at your fingertips - From frontend wizards to Reddit community ninjas, from whimsy injectors to reality checkers. Each agent is a specialized expert with personality, processes, and proven deliverables.",
+    "license": "MIT",
+    "commit": "4e3ac3ca6604c75113f52c695dbddcc7af928b46",
+    "tree_truncated": false,
+    "file_count": 383,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "scripts/build-hermes-plugin.py"
+    ]
+  },
+  {
+    "rank": 7,
+    "repo": "langgenius/dify",
+    "url": "https://github.com/langgenius/dify",
+    "description": "Build Agentic workflows, RAG pipelines, with rich AI model and tool support on one collaborative workspace. Deploy on cloud, VPC, or self-hosted, so teams move from prototype to production without rebuilding the stack.",
+    "license": "NOASSERTION",
+    "commit": "2b35144b2098f8f6ad6af31bf72356a42f813d58",
+    "tree_truncated": false,
+    "file_count": 14914,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "api/core/workflow/nodes/agent_v2/dify_tools_builder.py"
+    ]
+  },
+  {
+    "rank": 8,
+    "repo": "langflow-ai/langflow",
+    "url": "https://github.com/langflow-ai/langflow",
+    "description": "Langflow is a powerful tool for building and deploying AI-powered agents and workflows.",
+    "license": "MIT",
+    "commit": "aeb10d96bb2ea797696613af931e91ddf51f3320",
+    "tree_truncated": false,
+    "file_count": 11850,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "src/lfx/src/lfx/base/agents/altk_tool_wrappers.py"
+    ]
+  },
+  {
+    "rank": 9,
+    "repo": "langchain-ai/langchain",
+    "url": "https://github.com/langchain-ai/langchain",
+    "description": "The agent engineering platform.",
+    "license": "MIT",
+    "commit": "3d3b0034a94e49c8547ec38b371a31f8620850d9",
+    "tree_truncated": false,
+    "file_count": 3192,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "libs/langchain/langchain_classic/agents/tools.py"
+    ]
+  },
+  {
+    "rank": 10,
+    "repo": "x1xhlol/system-prompts-and-models-of-ai-tools",
+    "url": "https://github.com/x1xhlol/system-prompts-and-models-of-ai-tools",
+    "description": "FULL Augment Code, Claude Code, Cluely, CodeBuddy, Comet, Cursor, Devin AI, Junie, Kiro, Leap.new, Lovable, Manus, NotionAI, Orchids.app, Perplexity, Poke, Qoder, Replit, Same.dev, Trae, Traycer AI, VSCode Agent, Warp.dev, Windsurf, Xcode, Z.ai Code, Dia & v0. (And other Open Sourced) System Prompts, Internal Tools & AI Models",
+    "license": "GPL-3.0",
+    "commit": "162db92f54d717d8ebd12292e155aeef32bb4b3c",
+    "tree_truncated": false,
+    "file_count": 122,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE.md",
+      "README.md"
+    ]
+  },
+  {
+    "rank": 11,
+    "repo": "Shubhamsaboo/awesome-llm-apps",
+    "url": "https://github.com/Shubhamsaboo/awesome-llm-apps",
+    "description": "100+ AI Agents, Agent Skills and RAG Apps - Free and Open Source.",
+    "license": "Apache-2.0",
+    "commit": "6c16b23f1bacd0fdf240bb5141ef45e59e82c306",
+    "tree_truncated": false,
+    "file_count": 1984,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "agent_skills/evals/tools/skill_lint.py"
+    ]
+  },
+  {
+    "rank": 12,
+    "repo": "browser-use/browser-use",
+    "url": "https://github.com/browser-use/browser-use",
+    "description": "Open-source Python library for AI browser agents, plus Browser Use Cloud: stealth browsers and a hosted agent API.",
+    "license": "MIT",
+    "commit": "3df5806a0d097a1546d92c49bcf1b28c9972c3bd",
+    "tree_truncated": false,
+    "file_count": 555,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "browser_use/agent/gif.py"
+    ]
+  },
+  {
+    "rank": 13,
+    "repo": "earendil-works/pi",
+    "url": "https://github.com/earendil-works/pi",
+    "description": "AI agent toolkit: unified LLM API, agent loop, TUI, coding agent CLI",
+    "license": "MIT",
+    "commit": "ede2c9b468d8e061c557d16957513715e6d49cd6",
+    "tree_truncated": false,
+    "file_count": 2001,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "packages/coding-agent/src/core/skills.ts"
+    ]
+  },
+  {
+    "rank": 14,
+    "repo": "JuliusBrussee/caveman",
+    "url": "https://github.com/JuliusBrussee/caveman",
+    "description": "🪨 why use many token when few token do trick. Viral skill + proxy for coding agents that cuts 65% of tokens by talking like a caveman.",
+    "license": "Apache-2.0",
+    "commit": "b4531dfc05a3ef0ba93b57e8bfa5f48564a4b4d6",
+    "tree_truncated": false,
+    "file_count": 1791,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "packages/cli/src/agent-skills.generated.ts"
+    ]
+  },
+  {
+    "rank": 15,
+    "repo": "addyosmani/agent-skills",
+    "url": "https://github.com/addyosmani/agent-skills",
+    "description": "Production-grade engineering skills for AI coding agents.",
+    "license": "MIT",
+    "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+    "tree_truncated": false,
+    "file_count": 217,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "scripts/lib/skill-lint.js"
+    ]
+  },
+  {
+    "rank": 16,
+    "repo": "google-gemini/gemini-cli",
+    "url": "https://github.com/google-gemini/gemini-cli",
+    "description": "An open-source AI agent that brings the power of Gemini directly into your terminal.",
+    "license": "Apache-2.0",
+    "commit": "a713410aba5d594594e20d5c822e3aab8f822089",
+    "tree_truncated": false,
+    "file_count": 3032,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "tools/caretaker-agent/cloudrun/pr-generator/workflow/command_executor.py"
+    ]
+  },
+  {
+    "rank": 17,
+    "repo": "nexu-io/open-design",
+    "url": "https://github.com/nexu-io/open-design",
+    "description": "The 1st Collaborative AI Design Agent Workspace. Local-first and open source. Create motion, prototypes, websites, apps, dashboards, presentations, images, and videos with your team and AI agents. Share work, exchange feedback, and iterate together in one workspace.",
+    "license": "Apache-2.0",
+    "commit": "e03d5c23f308c39f4de7c057568df66c29a84385",
+    "tree_truncated": false,
+    "file_count": 13657,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "packages/contracts/src/agent-tools/task.ts"
+    ]
+  },
+  {
+    "rank": 18,
+    "repo": "thedotmack/claude-mem",
+    "url": "https://github.com/thedotmack/claude-mem",
+    "description": "Persistent Context Across Sessions for Every Agent –  Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More",
+    "license": "Apache-2.0",
+    "commit": "dcb28a768c6be4b8e451843210558275caa8ec44",
+    "tree_truncated": false,
+    "file_count": 2587,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "src/shared/memory-retrieval-tools.ts"
+    ]
+  },
+  {
+    "rank": 19,
+    "repo": "Leonxlnx/taste-skill",
+    "url": "https://github.com/Leonxlnx/taste-skill",
+    "description": "Agent skills that give coding agents taste: art direction, reference images and a browser check instead of generic AI pages",
+    "license": "MIT",
+    "commit": "6010f91a9935f1c167dfc500fb1a475681892e6b",
+    "tree_truncated": false,
+    "file_count": 69,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "skills/taste-skill/assets/base.js"
+    ]
+  },
+  {
+    "rank": 20,
+    "repo": "Panniantong/Agent-Reach",
+    "url": "https://github.com/Panniantong/Agent-Reach",
+    "description": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees.",
+    "license": "MIT",
+    "commit": "beabda7486e9a666360b18cdb5c0e759c2c4d20f",
+    "tree_truncated": false,
+    "file_count": 118,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "agent_reach/runtime/tools.py"
+    ]
+  },
+  {
+    "rank": 21,
+    "repo": "karpathy/autoresearch",
+    "url": "https://github.com/karpathy/autoresearch",
+    "description": "AI agents running research on single-GPU nanochat training automatically",
+    "license": "UNKNOWN",
+    "commit": "228791fb499afffb54b46200aca536f79142f117",
+    "tree_truncated": false,
+    "file_count": 10,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "README.md",
+      "train.py"
+    ]
+  },
+  {
+    "rank": 22,
+    "repo": "infiniflow/ragflow",
+    "url": "https://github.com/infiniflow/ragflow",
+    "description": "RAGFlow is a leading open-source Retrieval-Augmented Generation (RAG) engine that fuses cutting-edge RAG with Agent capabilities to create a superior context layer for LLMs",
+    "license": "Apache-2.0",
+    "commit": "a55dccee4c211046b4e4d216a538bc60fae78dfd",
+    "tree_truncated": false,
+    "file_count": 5450,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "internal/agent/tool/mcp.go"
+    ]
+  },
+  {
+    "rank": 23,
+    "repo": "unclecode/crawl4ai",
+    "url": "https://github.com/unclecode/crawl4ai",
+    "description": "Open-source web crawler and scraper for LLMs and AI agents: any website into clean, LLM-ready Markdown. Run it yourself, or use Crawl4AI Cloud with one key. Join our Discord https://discord.gg/VuxzM8mtf",
+    "license": "Apache-2.0",
+    "commit": "30165f1ee1fb61f6cce1477feed2acc5e2181e25",
+    "tree_truncated": false,
+    "file_count": 965,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "crawl4ai/user_agent_generator.py"
+    ]
+  },
+  {
+    "rank": 24,
+    "repo": "lobehub/lobehub",
+    "url": "https://github.com/lobehub/lobehub",
+    "description": "🤯 LobeHub is your Chief Agent Operator, organizing your agents into 7×24 operations by hiring, scheduling, and reporting on your entire AI team.",
+    "license": "NOASSERTION",
+    "commit": "312ed3e5467ea03f71f2b56a36fdb2672baf8cbb",
+    "tree_truncated": false,
+    "file_count": 21381,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "src/store/tool/slices/agentSkills/index.ts"
+    ]
+  },
+  {
+    "rank": 25,
+    "repo": "dair-ai/Prompt-Engineering-Guide",
+    "url": "https://github.com/dair-ai/Prompt-Engineering-Guide",
+    "description": "🐙 Guides, papers, lessons, notebooks and resources for prompt engineering, context engineering, RAG, and AI Agents.",
+    "license": "MIT",
+    "commit": "57673726396dd94acb23bdb1e67f27c78ee85a8e",
+    "tree_truncated": false,
+    "file_count": 1559,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE.md",
+      "README.md",
+      "middleware.js"
+    ]
+  },
+  {
+    "rank": 26,
+    "repo": "ruvnet/ruflo",
+    "url": "https://github.com/ruvnet/ruflo",
+    "description": "🌊 The original agent harness. Deploy intelligent multi-player swarms, coordinate autonomous workflows, and build conversational AI systems. Features adaptive memory, self-learning intelligence, federation, vector RAG integration, and native Claude Code / Codex / Hermes and many more Integrated",
+    "license": "MIT",
+    "commit": "88349655ebc2de8f9bf702aaf31d6be768e1ea11",
+    "tree_truncated": false,
+    "file_count": 8086,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "v3/mcp/tools/agent-tools.js"
+    ]
+  },
+  {
+    "rank": 27,
+    "repo": "microsoft/ai-agents-for-beginners",
+    "url": "https://github.com/microsoft/ai-agents-for-beginners",
+    "description": "18 Lessons to Get Started Building AI Agents",
+    "license": "MIT",
+    "commit": "735e18437e07f1812af3d088baa00cb93108532a",
+    "tree_truncated": false,
+    "file_count": 10226,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      ".agents/skills/jupyter-notebook/scripts/new_notebook.py"
+    ]
+  },
+  {
+    "rank": 28,
+    "repo": "headroomlabs-ai/headroom",
+    "url": "https://github.com/headroomlabs-ai/headroom",
+    "description": "Compress tool outputs, logs, files, and RAG chunks before they reach the LLM. 20% fewer tokens for coding agents, 60-95% fewer tokens for JSON, same answers. Library, proxy, MCP server.",
+    "license": "Apache-2.0",
+    "commit": "e995eb9f1dacac7ed548758406de6c1508caef95",
+    "tree_truncated": false,
+    "file_count": 2662,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "headroom/memory/tools.py"
+    ]
+  },
+  {
+    "rank": 29,
+    "repo": "career-ops-hq/career-ops",
+    "url": "https://github.com/career-ops-hq/career-ops",
+    "description": "Open-source AI job search agent and job finder: scan job boards, score each job 1-5 against your CV before you apply, tailor an ATS-friendly resume and cover letter, get interview prep and a job application tracker. It helps you fill in each application; you press Submit. Runs locally in your AI coding CLI (Claude Code, Codex, OpenCode and more).",
+    "license": "MIT",
+    "commit": "96a48ece9cd4090672a28ae702110d8346fdccec",
+    "tree_truncated": false,
+    "file_count": 2644,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "web/src/app/api/memory/route.ts"
+    ]
+  },
+  {
+    "rank": 30,
+    "repo": "openbq-org/OpenBB",
+    "url": "https://github.com/openbq-org/OpenBB",
+    "description": "Open Data Platform for analysts, quants and AI agents.",
+    "license": "NOASSERTION",
+    "commit": "78020ee4b864ab50b8c1f56373877c2b4e7fb623",
+    "tree_truncated": false,
+    "file_count": 4138,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "openbb_platform/core/openbb_core/provider/query_executor.py"
+    ]
+  },
+  {
+    "rank": 31,
+    "repo": "thedaviddias/Front-End-Checklist",
+    "url": "https://github.com/thedaviddias/Front-End-Checklist",
+    "description": "🗂 The essential checklist for modern web development, for humans and AI agents",
+    "license": "MIT",
+    "commit": "e8d14d049010e2ce25afcd5e8609dfcbbe63e47e",
+    "tree_truncated": false,
+    "file_count": 1978,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "packages/mcp/src/tools/get-workflow.ts"
+    ]
+  },
+  {
+    "rank": 32,
+    "repo": "rohitg00/ai-engineering-from-scratch",
+    "url": "https://github.com/rohitg00/ai-engineering-from-scratch",
+    "description": "Learn AI Engineering! Learn it. Build it. Ship it for others.",
+    "license": "MIT",
+    "commit": "3f9715c62a3bedcffb68a260f1a65ee2dd9cc10a",
+    "tree_truncated": false,
+    "file_count": 9782,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "phases/13-tools-and-protocols/22-skills-and-agent-sdks/code/main.py"
+    ]
+  },
+  {
+    "rank": 33,
+    "repo": "usestrix/strix",
+    "url": "https://github.com/usestrix/strix",
+    "description": "Open-source AI penetration testing tool to find and fix your app’s vulnerabilities.",
+    "license": "Apache-2.0",
+    "commit": "14cc948c36e90517a774cf32bdfe5d8cd3605b62",
+    "tree_truncated": false,
+    "file_count": 547,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "strix/tools/load_skill/tool.py"
+    ]
+  },
+  {
+    "rank": 34,
+    "repo": "calesthio/OpenMontage",
+    "url": "https://github.com/calesthio/OpenMontage",
+    "description": "World's first open-source, agentic video production system. 12 production pipelines, 100+ tools, 700+ agent skill and production-knowledge files. Turn your AI coding assistant into a full video production studio.",
+    "license": "AGPL-3.0",
+    "commit": "c8066452325cb57c8fc1ba8c2a71b6e8842e6b65",
+    "tree_truncated": false,
+    "file_count": 2171,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      ".agents/skills/beautiful-mermaid/scripts/render.ts"
+    ]
+  },
+  {
+    "rank": 35,
+    "repo": "FoundationAgents/MetaGPT",
+    "url": "https://github.com/FoundationAgents/MetaGPT",
+    "description": "🌟 The Multi-Agent Framework: First AI Software Company, Towards Natural Language Programming",
+    "license": "MIT",
+    "commit": "11cdf466d042aece04fc6cfd13b28e1a70341b1f",
+    "tree_truncated": false,
+    "file_count": 1255,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "metagpt/tools/swe_agent_commands/__init__.py"
+    ]
+  },
+  {
+    "rank": 36,
+    "repo": "heygen-com/hyperframes",
+    "url": "https://github.com/heygen-com/hyperframes",
+    "description": "Write HTML. Render video. Built for agents.",
+    "license": "Apache-2.0",
+    "commit": "bd4cae7e3582e2da9eee3903bc0780d9d03c98b2",
+    "tree_truncated": false,
+    "file_count": 9063,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "packages/studio/src/webmcp/useStudioAgentTools.ts"
+    ]
+  },
+  {
+    "rank": 37,
+    "repo": "shanraisshan/claude-code-best-practice",
+    "url": "https://github.com/shanraisshan/claude-code-best-practice",
+    "description": "from vibe coding to agentic engineering - practice makes claude perfect",
+    "license": "MIT",
+    "commit": "cefbfd67b6a05aab6d620f84959920164776341f",
+    "tree_truncated": false,
+    "file_count": 454,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      ".codex/hooks/scripts/hooks.py"
+    ]
+  },
+  {
+    "rank": 38,
+    "repo": "mem0ai/mem0",
+    "url": "https://github.com/mem0ai/mem0",
+    "description": "The Memory Layer for AI Agents - Drop-in memory infrastructure for AI agents and apps. Context that persists. Built for production.",
+    "license": "Apache-2.0",
+    "commit": "2c81af3bbe27d9bccb09c772d583df9e9be72ee5",
+    "tree_truncated": false,
+    "file_count": 1842,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "integrations/pi-agent-plugin/src/memory/tools.ts"
+    ]
+  },
+  {
+    "rank": 39,
+    "repo": "mvanhorn/last30days-skill",
+    "url": "https://github.com/mvanhorn/last30days-skill",
+    "description": "AI agent skill that researches any topic across Reddit, X, YouTube, HN, Polymarket, and the web - then synthesizes a grounded summary",
+    "license": "MIT",
+    "commit": "f3cd06a620e385ce15109ed6d3b70fc20c89eccc",
+    "tree_truncated": false,
+    "file_count": 594,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "skills/last30days/scripts/lib/agentcookie.py"
+    ]
+  },
+  {
+    "rank": 40,
+    "repo": "upstash/context7",
+    "url": "https://github.com/upstash/context7",
+    "description": "Context7 Platform -- Up-to-date docs for AI agents",
+    "license": "MIT",
+    "commit": "b5e81de845092694ba1bfc5af15400f319c89b6d",
+    "tree_truncated": false,
+    "file_count": 556,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "packages/tools-ai-sdk/src/agents/index.ts"
+    ]
+  },
+  {
+    "rank": 41,
+    "repo": "microsoft/autogen",
+    "url": "https://github.com/microsoft/autogen",
+    "description": "A programming framework for agentic AI",
+    "license": "CC-BY-4.0",
+    "commit": "004749e6b7102c8fd317b9b1499ce5807223c278",
+    "tree_truncated": false,
+    "file_count": 1837,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "python/samples/task_centric_memory/chat_with_teachable_agent.py"
+    ]
+  },
+  {
+    "rank": 42,
+    "repo": "crewAIInc/crewAI",
+    "url": "https://github.com/crewAIInc/crewAI",
+    "description": "Framework for orchestrating role-playing, autonomous AI agents. By fostering collaborative intelligence, CrewAI empowers agents to work together seamlessly, tackling complex tasks.",
+    "license": "MIT",
+    "commit": "0656245f0787347f0110c4d85dc5d5c2432aea3c",
+    "tree_truncated": false,
+    "file_count": 35790,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "lib/crewai/src/crewai/skills/tool.py"
+    ]
+  },
+  {
+    "rank": 43,
+    "repo": "blader/humanizer",
+    "url": "https://github.com/blader/humanizer",
+    "description": "Agent skill that removes signs of AI-generated writing from text",
+    "license": "MIT",
+    "commit": "8c307f367c91bd974002f10f2be2965d642c13df",
+    "tree_truncated": false,
+    "file_count": 14,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "scripts/validate-package.py"
+    ]
+  },
+  {
+    "rank": 44,
+    "repo": "coreyhaines31/marketingskills",
+    "url": "https://github.com/coreyhaines31/marketingskills",
+    "description": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering.",
+    "license": "MIT",
+    "commit": "e85f3cbc2e4a79bf33b2a12e9bdd9087d414735b",
+    "tree_truncated": false,
+    "file_count": 770,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "tools/clis/g2.js"
+    ]
+  },
+  {
+    "rank": 45,
+    "repo": "aaif-goose/goose",
+    "url": "https://github.com/aaif-goose/goose",
+    "description": "an open source, extensible AI agent that goes beyond code suggestions - install, execute, edit, and test with any LLM",
+    "license": "Apache-2.0",
+    "commit": "e970eea8ac23067eb5f3bbad767e51cfaf917a91",
+    "tree_truncated": false,
+    "file_count": 2529,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "crates/goose-agent/src/tool.rs"
+    ]
+  },
+  {
+    "rank": 46,
+    "repo": "bojieli/ai-agent-book",
+    "url": "https://github.com/bojieli/ai-agent-book",
+    "description": "《深入理解 AI Agent：设计原理与工程实践》（李博杰 著）开源主仓库：全书正文、编译版 PDF 与按章配套代码",
+    "license": "Apache-2.0",
+    "commit": "dbc046eb896ac4e39aa19c7774c8bf49583b89a6",
+    "tree_truncated": false,
+    "file_count": 11245,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "chapter3/agentic-rag-for-user-memory/tools.py"
+    ]
+  },
+  {
+    "rank": 47,
+    "repo": "FlowiseAI/Flowise",
+    "url": "https://github.com/FlowiseAI/Flowise",
+    "description": "Build AI Agents, Visually",
+    "license": "NOASSERTION",
+    "commit": "9291856d1ea4a4ceea9f8fef8ce14f4f6c81e8eb",
+    "tree_truncated": false,
+    "file_count": 2450,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE.md",
+      "README.md",
+      "packages/components/nodes/agentflow/Tool/Tool.ts"
+    ]
+  },
+  {
+    "rank": 48,
+    "repo": "K-Dense-AI/scientific-agent-skills",
+    "url": "https://github.com/K-Dense-AI/scientific-agent-skills",
+    "description": "Turn any AI agent into an AI Scientist. The #1 Agent Skills library for science, used by 250,000+ scientists worldwide. 177 ready-to-use validated skills plus 100+ scientific databases covering biology, chemistry, medicine, and drug discovery. Compatible with Cursor, Claude Code, Codex, Pi, Antigravity, and the open Agent Skills standard.",
+    "license": "MIT",
+    "commit": "593377bb048752abb0152deab9fbb1083a6087df",
+    "tree_truncated": false,
+    "file_count": 2780,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE.md",
+      "README.md",
+      "skills/deeptools/scripts/workflow_generator.py"
+    ]
+  },
+  {
+    "rank": 49,
+    "repo": "multica-ai/multica",
+    "url": "https://github.com/multica-ai/multica",
+    "description": "Make humans and AI agents work as one team — open-source and self-hostable.",
+    "license": "NOASSERTION",
+    "commit": "dbdbb299164347586e2650bb67684a490726a798",
+    "tree_truncated": false,
+    "file_count": 6826,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "server/internal/service/plugin_agent_tools.go"
+    ]
+  },
+  {
+    "rank": 50,
+    "repo": "CherryHQ/cherry-studio",
+    "url": "https://github.com/CherryHQ/cherry-studio",
+    "description": "AI productivity studio with smart chat, autonomous agents, and 300+ assistants. Unified access to frontier LLMs",
+    "license": "AGPL-3.0",
+    "commit": "d81cdc44c9fe158b4a5b8bd52ec1cb59657f3713",
+    "tree_truncated": false,
+    "file_count": 10542,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "src/main/ai/mcp/servers/agentMemory.ts"
+    ]
+  },
+  {
+    "rank": 51,
+    "repo": "run-llama/llama_index",
+    "url": "https://github.com/run-llama/llama_index",
+    "description": "LlamaIndex is the document processing platform for AI",
+    "license": "MIT",
+    "commit": "619d74664e8404612038bc15a1a40c686037277c",
+    "tree_truncated": false,
+    "file_count": 9798,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "llama-index-core/llama_index/core/agent/workflow/prompts.py"
+    ]
+  },
+  {
+    "rank": 52,
+    "repo": "elder-plinius/CL4R1T4S",
+    "url": "https://github.com/elder-plinius/CL4R1T4S",
+    "description": "LEAKED SYSTEM PROMPTS FOR CHATGPT, CLAUDE, GEMINI, GROK, PERPLEXITY, CURSOR, LOVABLE, REPLIT, AND MORE! - AI SYSTEMS TRANSPARENCY FOR ALL! 👐",
+    "license": "AGPL-3.0",
+    "commit": "a4d3da04e63324e794a65500c3e41994fc4ab02e",
+    "tree_truncated": false,
+    "file_count": 80,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md"
+    ]
+  },
+  {
+    "rank": 53,
+    "repo": "DavidHDev/react-bits",
+    "url": "https://github.com/DavidHDev/react-bits",
+    "description": "The largest open-source library of animated, interactive, and customizable React & Next.js components for building standout web products and experiences. Built for humans and AI agents.",
+    "license": "NOASSERTION",
+    "commit": "e12c22192ac7b4b452c5e2feb9b586d74765d696",
+    "tree_truncated": false,
+    "file_count": 8804,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE.md",
+      "README.md",
+      "src/constants/Tools.js"
+    ]
+  },
+  {
+    "rank": 54,
+    "repo": "mudler/LocalAI",
+    "url": "https://github.com/mudler/LocalAI",
+    "description": "LocalAI is the open-source AI engine. Run any model - LLMs, vision, voice, image, video - on any hardware. No GPU required.",
+    "license": "MIT",
+    "commit": "3934ee8e348b4378b745b29058f6b4a0a671cc19",
+    "tree_truncated": false,
+    "file_count": 5562,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "core/services/agents/skills.go"
+    ]
+  },
+  {
+    "rank": 55,
+    "repo": "microsoft/qlib",
+    "url": "https://github.com/microsoft/qlib",
+    "description": "Qlib is an AI-oriented Quant investment platform that aims to use AI tech to empower Quant Research, from exploring ideas to implementing productions. Qlib supports diverse ML modeling paradigms, including supervised learning, market dynamics modeling, and RL, and is now equipped with https://github.com/microsoft/RD-Agent to automate R&D process.",
+    "license": "MIT",
+    "commit": "54355232463878d2eebb91fe0ee5fa7fa1f5976c",
+    "tree_truncated": false,
+    "file_count": 643,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "qlib/workflow/exp.py"
+    ]
+  },
+  {
+    "rank": 56,
+    "repo": "HKUDS/nanobot",
+    "url": "https://github.com/HKUDS/nanobot",
+    "description": "Ultra-lightweight, open-source, self-hosted personal AI agent framework in Python with WebUI, tools, memory, MCP, multi-agent workflows, automation, and chat apps",
+    "license": "MIT",
+    "commit": "3d0f8feb77cf0f067273c929d6e18f14dab63a1a",
+    "tree_truncated": false,
+    "file_count": 2182,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "nanobot/agent/memory.py"
+    ]
+  },
+  {
+    "rank": 57,
+    "repo": "zhayujie/CowAgent",
+    "url": "https://github.com/zhayujie/CowAgent",
+    "description": "Open-source personal AI assistant & Agent Harness. Plans tasks, runs tools and skills, self-evolves with memory and knowledge. Multi-agent, multi-model, multi-channel. Lightweight, extensible, one-line install.",
+    "license": "MIT",
+    "commit": "3129c2b56b4a519f58c355b1dabde14dfa357c8b",
+    "tree_truncated": false,
+    "file_count": 1606,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "agent/tools/memory/__init__.py"
+    ]
+  },
+  {
+    "rank": 58,
+    "repo": "DeusData/codebase-memory-mcp",
+    "url": "https://github.com/DeusData/codebase-memory-mcp",
+    "description": "Local code intelligence for developers and AI agents. Connect code, docs and infrastructure in a persistent graph, with CBM Lens, MCP tools, agent integrations and change-aware test selection.",
+    "license": "MIT",
+    "commit": "10ab613de30dfd573d0b251cd0ad648e1c7e5204",
+    "tree_truncated": false,
+    "file_count": 3571,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "scripts/lint-memory-core.py"
+    ]
+  },
+  {
+    "rank": 59,
+    "repo": "siyuan-note/siyuan",
+    "url": "https://github.com/siyuan-note/siyuan",
+    "description": "An open-source, privacy-first, self-hosted knowledge workspace where humans and AI agents work together 开源、隐私优先、自托管的知识工作空间，让人与智能体在此协作",
+    "license": "AGPL-3.0",
+    "commit": "bfe36100477b7bbd66db1a8b8cff5547b2ccdb59",
+    "tree_truncated": false,
+    "file_count": 6160,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "kernel/agent/tools.go"
+    ]
+  },
+  {
+    "rank": 60,
+    "repo": "LibreChat-AI/LibreChat",
+    "url": "https://github.com/LibreChat-AI/LibreChat",
+    "description": "Enhanced ChatGPT Clone: Features Agents, MCP, Skills, DeepSeek, Anthropic, AWS, OpenAI, Responses API, Azure, Groq, o1, GPT-5, Mistral, OpenRouter, Vertex AI, Gemini, Artifacts, AI model switching, message search, Code Interpreter, langchain, DALL-E-3, OpenAPI Actions, Functions, Secure Multi-User Auth, Presets, open-source for self-hosting. Active",
+    "license": "MIT",
+    "commit": "94ae8a419839f8c99f5cfc15a650804ced8163c2",
+    "tree_truncated": false,
+    "file_count": 6953,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "packages/api/src/agents/tools.ts"
+    ]
+  },
+  {
+    "rank": 61,
+    "repo": "herdrdev/herdr",
+    "url": "https://github.com/herdrdev/herdr",
+    "description": "the runtime your coding agents live on",
+    "license": "Apache-2.0",
+    "commit": "6b526626f66e22c08962a7f39a83fc9ac2ebda62",
+    "tree_truncated": false,
+    "file_count": 3107,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "src/cli/agent.rs"
+    ]
+  },
+  {
+    "rank": 62,
+    "repo": "vercel-labs/agent-browser",
+    "url": "https://github.com/vercel-labs/agent-browser",
+    "description": "Browser automation CLI for AI agents",
+    "license": "Apache-2.0",
+    "commit": "50c34e78c98dbe8add0b3ff36b4bcd7a47f1022b",
+    "tree_truncated": false,
+    "file_count": 482,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "packages/@agent-browser/eve/extension/tools/get.ts"
+    ]
+  },
+  {
+    "rank": 63,
+    "repo": "langchain-ai/langgraph",
+    "url": "https://github.com/langchain-ai/langgraph",
+    "description": "Build resilient agents.",
+    "license": "MIT",
+    "commit": "eb066bd31a2bf01fc0cd58256df4800a3695c233",
+    "tree_truncated": false,
+    "file_count": 698,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "libs/sdk-py/integration/graph/tools_agent.py"
+    ]
+  },
+  {
+    "rank": 64,
+    "repo": "AstrBotDevs/AstrBot",
+    "url": "https://github.com/AstrBotDevs/AstrBot",
+    "description": "AI Agent Assistant & development framework that integrates lots of IM platforms, LLMs, plugins and AI feature, and can be your openclaw alternative. ✨",
+    "license": "AGPL-3.0",
+    "commit": "0cd42bd4dd216d8810da4e3f5fb2e381d3c6817e",
+    "tree_truncated": false,
+    "file_count": 1848,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "astrbot/core/agent/tool_executor.py"
+    ]
+  },
+  {
+    "rank": 65,
+    "repo": "agno-agi/agno",
+    "url": "https://github.com/agno-agi/agno",
+    "description": "Build, run, and manage agent platforms.",
+    "license": "Apache-2.0",
+    "commit": "6d5af04a72f7b152f433394b1bd4ab740fde8aed",
+    "tree_truncated": false,
+    "file_count": 6408,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "cookbook/02_agents/16_skills/sample_skills/git-workflow/scripts/commit_message.py"
+    ]
+  },
+  {
+    "rank": 66,
+    "repo": "ToolJet/ToolJet",
+    "url": "https://github.com/ToolJet/ToolJet",
+    "description": "Open-source foundation of ToolJet AI - the enterprise app generation platform for internal tools, dashboards, business applications, workflows and AI agents. Build visually, from a prompt, or from Claude Code, Codex and Cursor over MCP 🚀",
+    "license": "AGPL-3.0",
+    "commit": "7b1231d39bd00cbd02ab14934e30a3109901ca8d",
+    "tree_truncated": false,
+    "file_count": 12134,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "server/src/dto/agent-tool.dto.ts"
+    ]
+  },
+  {
+    "rank": 67,
+    "repo": "pingcap/tidb",
+    "url": "https://github.com/pingcap/tidb",
+    "description": "TiDB is built for agentic workloads that grow unpredictably, with ACID guarantees and native support for transactions, analytics, and vector search. No data silos. No noisy neighbors. No infrastructure ceiling.",
+    "license": "Apache-2.0",
+    "commit": "ab30f363d490f72d83da6b22fadc394424b8bdc7",
+    "tree_truncated": false,
+    "file_count": 7838,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "tools/check/ut.go"
+    ]
+  },
+  {
+    "rank": 68,
+    "repo": "volcengine/OpenViking",
+    "url": "https://github.com/volcengine/OpenViking",
+    "description": "Self-evolving Context Database for AI Agents. Unify Agent Memory, Knowledge RAG and Skills.",
+    "license": "AGPL-3.0",
+    "commit": "2260f6899e882a8d7f693cca4dd8559dfc66b8cf",
+    "tree_truncated": false,
+    "file_count": 5331,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "bot/vikingbot/agent/memory.py"
+    ]
+  },
+  {
+    "rank": 69,
+    "repo": "PostHog/posthog",
+    "url": "https://github.com/PostHog/posthog",
+    "description": ":hedgehog: PostHog is the leading platform for building self-driving products. Our developer tools – AI observability, analytics, session replay, flags, experiments, error tracking, logs, and more – capture all the context agents need to diagnose problems, uncover opportunities, and ship fixes. Steer it all from Slack, web, desktop, or the MCP.",
+    "license": "NOASSERTION",
+    "commit": "1c7d4483393769201b28bf5930de3727b86af72c",
+    "tree_truncated": true,
+    "file_count": 51774,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "ee/hogai/tools/subagent_executor.py"
+    ]
+  },
+  {
+    "rank": 70,
+    "repo": "github/awesome-copilot",
+    "url": "https://github.com/github/awesome-copilot",
+    "description": "Community-contributed instructions, agents, skills, and configurations to help you make the most of GitHub Copilot.",
+    "license": "MIT",
+    "commit": "d85f762d6e521abf5fe16703946e9b38adc42da7",
+    "tree_truncated": false,
+    "file_count": 3663,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "skills/mini-context-graph/scripts/template_agent_workflow.py"
+    ]
+  },
+  {
+    "rank": 71,
+    "repo": "mindsdb/mindshub",
+    "url": "https://github.com/mindsdb/mindshub",
+    "description": "The unified workspace where open-source models get things done for you.",
+    "license": "MIT",
+    "commit": "d998b789ab085013a174a1013951eb3c9ad55e9c",
+    "tree_truncated": false,
+    "file_count": 41,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md"
+    ]
+  },
+  {
+    "rank": 72,
+    "repo": "VectifyAI/PageIndex",
+    "url": "https://github.com/VectifyAI/PageIndex",
+    "description": "📑 PageIndex: Document Index for Vectorless, Reasoning-based RAG",
+    "license": "MIT",
+    "commit": "c97d856a8fad27f486a3149a67c4afad719cc822",
+    "tree_truncated": false,
+    "file_count": 180,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "pageindex/agent_tools.py"
+    ]
+  },
+  {
+    "rank": 73,
+    "repo": "bytedance/UI-TARS-desktop",
+    "url": "https://github.com/bytedance/UI-TARS-desktop",
+    "description": "The Open-Source Multimodal AI Agent Stack: Connecting Cutting-Edge AI Models and Agent Infra",
+    "license": "Apache-2.0",
+    "commit": "3ac2cb8d946d78d5ff92ad17b318eaafa18c178c",
+    "tree_truncated": false,
+    "file_count": 2504,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "multimodal/tarko/agent-interface/src/tool.ts"
+    ]
+  },
+  {
+    "rank": 74,
+    "repo": "ashishpatel26/500-AI-Agents-Projects",
+    "url": "https://github.com/ashishpatel26/500-AI-Agents-Projects",
+    "description": "The 500 AI Agents Projects is a curated collection of AI agent use cases across various industries. It showcases practical applications and provides links to open-source projects for implementation, illustrating how AI agents are transforming sectors such as healthcare, finance, education, retail, and more.",
+    "license": "MIT",
+    "commit": "9beeb721c2af551bacaab827a76bddaecaa0ca5e",
+    "tree_truncated": false,
+    "file_count": 145,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "agents/03-pdf-qa-agent/agent.py"
+    ]
+  },
+  {
+    "rank": 75,
+    "repo": "patchy631/ai-engineering-hub",
+    "url": "https://github.com/patchy631/ai-engineering-hub",
+    "description": "In-depth tutorials on LLMs, RAGs and real-world AI agent applications.",
+    "license": "MIT",
+    "commit": "be534adc47ae3357253025d6e0ab769b465086d7",
+    "tree_truncated": false,
+    "file_count": 1512,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "open-agent-builder/lib/workflow/executors/tools.ts"
+    ]
+  },
+  {
+    "rank": 76,
+    "repo": "CopilotKit/CopilotKit",
+    "url": "https://github.com/CopilotKit/CopilotKit",
+    "description": "The Frontend Stack for Agents & Generative UI. React, Angular, Mobile, Slack, and more.  Makers of the AG-UI Protocol",
+    "license": "MIT",
+    "commit": "4930320fa3fe231d20c3525683cd3a46256692f1",
+    "tree_truncated": false,
+    "file_count": 22599,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "packages/runtime/src/agent/learned-skills.ts"
+    ]
+  },
+  {
+    "rank": 77,
+    "repo": "Dokploy/dokploy",
+    "url": "https://github.com/Dokploy/dokploy",
+    "description": "Open Source Alternative to Vercel, Netlify and Heroku.",
+    "license": "NOASSERTION",
+    "commit": "bce96fd75bf6afa098b8ce824e60cb649d5ec188",
+    "tree_truncated": false,
+    "file_count": 1628,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE.MD",
+      "README.md",
+      "apps/dokploy/server/queues/in-memory-queue.ts"
+    ]
+  },
+  {
+    "rank": 78,
+    "repo": "musistudio/claude-code-router",
+    "url": "https://github.com/musistudio/claude-code-router",
+    "description": "One local control plane for every AI agent: route across models, fuse new capabilities, orchestrate tools, and stay fully in control.",
+    "license": "MIT",
+    "commit": "057abaa1f95519ab8faf999e1ccef2b80ccdeb9e",
+    "tree_truncated": false,
+    "file_count": 863,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "packages/core/src/media/tools.ts"
+    ]
+  },
+  {
+    "rank": 79,
+    "repo": "khoj-ai/khoj",
+    "url": "https://github.com/khoj-ai/khoj",
+    "description": "Your AI second brain. Self-hostable. Get answers from the web or your docs. Build custom agents, schedule automations, do deep research. Turn any online or local LLM into your personal, autonomous AI (gpt, claude, gemini, llama, qwen, mistral). Get started - free.",
+    "license": "AGPL-3.0",
+    "commit": "ae229ca894c0b80ad84664afcfdde523b5e87057",
+    "tree_truncated": false,
+    "file_count": 702,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "src/khoj/database/migrations/0084_alter_agent_input_tools.py"
+    ]
+  },
+  {
+    "rank": 80,
+    "repo": "JCodesMore/ai-website-cloner-template",
+    "url": "https://github.com/JCodesMore/ai-website-cloner-template",
+    "description": "Clone any website with one command using AI coding agents",
+    "license": "MIT",
+    "commit": "ee3f5a2f31fd549b9593fa4f7cf6d2955ee593bb",
+    "tree_truncated": false,
+    "file_count": 48,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "next.config.ts"
+    ]
+  },
+  {
+    "rank": 81,
+    "repo": "continuedev/continue",
+    "url": "https://github.com/continuedev/continue",
+    "description": "open-source coding agent",
+    "license": "Apache-2.0",
+    "commit": "5522c6f44ca0ac3528b37244818fbfa39b5af470",
+    "tree_truncated": false,
+    "file_count": 3058,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "extensions/cli/src/tools/skills.ts"
+    ]
+  },
+  {
+    "rank": 82,
+    "repo": "reworkd/AgentGPT",
+    "url": "https://github.com/reworkd/AgentGPT",
+    "description": "🤖 Assemble, configure, and deploy autonomous AI Agents in your browser.",
+    "license": "GPL-3.0",
+    "commit": "18b073ab05b2902e1d052c3d2799786d8623b5e5",
+    "tree_truncated": false,
+    "file_count": 571,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "platform/reworkd_platform/web/api/agent/tools/code.py"
+    ]
+  },
+  {
+    "rank": 83,
+    "repo": "Tencent/WeKnora",
+    "url": "https://github.com/Tencent/WeKnora",
+    "description": "Open-source LLM knowledge platform: turn raw documents into a queryable RAG, an autonomous reasoning agent, and a self-maintaining Wiki.",
+    "license": "NOASSERTION",
+    "commit": "30658b7d43bf6415537435c42a5c4e95f2766b8d",
+    "tree_truncated": false,
+    "file_count": 5634,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "internal/agent/tools/skill_file.go"
+    ]
+  },
+  {
+    "rank": 84,
+    "repo": "mukul975/Anthropic-Cybersecurity-Skills",
+    "url": "https://github.com/mukul975/Anthropic-Cybersecurity-Skills",
+    "description": "817 structured cybersecurity skills for AI agents · Mapped to 6 frameworks: MITRE ATT&CK, NIST CSF 2.0, MITRE ATLAS, D3FEND, NIST AI RMF & MITRE F3 (Fight Fraud) · agentskills.io standard · Works with Claude Code, GitHub Copilot, Codex CLI, Cursor, Gemini CLI & 20+ platforms · 29 security domains · Apache 2.0",
+    "license": "Apache-2.0",
+    "commit": "54a798831d2266a3ca61ce68a7acb80b81160d57",
+    "tree_truncated": false,
+    "file_count": 4532,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "tools/validate-agentskills.py"
+    ]
+  },
+  {
+    "rank": 85,
+    "repo": "iOfficeAI/AionUi",
+    "url": "https://github.com/iOfficeAI/AionUi",
+    "description": "Open-source 24/7 Cowork app for OpenClaw, Hermes, Claude Code, Codex, OpenCode and 20+ more CLI Agent | Customize your assistants | Team them up｜Star if you like it!",
+    "license": "Apache-2.0",
+    "commit": "11cd2a9a20d1e033157636efc570b41384c66d85",
+    "tree_truncated": false,
+    "file_count": 2344,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "readme.md",
+      "mobile/src/constants/agentModes.ts"
+    ]
+  },
+  {
+    "rank": 86,
+    "repo": "ifixai-ai/iFixAi",
+    "url": "https://github.com/ifixai-ai/iFixAi",
+    "description": "Independent Auditing of AI Agents. Run by human or the agent itself, to answer the most crucial question in the AI Agent Economy. Is the agent doing what is supposed to do? With iFixAi you can have this answer in less than 120 seconds.",
+    "license": "Apache-2.0",
+    "commit": "92bb5d0a950e5da6ae94bbcddd95824b455058ba",
+    "tree_truncated": false,
+    "file_count": 905,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "ifixai/policy_lab/executor.py"
+    ]
+  },
+  {
+    "rank": 87,
+    "repo": "topoteretes/cognee",
+    "url": "https://github.com/topoteretes/cognee",
+    "description": "Cognee is the open-source AI memory platform for agents. Give your AI agents persistent long-term memory with small models for free",
+    "license": "Apache-2.0",
+    "commit": "37f788bd287750e10d7610173e5332b3843f6ebd",
+    "tree_truncated": false,
+    "file_count": 4217,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "tools/simulate_agent.py"
+    ]
+  },
+  {
+    "rank": 88,
+    "repo": "SigNoz/signoz",
+    "url": "https://github.com/SigNoz/signoz",
+    "description": "SigNoz is an open-source, OpenTelemetry-native observability platform for your team and their AI agents. Get logs, metrics, and traces in one tool with features like APM, distributed tracing, log management, infra monitoring, etc. Combined with SigNoz MCP and a native AI teammate (in SigNoz Cloud) it helps you build more resilient apps.",
+    "license": "NOASSERTION",
+    "commit": "30839d390f466b2f2732248cd845a07627ab72b1",
+    "tree_truncated": false,
+    "file_count": 8579,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "pkg/types/opamptypes/agent.go"
+    ]
+  },
+  {
+    "rank": 89,
+    "repo": "conductor-oss/conductor",
+    "url": "https://github.com/conductor-oss/conductor",
+    "description": "Conductor is an event driven agentic workflow engine providing durable and highly resilient execution engine for applications and AI Agents",
+    "license": "Apache-2.0",
+    "commit": "1488804170d159021c7e62dce61514b8f31ef9ff",
+    "tree_truncated": false,
+    "file_count": 4389,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "ui/src/data/workflow.js"
+    ]
+  },
+  {
+    "rank": 90,
+    "repo": "iOfficeAI/OfficeCLI",
+    "url": "https://github.com/iOfficeAI/OfficeCLI",
+    "description": "OfficeCLI is the first and best Office suite  purpose-built for AI agents to read, edit, and automate Word, Excel, and PowerPoint files. Free, open-source, single binary, no Office installation required.",
+    "license": "Apache-2.0",
+    "commit": "5e3e26278753be846b4b0b2fb0387f42d911553a",
+    "tree_truncated": false,
+    "file_count": 1214,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "skills/morph-ppt/reference/morph-helpers.py"
+    ]
+  },
+  {
+    "rank": 91,
+    "repo": "getzep/graphiti",
+    "url": "https://github.com/getzep/graphiti",
+    "description": "Build Real-Time Knowledge Graphs for AI Agents",
+    "license": "Apache-2.0",
+    "commit": "afea04fecd34671c6608fd2a877c5372ff55ee29",
+    "tree_truncated": false,
+    "file_count": 424,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "graphiti_core/driver/query_executor.py"
+    ]
+  },
+  {
+    "rank": 92,
+    "repo": "vxcontrol/pentagi",
+    "url": "https://github.com/vxcontrol/pentagi",
+    "description": "Fully autonomous AI Agents system capable of performing complex penetration testing tasks",
+    "license": "MIT",
+    "commit": "cffed9485aa1cca70762cd08a57ac62a80406258",
+    "tree_truncated": false,
+    "file_count": 1728,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "backend/pkg/tools/memory.go"
+    ]
+  },
+  {
+    "rank": 93,
+    "repo": "mksglu/context-mode",
+    "url": "https://github.com/mksglu/context-mode",
+    "description": "Context window optimization for AI coding agents. Sandboxes tool output (98% reduction), persists session memory, and   enforces routing across 17 platforms via MCP + hooks.",
+    "license": "NOASSERTION",
+    "commit": "fc0fda3d2bf62c9c35e085f9a28985088ba5fbca",
+    "tree_truncated": false,
+    "file_count": 599,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "src/executor.ts"
+    ]
+  },
+  {
+    "rank": 94,
+    "repo": "googleworkspace/cli",
+    "url": "https://github.com/googleworkspace/cli",
+    "description": "Google Workspace CLI — one command-line tool for Drive, Gmail, Calendar, Sheets, Docs, Chat, Admin, and more. Dynamically built from Google Discovery Service. Includes AI agent skills.",
+    "license": "Apache-2.0",
+    "commit": "a3768d0e82ad83cca2da97724e46bea4ff0e6dbd",
+    "tree_truncated": false,
+    "file_count": 222,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "crates/google-workspace-cli/src/executor.rs"
+    ]
+  },
+  {
+    "rank": 95,
+    "repo": "ComposioHQ/composio",
+    "url": "https://github.com/ComposioHQ/composio",
+    "description": "Composio powers 1000+ toolkits, tool search, context management, authentication, and a sandboxed workbench to help you build AI agents that turn intent into action.",
+    "license": "MIT",
+    "commit": "fecf1bffae70fe529aa8da340b980feab8407d19",
+    "tree_truncated": false,
+    "file_count": 3816,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "ts/packages/cli/src/services/tools-executor.ts"
+    ]
+  },
+  {
+    "rank": 96,
+    "repo": "oraios/serena",
+    "url": "https://github.com/oraios/serena",
+    "description": "A powerful MCP toolkit for coding, providing semantic retrieval and editing capabilities  - the IDE for your agent",
+    "license": "NOASSERTION",
+    "commit": "abb0a0f01b94bc8050086f0fb860077d17730324",
+    "tree_truncated": false,
+    "file_count": 1180,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "src/serena/tools/memory_tools.py"
+    ]
+  },
+  {
+    "rank": 97,
+    "repo": "e2b-dev/awesome-ai-agents",
+    "url": "https://github.com/e2b-dev/awesome-ai-agents",
+    "description": "A list of AI autonomous agents",
+    "license": "NOASSERTION",
+    "commit": "9596ab1e69fbbb6c95291141c8dab5c181083216",
+    "tree_truncated": false,
+    "file_count": 10,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE.md"
+    ]
+  },
+  {
+    "rank": 98,
+    "repo": "jackwener/OpenCLI",
+    "url": "https://github.com/jackwener/OpenCLI",
+    "description": "Make Any Website into CLI & Use your logged-in browser by AI agent. ",
+    "license": "Apache-2.0",
+    "commit": "aeaff2b796efabb7fd46654112418ab61fcae917",
+    "tree_truncated": false,
+    "file_count": 2349,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "src/skills.ts"
+    ]
+  },
+  {
+    "rank": 99,
+    "repo": "langchain-ai/deepagents",
+    "url": "https://github.com/langchain-ai/deepagents",
+    "description": "The batteries-included agent harness.",
+    "license": "MIT",
+    "commit": "a551c88389e390454e8363a4f1b74d41fd6b8c80",
+    "tree_truncated": false,
+    "file_count": 1843,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "libs/deepagents/deepagents/middleware/_skill_tools.py"
+    ]
+  },
+  {
+    "rank": 100,
+    "repo": "assafelovic/gpt-researcher",
+    "url": "https://github.com/assafelovic/gpt-researcher",
+    "description": "An autonomous agent that conducts deep research on any data using any LLM providers",
+    "license": "Apache-2.0",
+    "commit": "3582a6841fe7dc801e2a34e34ee408641aea9bce",
+    "tree_truncated": false,
+    "file_count": 841,
+    "review_level": "metadata, tree and sampled files; not an exhaustive code audit",
+    "sampled_paths": [
+      "LICENSE",
+      "README.md",
+      "deep_agents/tools.py"
+    ]
+  }
+]

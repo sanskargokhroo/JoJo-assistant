@@ -160,3 +160,7 @@ their own terms; see [third-party provenance](JOJO_THIRD_PARTY_NOTICES.md).
 ## Windows installer and shortcuts
 
 See [Windows installation and controls](JOJO_WINDOWS_INSTALLER.md) for the setup EXE, CLI setup, border-only overlay, and manual stop/deactivate shortcuts. Silence no longer cancels running work.
+
+### Workflow guides and conversation controls
+
+Native **Skills & plugins** includes eight optional workflow guides for research, debugging, browser use, documents, memory, writing, planning and defensive review. **Settings → Character & conversation** selects tone and follow-up preferences without changing the selected voice. **Check PC status** reads local CPU, RAM, storage and battery. See [agent ecosystem review](JOJO_AGENT_REVIEW.md) for the 100-repository inventory, source provenance and limitations. These guides use existing tools; they do not make JoJo AGI or import other agents.

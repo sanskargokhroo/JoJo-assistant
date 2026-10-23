@@ -358,7 +358,9 @@ def get_all_tools(include_disabled=False) -> List[Callable]:
     from jojo_workspace import search_knowledge, draft_workflow
     from jojo_security import audit_device_security, inspect_link, inspect_app_file, wifi_security_guidance
     from jojo_smart_home import list_smart_devices, control_smart_device
+    from jojo_playbooks import get_skill_guidance
     tools = [
+        get_skill_guidance,
         search_knowledge,
         draft_workflow,
         list_smart_devices,

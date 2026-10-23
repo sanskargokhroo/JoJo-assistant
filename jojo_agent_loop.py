@@ -164,7 +164,8 @@ For partial work use incomplete and name what remains. Never invent a successful
                 action_event(len(steps), name, 'returned' if ok else 'failed', value)
                 report_progress(f'{name}: ' + ('returned a result' if ok else 'failed; evaluating recovery'), tool=name)
             # Bound context while retaining enough error detail for recovery.
-            payload = dict(value) if isinstance(value, dict) else {'result': str(value)[:12000]}
+            from jojo_tool_payload import bounded_payload
+            payload = bounded_payload(value)
             payload['evidence_step'] = len(steps) if name in registry else None
             parts.append(types.Part(function_response=types.FunctionResponse(id=call.id, name=name, response=payload)))
         contents.append(types.Content(role='user', parts=parts))

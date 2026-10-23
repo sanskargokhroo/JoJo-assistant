@@ -141,6 +141,22 @@ class JoJoDesktop:
             self.chat.configure(state='disabled')
             self.chat.see('end')
 
+    def character_settings(self):
+        from jojo_character import settings, save, STYLES
+        current=settings()
+        win=tk.Toplevel(self.root);win.title('JoJo • Character');win.geometry('510x410')
+        tk.Label(win,text='Conversation style — voice and permissions stay unchanged',wraplength=470).pack(pady=12)
+        mode=ttk.Combobox(win,values=list(STYLES),state='readonly');mode.set(current['mode']);mode.pack(pady=8)
+        tk.Label(win,text='Custom tone preferences (up to 1000 characters)').pack()
+        custom=tk.Text(win,height=8,width=55);custom.insert('1.0',current['custom']);custom.pack(padx=12,pady=8)
+        followups=tk.BooleanVar(value=current['followups'])
+        tk.Checkbutton(win,text='Offer relevant next-step questions',variable=followups).pack()
+        def persist():
+            try:save(mode.get(),custom.get('1.0','end-1c'),followups.get())
+            except ValueError as exc:messagebox.showerror('Character',str(exc),parent=win);return
+            self.append('Character','Saved locally. Applies to the next reply.');win.destroy()
+        self.button(win,'Save character',persist,True).pack(pady=12)
+
     def submit(self):
         if self.stopping:
             return
@@ -255,6 +271,8 @@ class JoJoDesktop:
         viewport.bind('<Configure>',lambda event:viewport.itemconfigure(item,width=event.width))
         from jojo_install import gui as account_setup
         self.button(panel,'My model & Firebase setup',lambda:account_setup(self.root)).pack(pady=5)
+        self.button(panel,'Character & conversation',self.character_settings).pack(pady=5)
+        self.button(panel,'Check PC status',lambda:self.requests.put(('submit','/api/tasks',{'message':'pc status','source':'laptop','speak':False}))).pack(pady=5)
         tk.Label(panel, text='VOICE & WINDOW', bg=BG, fg=ACCENT, font=('Segoe UI', 13, 'bold')).pack(pady=(20, 16))
         tk.Label(panel, text='Microphone', bg=BG, fg=TEXT).pack()
         mic = ttk.Combobox(panel, state='readonly', values=list(self.microphones), width=48)

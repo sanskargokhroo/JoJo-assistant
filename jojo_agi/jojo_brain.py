@@ -114,6 +114,10 @@ def run_agent_cycle(goal, speak_callback=None, thought_callback=None, context_no
         try:
             from jojo_user_config import owner_context
             prompt = JOJO_AGI_SYSTEM_PROMPT + owner_context() + "\n" + context_notes
+            from jojo_character import prompt as character_prompt
+            prompt += character_prompt()
+            from jojo_playbooks import context as workflow_context
+            prompt += workflow_context(goal)
             from jojo_journal import context
             prompt += context(goal)
             prompt += recall_relevant_episodes(goal)

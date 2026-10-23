@@ -6,7 +6,8 @@ _last_greeting = None
 
 def wake_reply():
     global _last_greeting
-    choices = ['Haan, bolo—kya karna hai?', 'Sun raha hoon. Batao.', 'Ji, kya karein?', 'Bolo, aaj kya plan hai?']
+    from jojo_character import GREETINGS, settings
+    choices = GREETINGS.get(settings()['mode'],GREETINGS['companion'])
     choices = [s for s in choices if s != _last_greeting]
     _last_greeting = random.choice(choices)
     return _last_greeting
