@@ -9,17 +9,28 @@ saved-PIN entry on supported normal authentication screens. See
 `../JOJO_PIN_AND_SYNC.md` for opt-in setup, security tradeoffs, supported targets,
 Firestore synchronization and remaining device tests. The local test APK built on 10 October 2026 includes this change; physical-device validation is pending.
 
-## Source versus available APK
+## Current testing build
 
-The October 15 source adds Android 8.1 compatibility guards, border-only overlay
-by default and speech emoji filtering. Java compilation was checked; no new APK
-was generated. The existing October 10 APK still requires Android 11 and does
-not contain these changes. Do not use it to test Android 8.1. A fresh APK and
-physical-phone tests are deferred until requested.
+The 29 October 2026 testing build is **0.3.0-alpha.3**, version code 4, minimum
+Android 8.1 (API 27). It includes the native dashboard, JoJo icon, masked pairing
+field, connection diagnostics and selected laptop-voice playback. APK signing
+and Java compilation passed; physical voice/action testing is still in progress.
 
-On Android 8.1, locking requires the physical power button; accessibility lock
-requires Android 9+. On-device speech for local essentials requires Android 12+
-and an available recognizer; typed local commands remain available on older OSes.
+Laptop **Deactivate** now stops laptop listening, speech and tasks only. The
+shared backend remains available to the phone. Phone **Stop phone assistant**
+affects the phone only. This remains a USB companion: powering off the laptop,
+terminating the shared backend or disconnecting USB prevents full phone AI work.
+Memory is shared; this change does not move model execution onto the phone.
+
+Phone speech uses the laptop's selected Madhur voice/rate/pitch through an
+authenticated audio endpoint. Temporary audio is deleted after playback; no default
+Android/female voice fallback is used. If synthesis fails, the dashboard shows the
+reply. Private sessions do not send text to this online voice service. Latest reply
+and error display are process-local, not saved to phone preferences.
+
+On Android 8.1, locking requires the physical power button. On-device speech for
+local essentials requires Android 12+ and an available recognizer; typed commands
+remain available. No automatic unlock or payment tests are part of this trial.
 
 ## Install
 

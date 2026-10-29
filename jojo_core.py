@@ -1885,6 +1885,10 @@ def _speak_now(text, engine=None, epoch=None):
 _preferences = read_preferences()
 AUDIO_DEVICE_ID = _preferences.get("audio_device_id")
 microphone_paused = threading.Event()
+desktop_deactivated = threading.Event()
+if read_preferences().get("desktop_deactivated", False):
+    desktop_deactivated.set()
+    microphone_paused.set()
 barge_in_enabled = bool(read_preferences().get('barge_in_enabled', False))
 speech_cancel = threading.Event()
 shutdown_requested = threading.Event()
@@ -2029,6 +2033,7 @@ def _speech_worker():
             _speech_queue.task_done()
 
 def speak(text, engine=None):
+    if desktop_deactivated.is_set():return
     global _speech_thread
     checkpoint()
     update_voice_state(reply=str(text))
@@ -2080,6 +2085,8 @@ def listen_command(duration=3.0):
 def dispatch_command(message, source="laptop"):
     from jojo_runtime import bind_device
     bind_device(source)
+    if source == "laptop" and desktop_deactivated.is_set():
+        raise ValueError("Laptop assistant is deactivated. Open JoJo to reactivate it; phone service is separate.")
     from jojo_workspace import set_private
     if message.strip().casefold() in ('privacy on', 'private mode on', 'privacy mode on', 'ye yaad mat rakhna'):
         set_private(True)
@@ -3115,12 +3122,12 @@ def api_security_quick_scan():
 @app.post("/api/tasks")
 def api_submit_task(req: DesktopTaskReq):
     if is_stop_command(req.message):
-        stop_speech()
-        task = task_manager.cancel_pending()
+        if req.source == 'laptop':stop_speech()
+        task = task_manager.cancel_pending(req.source)
         return {"status": "cancel_requested", "task": task}
     try:
-        stop_speech()
-        return task_manager.submit(req.message, req.source, req.speak,request_id=req.request_id,replace_pending=True)
+        if req.source == 'laptop':stop_speech()
+        return task_manager.submit(req.message, req.source, req.speak and req.source == 'laptop',request_id=req.request_id,replace_pending=True)
     except ValueError as exc:
         raise HTTPException(400, str(exc))
     except queue.Full:
@@ -3135,13 +3142,31 @@ def api_task_status(task_id: str):
 
 @app.post("/api/tasks/{task_id}/cancel")
 def api_cancel_task(task_id: str):
-    stop_speech()
     if task_id == "active":
         pause_session()
         result = {"status":"cancel_requested","reply":"Stopped. Say JoJo when needed."}
     else:
+        task=task_manager.get(task_id)
+        if task and task.get('source')=='laptop':stop_speech()
         result = task_manager.cancel_task(task_id)
     return result or {"status": "idle", "reply": "No active task."}
+
+@app.post("/api/desktop/deactivate")
+def api_deactivate_desktop():
+    desktop_deactivated.set()
+    microphone_paused.set()
+    pause_session()
+    if vad_listener is not None:vad_listener.close()
+    save_preferences({'desktop_deactivated': True})
+    return {'status':'desktop_deactivated','mobile_service':'available',
+            'reply':'Laptop microphone, speech and work stopped. USB phone service remains available.'}
+
+@app.post("/api/desktop/activate")
+def api_activate_desktop():
+    desktop_deactivated.clear()
+    microphone_paused.clear()
+    save_preferences({'desktop_deactivated': False})
+    return {'status':'desktop_active'}
 
 @app.post("/api/shutdown")
 def api_shutdown():
@@ -3206,10 +3231,11 @@ def run_voice_loop():
     global is_active_session, last_interaction_time
     while not shutdown_requested.is_set():
         try:
-            if microphone_paused.is_set():
+            if microphone_paused.is_set() or desktop_deactivated.is_set():
                 time.sleep(.15)
                 continue
             text, mono_audio = listen_command(duration=3.0)
+            if microphone_paused.is_set() or desktop_deactivated.is_set():continue
             if not text:
                 expire_idle_session()
                 continue
@@ -3222,7 +3248,7 @@ def run_voice_loop():
                 continue
             if is_stop_command(clean):
                 # Stop is deliberately available without speaker authentication.
-                task_manager.cancel_pending()
+                task_manager.cancel_pending("laptop")
                 stop_speech()
                 continue
             if clean.casefold().strip(" .!।") in SLEEP_WORDS:

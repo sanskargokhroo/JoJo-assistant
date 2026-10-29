@@ -202,17 +202,11 @@ class JoJoDesktop:
             return
         self.stopping = True
         self.launch_core = False
-        self.detail.set('Stopping microphone, speech and tasks…')
+        self.detail.set('Stopping laptop only; phone relay stays available…')
         self.ambient.update({'status':'sleeping','active_session':False})
         def shutdown():
             try:
-                request('/api/shutdown', {}, timeout=5)
-                self.closed.wait(.5)
-            except Exception:
-                pass
-            try:
-                from jojo_controls import terminate_backend
-                terminate_backend(ROOT)
+                request('/api/desktop/deactivate', {}, timeout=5)
             except Exception:
                 self.events.put(('stop_failed', {}))
                 return
@@ -309,7 +303,7 @@ class JoJoDesktop:
                     self.events.put(('error', 'Pairing unavailable: ' + type(exc).__name__))
             threading.Thread(target=fetch, daemon=True).start()
         self.button(panel, 'Pair native Android companion', pair).pack(pady=8)
-        self.button(panel, 'Quit assistant & microphone', self.stop_assistant).pack(pady=8)
+        self.button(panel, 'Deactivate laptop only', self.stop_assistant).pack(pady=8)
         tk.Label(panel, text='Local neural voice match • Re-enroll after this upgrade.', bg=BG, fg=MUTED,
             font=('Segoe UI', 9)).pack(pady=8)
 
@@ -376,6 +370,7 @@ class JoJoDesktop:
                     raise ValueError('An older or different service is using port 8000. Restart JoJo.')
                 self.events.put(('connected', health))
                 if not devices_loaded:
+                    request('/api/desktop/activate', {})
                     self.events.put(('history', request('/api/memory/history')))
                     self.events.put(('devices', request('/api/audio_devices')))
                     devices_loaded = True
@@ -581,6 +576,8 @@ def main():
     if not preview and not claim_instance('desktop'):
         if '--background' in sys.argv:
             return
+        try:request('/api/desktop/activate', {})
+        except (OSError,ValueError):pass
         from jojo_overlay import show_jojo_hud
         show_jojo_hud()
         return

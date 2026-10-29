@@ -60,3 +60,22 @@ ending an already active laptop session. Each subsequent command still requires
 owner voice verification. Commands captured after speech ends no longer inherit
 an obsolete speaking flag. Settings launch variants have local-handler tests;
 physical microphone recognition still needs the owner's interactive trial.
+
+## October 29 device lifecycle and phone dashboard
+
+Laptop Deactivate / Ctrl+Shift+Q now leaves the shared backend available and stops
+only laptop microphone, speech and work. Ctrl+Alt+J reopens and reactivates the
+laptop assistant. Phone Stop remains local. Full backend shutdown is a separate
+administrative operation and still disconnects the USB companion. Unplugging USB
+or powering off the laptop is not supported for full phone reasoning.
+
+Android 0.3.0-alpha.3 (API 27+) now includes a native card dashboard, JoJo launcher
+icon, masked pairing, connection/permission status and readable latest replies.
+Phone audio uses the same selected laptop voice, with no system-TTS fallback.
+The October 10 APK limitations above describe the historical build, not this one.
+
+227 isolated Python regression tests passed, including scoped stop/deactivate,
+reactivation, authenticated mobile status and selected voice/private-session
+handling. Android compile/signature checks passed. Live phone action and owner
+voice performance must still be checked interactively; these are not universal
+app compatibility or AGI guarantees.

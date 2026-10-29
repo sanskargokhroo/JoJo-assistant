@@ -53,6 +53,17 @@ def register(app, core):
         if not supplied or not hmac.compare_digest(supplied, pairing_key()):
             raise HTTPException(401, 'Pair the native Android app from desktop Settings.')
 
+    from jojo_mobile_speech import register as register_speech
+    register_speech(app,core,authenticate)
+
+    @app.get('/api/mobile/status')
+    def mobile_status(request: Request):
+        authenticate(request)
+        return {'service':'jojo','device':'mobile','transport':'usb',
+                'owner_enrolled':core.boss_profile is not None,
+                'laptop_active':not core.desktop_deactivated.is_set(),
+                'message':'Phone control is independent of laptop listening; USB backend must stay running.'}
+
     @app.get('/api/mobile_pairing')
     def pairing(request: Request):
         if request.client and request.client.host not in ('127.0.0.1', '::1', 'testclient'):

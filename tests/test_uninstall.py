@@ -61,7 +61,8 @@ class UninstallTests(unittest.TestCase):
         with patch('jojo_controls.terminate_backend') as terminate,patch('jojo_desktop.request',return_value={'status':'shutting_down'}) as api,patch('jojo_desktop.threading.Thread') as thread:
             desktop.stop_assistant();thread.call_args.kwargs['target']()
             desktop.stop_assistant()
-        api.assert_called_once_with('/api/shutdown',{},timeout=5)
+        api.assert_called_once_with('/api/desktop/deactivate',{},timeout=5)
+        terminate.assert_not_called()
         desktop.requests.put.assert_not_called()
         self.assertFalse(desktop.launch_core)
         self.assertEqual(desktop.events.get()[0],'shutdown')

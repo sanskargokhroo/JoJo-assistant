@@ -4,18 +4,21 @@ import android.app.*;
 import android.content.Intent;
 import android.media.*;
 import android.os.*;
-import android.speech.tts.TextToSpeech;
+
 import android.util.Base64;
 import org.json.JSONObject;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.Locale;
+
 import java.util.concurrent.*;
 
 public class VoiceService extends Service {
     private static volatile VoiceService instance;
     private volatile HttpURLConnection connection;
+    private long lastErrorNotice=0;
+    static volatile String latestReply="", latestError="";
+    static boolean isRunning(){return instance!=null && instance.running;}
     static void stopNow(){
         VoiceService service=instance;
         if(service==null)return;
@@ -25,7 +28,7 @@ public class VoiceService extends Service {
         if(service.connection!=null){try{service.connection.disconnect();}catch(Exception ignored){}}
         AudioRecord audio=service.recorder;
         if(audio!=null){try{audio.stop();}catch(Exception ignored){}}
-        if(service.tts!=null)service.tts.stop();
+        synchronized(service.playbackLock){if(service.player!=null){service.player.release();service.player=null;}}
         if(service.worker!=null)service.worker.interrupt();
         if(ScreenService.instance!=null)ScreenService.instance.clearInstall();
         service.show("sleeping");
@@ -33,8 +36,8 @@ public class VoiceService extends Service {
     private volatile boolean running=false;
     private volatile AudioRecord recorder;
     private final Handler main=new Handler(Looper.getMainLooper());
-    private TextToSpeech tts;
-    private volatile boolean ttsReady=false;
+    private final Object playbackLock=new Object();
+    private MediaPlayer player;
     private volatile String session="";
     private long lastActive=0;
     private Thread worker;
@@ -54,7 +57,6 @@ public class VoiceService extends Service {
         Notification notification=new Notification.Builder(this,"voice").setSmallIcon(android.R.drawable.ic_btn_speak_now).setContentTitle("JoJo · waiting for wake word")
             .setContentText("Microphone active. Tap Stop to end listening.").addAction(new Notification.Action.Builder(null,"Stop",stop).build()).setOngoing(true).build();
         try{startForeground(7,notification);}catch(SecurityException|IllegalStateException unavailable){stopSelf();return START_NOT_STICKY;}
-        tts=new TextToSpeech(this,status->{if(status==TextToSpeech.SUCCESS){tts.setLanguage(Locale.forLanguageTag("hi-IN"));ttsReady=true;}});
         running=true;
         instance=this;
         listeningLock=getSystemService(PowerManager.class).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"JoJo:Listening");
@@ -68,7 +70,7 @@ public class VoiceService extends Service {
         if(listeningLock!=null&&listeningLock.isHeld())listeningLock.release();
         AudioRecord active=recorder;if(active!=null){try{active.stop();}catch(Exception ignored){}}
         if(worker!=null)worker.interrupt();
-        if(tts!=null){tts.stop();tts.shutdown();}show("sleeping");super.onDestroy();
+        show("sleeping");super.onDestroy();
     }
     private void show(String state){main.post(()->{if(ScreenService.instance!=null)ScreenService.instance.show(state);});}
     private <T>T onMain(Callable<T> callback) throws Exception {
@@ -78,12 +80,41 @@ public class VoiceService extends Service {
         if(ScreenService.instance==null)throw new IllegalStateException("Enable screen control");return ScreenService.instance.snapshot();});}
     private void say(String text) throws Exception {
         final String spoken=JojoSpeechText.clean(text);
-        if(!running||spoken.isEmpty())return;show("speaking");
-        if(!ttsReady){main.post(()->android.widget.Toast.makeText(this,text,android.widget.Toast.LENGTH_LONG).show());return;}
-        onMain(()->running?tts.speak(spoken,TextToSpeech.QUEUE_FLUSH,null,"jojo"):TextToSpeech.ERROR);
-        Thread.sleep(300);long deadline=SystemClock.elapsedRealtime()+30000;
-        while(running&&tts.isSpeaking()&&SystemClock.elapsedRealtime()<deadline)Thread.sleep(100);
-        Thread.sleep(350);
+        if(!running||spoken.isEmpty())return;
+        latestReply=text;latestError="";
+        show("speaking");File audio=null;HttpURLConnection c=null;
+        try{
+            c=(HttpURLConnection)new URL("http://127.0.0.1:8000/api/mobile/speech").openConnection();connection=c;
+            c.setConnectTimeout(5000);c.setReadTimeout(25000);c.setRequestMethod("POST");c.setDoOutput(true);
+            c.setRequestProperty("Content-Type","application/json");
+            c.setRequestProperty("X-JoJo-Key",getSharedPreferences("jojo",0).getString("key",""));
+            try(OutputStream out=c.getOutputStream()){out.write(new JSONObject().put("text",spoken).toString().getBytes(StandardCharsets.UTF_8));}
+            if(c.getResponseCode()!=200)throw new IOException("Selected voice unavailable");
+            audio=File.createTempFile("jojo-speech-",".mp3",getCacheDir());
+            try(InputStream in=c.getInputStream();OutputStream out=new FileOutputStream(audio)){
+                byte[] bytes=new byte[4096];int n,total=0;
+                while(running&&(n=in.read(bytes))!=-1){total+=n;if(total>5000000)throw new IOException("Audio too large");out.write(bytes,0,n);}
+            }
+            if(!running)return;
+            synchronized(playbackLock){
+                if(!running)return;
+                player=new MediaPlayer();player.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ASSISTANT).setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build());
+                player.setDataSource(audio.getAbsolutePath());player.prepare();player.start();
+            }
+            long deadline=SystemClock.elapsedRealtime()+120000;
+            while(running&&SystemClock.elapsedRealtime()<deadline){
+                synchronized(playbackLock){if(player==null||!player.isPlaying())break;}
+                Thread.sleep(100);
+            }
+        }catch(Exception unavailable){
+            // Service cannot open an activity dialog; expose the result in the app and a toast.
+            latestReply=text;latestError="Selected male voice unavailable. Reply shown in JoJo; no other voice used.";
+            if(running)main.post(()->android.widget.Toast.makeText(this,"Selected male voice unavailable. Read the reply in JoJo.",android.widget.Toast.LENGTH_LONG).show());
+        }finally{
+            synchronized(playbackLock){if(player!=null){player.release();player=null;}}
+            if(c!=null)c.disconnect();connection=null;if(audio!=null)audio.delete();
+        }
+        if(running)Thread.sleep(350);
     }
     private JSONObject post(String path,JSONObject input) throws Exception {
         android.content.SharedPreferences prefs=getSharedPreferences("jojo",0);
@@ -148,7 +179,11 @@ public class VoiceService extends Service {
                     }
                 }
             }catch(Exception e){
-                if(running){session="";show("sleeping");main.post(()->android.widget.Toast.makeText(this,"JoJo: "+e.getMessage(),android.widget.Toast.LENGTH_LONG).show());try{Thread.sleep(2000);}catch(InterruptedException ignored){}}
+                if(running){session="";show("sleeping");
+                    String detail=e instanceof java.net.ConnectException||e instanceof java.net.SocketTimeoutException?"Laptop connection unavailable. Check USB and use Check connection in JoJo.":"JoJo could not complete this step. Check connection and phone permissions.";
+                    latestError=detail;
+                    if(SystemClock.elapsedRealtime()-lastErrorNotice>15000){lastErrorNotice=SystemClock.elapsedRealtime();main.post(()->android.widget.Toast.makeText(this,detail,android.widget.Toast.LENGTH_LONG).show());}
+                    try{Thread.sleep(2000);}catch(InterruptedException ignored){}}
             }finally{if(audio!=null){try{audio.stop();}catch(Exception ignored){}audio.release();}recorder=null;}
         }
     }

@@ -50,3 +50,11 @@ OEM process termination and phone reconnect need physical-device testing. No APK
 was generated.
 
 Android reference: [microphone foreground service restrictions](https://developer.android.com/develop/background-work/services/fgs/service-types#microphone).
+
+### Separate laptop and phone controls (October 29)
+
+Ctrl+Shift+Q disables laptop login startup and deactivates the laptop assistant,
+while leaving the shared USB backend running for the phone. It no longer means
+all JoJo processes have exited. Ctrl+Alt+J reactivates laptop listening. Phone
+Stop does not stop laptop tasks. Shared memory is retained in both cases.
+The phone still needs the powered-on laptop backend and USB connection.
