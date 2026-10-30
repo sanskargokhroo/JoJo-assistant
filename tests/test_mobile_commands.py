@@ -16,3 +16,13 @@ class CommandTests(unittest.TestCase):
         error=RuntimeError('secret prompt');error.code=504
         self.assertIn('time par',planning_failure(error))
         self.assertNotIn('secret',planning_failure(error))
+
+    def test_reported_calculator_phrase(self):
+        self.assertEqual(navigation('कैलकुलेटर ओपन कर'),'calculator')
+        self.assertEqual(navigation('calculator open karo'),'calculator')
+    def test_system_action_aliases_and_unknown_rejected(self):
+        from jojo_mobile_actions import validate_action
+        for value,target in [('Calculator','calculator'),('album','gallery'),('sms','messages')]:
+            self.assertEqual(validate_action({'type':'open_system','app':value},'', '')['app'],target)
+        with self.assertRaises(ValueError):
+            validate_action({'type':'open_system','app':'arbitrary unknown'},'', '')

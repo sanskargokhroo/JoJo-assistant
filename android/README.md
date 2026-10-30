@@ -11,7 +11,7 @@ Firestore synchronization and remaining device tests. The local test APK built o
 
 ## Current testing build
 
-The 30 October 2026 testing build is **0.3.0-alpha.4**, version code 5, minimum
+The 30 October 2026 testing build is **0.3.0-alpha.5**, version code 6, minimum
 Android 8.1 (API 27). It includes the native dashboard, JoJo icon, masked pairing
 field, connection diagnostics and selected laptop-voice playback. APK signing
 and Java compilation passed; physical voice/action testing is still in progress.
@@ -182,3 +182,10 @@ the explicit microphone/service stop. Laptop silence behavior is unchanged.
 234 isolated regression tests passed, including direct-route selection, foreground
 verification, sleep aliases and planner error reporting. Physical command recognition,
 launch latency, audible acknowledgement and idle timing still need owner trials.
+
+Calculator correction: the reported phrase `कैलकुलेटर ओपन कर` now routes directly.
+Calculator is included in the validated system-app set, with safe alias normalization.
+The vivo 1820 does not register CATEGORY_APP_CALCULATOR; its installed
+`com.android.bbkcalculator` launch intent is used as a checked fallback. Other unknown
+system app names remain rejected. 237 regression tests passed, including the exact
+reported phrase and confirmation against the observed foreground package.

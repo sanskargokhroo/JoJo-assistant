@@ -12,6 +12,7 @@ def sleep_requested(text):
                     'बंद हो जा','बंद हो जाओ','सो जाओ','चुप हो जाओ'}
 
 ALIASES={
+ 'calculator':('calculator','calc','कैलकुलेटर','कैल्कुलेटर','कैलकुलेटर ऐप'),
  'settings':('settings','setting','सेटिंग','सेटिंग्स'),
  'gallery':('gallery','album','albums','गैलरी','गैलरी ऐप','एल्बम','एलबम'),
  'messages':('sms','messages','message app','messaging','एसएमएस','मैसेज','मैसेजेस','मैसेज ऐप'),
@@ -26,7 +27,7 @@ def navigation(text):
     text=normalize(text)
     prefixes=('','open ','launch ','show ','please open ','meri ','mera ','मेरी ','मेरा ')
     suffixes=('',' open',' kholo',' khol',' khol do',' khol de',' kholna',' open karo',' open kar',
-              ' open kr',' on kr',' on karo',' खोलो',' खोल',' खोल दो',' खोल दे',' ओपन करो',' ऑन करो')
+              ' open kr',' on kr',' on karo',' खोलो',' खोल',' खोल दो',' खोल दे',' ओपन करो',' ओपन कर',' ओपन कर दो',' खोल दीजिए',' ऑन करो')
     for app,aliases in ALIASES.items():
         if any(text==prefix+alias+suffix for alias in aliases for prefix in prefixes for suffix in suffixes):
             return app

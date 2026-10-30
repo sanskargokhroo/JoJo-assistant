@@ -23,6 +23,9 @@ def files(root=ROOT):
     chosen.update(p for p in (root/'android/app/src').rglob('*') if p.is_file() and p.suffix in ('.java','.xml'))
     chosen.update(p for p in (root/'web').glob('*') if p.is_file() and p.suffix in ('.html','.js','.json','.glb'))
     chosen.update((root/'web/icons').glob('jojo_*.png'))
+    # Explicit public brand assets only; never include arbitrary screenshots.
+    for name in ('assets/jojo_jj_hd.png','android/app/src/main/res/drawable/jojo_brand.png'):
+        if (root/name).is_file():chosen.add(root/name)
     return sorted(chosen)
 
 def audit(selected,root=ROOT):

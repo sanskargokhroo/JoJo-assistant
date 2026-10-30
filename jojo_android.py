@@ -56,6 +56,8 @@ def register(app, core):
 
     from jojo_mobile_speech import register as register_speech
     register_speech(app,core,authenticate)
+    from jojo_mobile_management import register as register_management
+    register_management(app,authenticate)
 
     @app.get('/api/mobile/status')
     def mobile_status(request: Request):
@@ -141,7 +143,7 @@ def register(app, core):
 Return JSON only: {"type":"click|type|scroll|open|open_system|request_install|wait|back|finish","node":0,"text":"","package":"","app":"","direction":"down|up","reply":"","status":"completed|incomplete|needs_input"}.
 You are running on Android, never on the laptop. Do not run desktop tools or claim a laptop action.
 One action at a time. Use ONLY visible node IDs and supplied installed package names.
-open_system app may be contacts, dialer, messages, gallery, settings, wifi, bluetooth, display.
+open_system app may be calculator, contacts, dialer, messages, gallery, settings, wifi, bluetooth, display.
 For Amazon/Flipkart open the installed Android app, then search its visible search field.
 If missing, request_install a known package (common packages supplied in catalog); the backend verifies
 its real Play Store title before asking the owner. If you do not know the package, ask for the Play Store link.

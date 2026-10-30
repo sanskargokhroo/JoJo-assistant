@@ -114,6 +114,13 @@ public class ScreenService extends AccessibilityService {
     }
     Intent systemIntent(String app){
         switch(app){
+            case "calculator":{
+                Intent standard=new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_CALCULATOR);
+                if(getPackageManager().resolveActivity(standard,android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)!=null)return standard;
+                // Vivo's factory calculator may omit CATEGORY_APP_CALCULATOR.
+                Intent installed=getPackageManager().getLaunchIntentForPackage("com.android.bbkcalculator");
+                return installed!=null?installed:standard;
+            }
             case "contacts":return new Intent(Intent.ACTION_VIEW,android.provider.ContactsContract.Contacts.CONTENT_URI);
             case "dialer":return new Intent(Intent.ACTION_DIAL);
             case "messages":return new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_APP_MESSAGING);

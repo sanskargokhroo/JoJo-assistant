@@ -20,7 +20,10 @@ def connect():
 
 def record(task):
     from jojo_workspace import private_session
-    if task.get('private') or private_session():return
+    from jojo_config import read_preferences
+    if task.get('private') or private_session() or not read_preferences().get('remember_tasks',True):return
+    # Never persist credential-bearing turns or their action payloads.
+    if re.search(r'(?i)password|passcode|\bpin\b|api[ _-]?key|\btoken\b|पासवर्ड|पिन',str(task.get('message',''))+' '+str(task.get('reply',''))):return
     with connect() as db:
         db.execute('INSERT OR REPLACE INTO turns VALUES (?,?,?,?,?,?,?)',
             (task['id'], task.get('created_at', time.time()), task['source'], task['message'],

@@ -20,6 +20,7 @@
         <activity android:name=".PinVaultActivity" android:exported="false" android:excludeFromRecents="true" />
         <activity android:name=".JojoOfflineActivity" android:exported="false" android:excludeFromRecents="true" />
         <activity android:name=".UnlockPromptActivity" android:exported="false" android:excludeFromRecents="true" />
+        <activity android:name=".JojoManagementActivity" android:exported="false" />
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter><action android:name="android.intent.action.MAIN" /><category android:name="android.intent.category.LAUNCHER" /></intent-filter>
         </activity>

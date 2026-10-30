@@ -12,7 +12,8 @@ def tables(db):
 
 def learn(task):
     from jojo_workspace import private_session
-    if task.get('private') or private_session():return
+    from jojo_config import read_preferences
+    if task.get('private') or private_session() or not read_preferences().get('remember_tasks',True):return
     if task.get('status') not in {'completed','failed','incomplete','cancelled','needs_input'}:return
     with connect() as db:
         tables(db)

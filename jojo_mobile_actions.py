@@ -13,7 +13,7 @@ APP_CATALOG = {
     'com.google.android.gm': 'Gmail',
     'com.google.android.apps.maps': 'Google Maps',
 }
-SYSTEM_APPS = {'contacts', 'dialer', 'messages', 'gallery', 'settings', 'wifi', 'bluetooth', 'display'}
+SYSTEM_APPS = {'calculator', 'contacts', 'dialer', 'messages', 'gallery', 'settings', 'wifi', 'bluetooth', 'display'}
 
 def store_app_name(package):
     """Resolve a proposed package against Google's store, never an arbitrary host."""
@@ -69,8 +69,13 @@ def validate_action(action, apps, screen, install_grant=None):
         return dict(action)
     import json
     require_allowed(json.dumps({k: v for k, v in action.items() if k != 'reply'}, ensure_ascii=False))
-    if kind == 'open_system' and action.get('app') not in SYSTEM_APPS:
-        raise ValueError('Unknown system app')
+    if kind == 'open_system':
+        from jojo_mobile_commands import ALIASES, normalize
+        target=normalize(action.get('app','')) if isinstance(action.get('app',''),str) else ''
+        canonical=next((key for key,aliases in ALIASES.items() if target==key or target in aliases),None)
+        if canonical not in SYSTEM_APPS:
+            raise ValueError('Is app ka system shortcut supported nahi hai. App ka exact installed naam batayiye.')
+        action=dict(action,app=canonical)
     if kind in {'open', 'request_install'}:
         pkg = action.get('package', '')
         if pkg not in installed_packages(apps):

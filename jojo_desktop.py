@@ -56,8 +56,8 @@ class JoJoDesktop:
         self.barge_in_enabled=False
         root.title('JoJo Desktop')
         root.configure(bg=BG)
-        root.geometry('580x780')
-        root.minsize(500, 650)
+        root.geometry('1040x740')
+        root.minsize(840, 620)
         root.protocol('WM_DELETE_WINDOW', self.close)
         self.build()
         self.ambient = AmbientOverlay(root)
@@ -81,51 +81,54 @@ class JoJoDesktop:
             relief='flat', bd=0, padx=14, pady=9, font=('Segoe UI', 10), cursor='hand2')
 
     def build(self):
-        head = tk.Frame(self.root, bg=BG)
+        sidebar=tk.Frame(self.root,bg=PANEL,width=210);sidebar.pack(side='left',fill='y');sidebar.pack_propagate(False)
+        tk.Label(sidebar,text='JJ  /  JoJo',bg=PANEL,fg=ACCENT,font=('Segoe UI',23,'bold')).pack(anchor='w',padx=20,pady=(24,4))
+        try:
+            self.brand_image=tk.PhotoImage(file=str(ROOT/'assets/jojo_jj_hd.png'))
+            self.brand_image=self.brand_image.subsample(max(1,self.brand_image.width()//64))
+            tk.Label(sidebar,image=self.brand_image,bg=PANEL).pack(anchor='w',padx=20,pady=10)
+            self.root.iconphoto(True,self.brand_image)
+        except tk.TclError:
+            pass
+        tk.Label(sidebar,text='DESKTOP WORKSPACE',bg=PANEL,fg=MUTED,font=('Segoe UI',9)).pack(anchor='w',padx=20,pady=(0,25))
+        from jojo_install import gui as account_setup
+        from jojo_workspace_ui import open_workspace
+        for title,action in [('Home',lambda:self.input.focus_set()),('Model & Firebase',lambda:account_setup(self.root)),('Skills & plugins',self.skills),('Memory & workspace',lambda:open_workspace(self.root,request)),('Owner & voice',self.owner_setup),('Settings & pairing',self.settings),('Conversation style',self.character_settings)]:
+            item=self.button(sidebar,title,action);item.configure(pady=6);item.pack(fill='x',padx=10,pady=1)
+        self.button(sidebar,'Uninstall',self.uninstall).pack(side='bottom',fill='x',padx=10,pady=10)
+        self.button(sidebar,'Deactivate',self.deactivate).pack(side='bottom',fill='x',padx=10,pady=3)
+        body=tk.Frame(self.root,bg=BG);body.pack(side='left',fill='both',expand=True)
+        head = tk.Frame(body, bg=BG)
         head.pack(fill='x', padx=24, pady=(22, 0))
         tk.Label(head, text='JOJO', font=('Segoe UI', 23, 'bold'), fg=TEXT, bg=BG).pack(side='left')
         self.connection = tk.StringVar(value='STARTING…')
         tk.Label(head, textvariable=self.connection, font=('Segoe UI', 9, 'bold'), fg=ACCENT, bg=BG).pack(side='right')
-        self.canvas = tk.Canvas(self.root, width=280, height=136, bg=BG, highlightthickness=0)
-        self.canvas.pack(pady=(4, 0))
+        self.canvas = tk.Canvas(body, width=280, height=136, bg=BG, highlightthickness=0)
+        # Keep the animation available without occupying the conversation workspace.
         self.status = tk.StringVar(value='Connecting to your assistant…')
-        tk.Label(self.root, textvariable=self.status, bg=BG, fg=TEXT, font=('Segoe UI', 15, 'bold')).pack()
+        tk.Label(body, textvariable=self.status, bg=BG, fg=TEXT, font=('Segoe UI', 15, 'bold')).pack()
         self.detail = tk.StringVar(value='Your conversation and controls stay in this desktop window.')
-        tk.Label(self.root, textvariable=self.detail, bg=BG, fg=MUTED, wraplength=480,
+        tk.Label(body, textvariable=self.detail, bg=BG, fg=MUTED, wraplength=480,
             font=('Segoe UI', 10)).pack(padx=20, pady=(7, 14))
-        controls = tk.Frame(self.root, bg=BG)
+        controls = tk.Frame(body, bg=BG)
         controls.pack(fill='x', padx=24)
         self.mic_button = self.button(controls, 'Pause mic', self.toggle_mic)
         self.mic_button.pack(side='left')
         self.button(controls, 'Stop task', self.stop).pack(side='left', padx=8)
-        self.button(controls, 'Settings', self.settings).pack(side='right')
-        lifecycle = tk.Frame(self.root, bg=BG)
-        lifecycle.pack(fill='x', padx=24, pady=(8,0))
-        self.button(lifecycle, 'Stop JoJo', self.stop_assistant).pack(side='left')
-        self.button(lifecycle, 'Deactivate', self.deactivate).pack(side='left',padx=6)
-        self.button(lifecycle, 'Uninstall JoJo', self.uninstall).pack(side='right')
-        setup_controls=tk.Frame(self.root,bg=BG);setup_controls.pack(fill='x',padx=24,pady=(8,0))
-        self.button(setup_controls,'Owner setup',self.owner_setup).pack(side='left')
-        from jojo_workspace_ui import open_workspace
-        self.button(setup_controls,'Workspace',lambda:open_workspace(self.root,request)).pack(side='left',padx=6)
-        self.button(setup_controls,'Skills & plugins',self.skills).pack(side='right')
-        security_controls = tk.Frame(self.root, bg=BG)
-        security_controls.pack(fill='x', padx=24, pady=(8,0))
-        self.button(security_controls, 'Security check', lambda: self.requests.put(('submit','/api/tasks',{'message':'security check','source':'laptop','speak':False}))).pack(side='left')
-        self.button(security_controls, 'Defender quick scan', lambda: self.requests.put(('security_scan','/api/security/quick_scan',{}))).pack(side='right')
-        self.chat = ScrolledText(self.root, bg=PANEL, fg=TEXT, insertbackground=TEXT,
+        self.button(controls, 'Stop JoJo', self.stop_assistant).pack(side='right')
+        self.chat = ScrolledText(body, bg=PANEL, fg=TEXT, insertbackground=TEXT,
             relief='flat', borderwidth=0, font=('Segoe UI', 11), wrap='word', padx=16, pady=12,
             state='disabled', height=10)
         self.chat.pack(fill='both', expand=True, padx=24, pady=14)
         self.chat.tag_configure('name', foreground=ACCENT, font=('Segoe UI', 10, 'bold'))
-        composer = tk.Frame(self.root, bg=PANEL, padx=10, pady=10)
+        composer = tk.Frame(body, bg=PANEL, padx=10, pady=10)
         composer.pack(fill='x', padx=24)
         self.input = tk.Entry(composer, bg=PANEL, fg=TEXT, insertbackground=ACCENT,
             relief='flat', font=('Segoe UI', 12))
         self.input.pack(side='left', fill='x', expand=True, ipady=8)
         self.input.bind('<Return>', lambda event: self.submit())
         self.button(composer, 'Send  ↗', self.submit, True).pack(side='right', padx=(8, 0))
-        footer = tk.Frame(self.root, bg=BG)
+        footer = tk.Frame(body, bg=BG)
         footer.pack(fill='x', padx=24, pady=(9, 18))
         self.speak_results = tk.BooleanVar(value=True)
         tk.Checkbutton(footer, text='Speak replies', variable=self.speak_results, bg=BG, fg=MUTED,
@@ -254,19 +257,13 @@ class JoJoDesktop:
         win.configure(bg=BG)
         win.transient(self.root)
         win.geometry(f'490x640+{max(0, self.root.winfo_x()+30)}+{max(0, self.root.winfo_y()+50)}')
-        viewport=tk.Canvas(win,bg=BG,highlightthickness=0)
-        scrollbar=ttk.Scrollbar(win,orient='vertical',command=viewport.yview)
-        scrollbar.pack(side='right',fill='y')
-        viewport.pack(side='left',fill='both',expand=True)
-        viewport.configure(yscrollcommand=scrollbar.set)
-        panel=tk.Frame(viewport,bg=BG)
-        item=viewport.create_window((0,0),window=panel,anchor='nw')
-        panel.bind('<Configure>',lambda event:viewport.configure(scrollregion=viewport.bbox('all')))
-        viewport.bind('<Configure>',lambda event:viewport.itemconfigure(item,width=event.width))
+        tabs=ttk.Notebook(win);tabs.pack(fill='both',expand=True,padx=12,pady=12)
+        panel=tk.Frame(tabs,bg=BG);account=tk.Frame(tabs,bg=BG);privacy=tk.Frame(tabs,bg=BG)
+        tabs.add(panel,text='Voice & appearance');tabs.add(account,text='Connections');tabs.add(privacy,text='Privacy & security')
         from jojo_install import gui as account_setup
-        self.button(panel,'My model & Firebase setup',lambda:account_setup(self.root)).pack(pady=5)
-        self.button(panel,'Character & conversation',self.character_settings).pack(pady=5)
-        self.button(panel,'Check PC status',lambda:self.requests.put(('submit','/api/tasks',{'message':'pc status','source':'laptop','speak':False}))).pack(pady=5)
+        self.button(account,'My model & Firebase setup',lambda:account_setup(self.root)).pack(pady=5)
+        self.button(account,'Character & conversation',self.character_settings).pack(pady=5)
+        self.button(privacy,'Check PC status',lambda:self.requests.put(('submit','/api/tasks',{'message':'pc status','source':'laptop','speak':False}))).pack(pady=5)
         tk.Label(panel, text='VOICE & WINDOW', bg=BG, fg=ACCENT, font=('Segoe UI', 13, 'bold')).pack(pady=(20, 16))
         tk.Label(panel, text='Microphone', bg=BG, fg=TEXT).pack()
         mic = ttk.Combobox(panel, state='readonly', values=list(self.microphones), width=48)
@@ -291,6 +288,12 @@ class JoJoDesktop:
                 'speech_language': 'hi-IN' if language.current() == 0 else 'en-IN', 'barge_in_enabled':barge.get()}))
             win.destroy()
         self.button(panel, 'Save settings', save, True).pack(pady=12)
+        from jojo_config import read_preferences,save_preferences
+        remember=tk.BooleanVar(value=read_preferences().get('remember_tasks',True))
+        tk.Checkbutton(privacy,text='Remember task outcomes on both devices',variable=remember,bg=BG,fg=TEXT,selectcolor=PANEL,command=lambda:save_preferences({'remember_tasks':remember.get()})).pack(pady=16)
+        tk.Label(privacy,text='Relevant history guides future tasks. Current screen is checked again.\nPrivate sessions and credential-bearing turns are not saved.',wraplength=440,bg=BG,fg=MUTED).pack(padx=12,pady=10)
+        self.button(privacy,'Security check',lambda:self.requests.put(('submit','/api/tasks',{'message':'security check','source':'laptop','speak':False}))).pack(pady=8)
+        self.button(privacy,'Defender quick scan',lambda:self.requests.put(('security_scan','/api/security/quick_scan',{}))).pack(pady=8)
         def enroll():
             self.append('Voice enrollment', 'Ab 9 seconds tak normal awaaz mein bolte rahiye: JoJo, main aapka boss hoon, meri awaaz yaad rakho.')
             self.requests.put(('enroll', '/api/enroll_boss', {}))
@@ -302,8 +305,8 @@ class JoJoDesktop:
                 except Exception as exc:
                     self.events.put(('error', 'Pairing unavailable: ' + type(exc).__name__))
             threading.Thread(target=fetch, daemon=True).start()
-        self.button(panel, 'Pair native Android companion', pair).pack(pady=8)
-        self.button(panel, 'Deactivate laptop only', self.stop_assistant).pack(pady=8)
+        self.button(account, 'Pair native Android companion', pair).pack(pady=8)
+        self.button(privacy, 'Deactivate laptop only', self.stop_assistant).pack(pady=8)
         tk.Label(panel, text='Local neural voice match • Re-enroll after this upgrade.', bg=BG, fg=MUTED,
             font=('Segoe UI', 9)).pack(pady=8)
 
@@ -535,10 +538,13 @@ class JoJoDesktop:
                 win = tk.Toplevel(self.root)
                 win.title('JoJo Android pairing')
                 tk.Label(win, text='Enter this key in the native Android app.\nUse USB debugging and adb reverse tcp:8000 tcp:8000.', padx=20, pady=15).pack()
-                entry = tk.Entry(win, width=62)
+                entry = tk.Entry(win, width=62, show='•')
                 entry.insert(0, data['key'])
                 entry.configure(state='readonly')
                 entry.pack(padx=20, pady=15)
+                visible=tk.BooleanVar(value=False)
+                tk.Checkbutton(win,text='Reveal pairing key',variable=visible,command=lambda:entry.configure(show='' if visible.get() else '•')).pack(pady=8)
+                win.after(30000,lambda:entry.configure(show='•') if entry.winfo_exists() else None)
             elif kind == 'shutdown':
                 self.closed.set()
                 self.root.destroy()

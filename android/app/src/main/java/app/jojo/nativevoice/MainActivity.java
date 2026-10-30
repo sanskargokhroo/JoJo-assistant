@@ -13,6 +13,18 @@ public class MainActivity extends Activity {
     private final android.os.Handler ui=new android.os.Handler(android.os.Looper.getMainLooper());
     private TextView connectionStatus, permissionStatus, lastReply;
     private boolean checking=false, destroyed=false;
+    private final java.util.ArrayList<ScrollView> pages=new java.util.ArrayList<>();
+    private final java.util.ArrayList<Button> tabs=new java.util.ArrayList<>();
+    private LinearLayout pageHost;
+    private LinearLayout page(){
+        LinearLayout p=new LinearLayout(this);p.setOrientation(LinearLayout.VERTICAL);p.setPadding(dp(16),0,dp(16),dp(16));
+        ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.addView(p);pages.add(scroll);
+        pageHost.addView(scroll,new LinearLayout.LayoutParams(-1,-1));scroll.setVisibility(android.view.View.GONE);return p;
+    }
+    private void selectPage(int index){
+        for(int i=0;i<pages.size();i++){pages.get(i).setVisibility(i==index?android.view.View.VISIBLE:android.view.View.GONE);
+            tabs.get(i).setTextColor(i==index?Color.rgb(98,229,216):Color.rgb(164,182,207));}
+    }
     private final Runnable refresh=new Runnable(){public void run(){refreshStatus();ui.postDelayed(this,1500);}};
     private int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+.5f);}
     private android.graphics.drawable.GradientDrawable surface(int color,int radius){
@@ -32,16 +44,18 @@ public class MainActivity extends Activity {
     }
     @Override public void onCreate(Bundle bundle){
         super.onCreate(bundle);
+        getWindow().setFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE,android.view.WindowManager.LayoutParams.FLAG_SECURE);
         getWindow().setStatusBarColor(Color.rgb(9,15,29));getWindow().setNavigationBarColor(Color.rgb(9,15,29));
         getWindow().setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN|android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        LinearLayout panel=new LinearLayout(this);panel.setOrientation(LinearLayout.VERTICAL);
-        panel.setPadding(dp(20),dp(20),dp(20),dp(32));panel.setBackgroundColor(Color.rgb(9,15,29));
-        panel.setFocusableInTouchMode(true);
-        ImageView logo=new ImageView(this);logo.setImageResource(getResources().getIdentifier("jojo_icon","drawable",getPackageName()));
-        logo.setContentDescription("JoJo logo");panel.addView(logo,new LinearLayout.LayoutParams(dp(64),dp(64)));
-        label(panel,"JoJo",34,Color.WHITE).setTypeface(null,android.graphics.Typeface.BOLD);
-        label(panel,"YOUR PHONE. YOUR ASSISTANT.",12,Color.rgb(98,229,216));
-        label(panel,"Shared memory. Separate device controls.",15,Color.rgb(164,182,207));
+        LinearLayout screen=new LinearLayout(this);screen.setOrientation(LinearLayout.VERTICAL);screen.setBackgroundColor(Color.rgb(9,15,29));
+        LinearLayout header=new LinearLayout(this);header.setGravity(android.view.Gravity.CENTER_VERTICAL);header.setPadding(dp(20),dp(12),dp(20),dp(8));
+        ImageView logo=new ImageView(this);logo.setImageResource(getResources().getIdentifier("jojo_icon","drawable",getPackageName()));logo.setContentDescription("JoJo double J logo");
+        header.addView(logo,new LinearLayout.LayoutParams(dp(44),dp(44)));
+        LinearLayout titles=new LinearLayout(this);titles.setOrientation(LinearLayout.VERTICAL);titles.setPadding(dp(12),0,0,0);
+        label(titles,"JoJo",25,Color.WHITE).setTypeface(null,android.graphics.Typeface.BOLD);
+        label(titles,android.os.Build.MODEL+" • Phone workspace",12,Color.rgb(164,182,207));header.addView(titles);screen.addView(header);
+        pageHost=new LinearLayout(this);pageHost.setOrientation(LinearLayout.VERTICAL);screen.addView(pageHost,new LinearLayout.LayoutParams(-1,0,1));
+        LinearLayout panel=page(),connections=page(),skills=page(),settings=page();
         LinearLayout status=card(panel,"This phone","USB companion • laptop backend required");
         connectionStatus=label(status,"Tap Check connection to verify pairing.",14,Color.WHITE);
         permissionStatus=label(status,"",13,Color.rgb(164,182,207));
@@ -55,28 +69,34 @@ public class MainActivity extends Activity {
         });
         LinearLayout replyCard=card(panel,"Latest reply","Same selected laptop voice • no automatic voice substitution");
         lastReply=label(replyCard,"Your latest response appears here.",14,Color.WHITE);
-        LinearLayout pairing=card(panel,"Connect your laptop","The same private key connects this phone to your JoJo memory.");
+        LinearLayout pairing=card(connections,"Connect your laptop","The same private key connects this phone to your JoJo memory.");
+        TextView paired=label(pairing,"",14,Color.rgb(98,229,216));
+        LinearLayout editor=new LinearLayout(this);editor.setOrientation(LinearLayout.VERTICAL);pairing.addView(editor);
         EditText key=new EditText(this);key.setHint("Paste pairing key");key.setHintTextColor(Color.rgb(144,161,185));
         key.setTextColor(Color.WHITE);key.setSingleLine();key.setTextSize(14);
         key.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        key.setText(getSharedPreferences("jojo",0).getString("key",""));pairing.addView(key);
-        button(pairing,"Save pairing",()->{
+        editor.addView(key);
+        Runnable pairingState=()->{boolean saved=!getSharedPreferences("jojo",0).getString("key","").isEmpty();paired.setText(saved?"Pairing saved • key hidden":"Not paired");editor.setVisibility(saved?android.view.View.GONE:android.view.View.VISIBLE);key.setText("");};
+        pairingState.run();
+        button(pairing,"Change pairing",()->{key.setText("");editor.setVisibility(android.view.View.VISIBLE);});
+        button(pairing,"Remove pairing",()->new android.app.AlertDialog.Builder(this).setTitle("Disconnect this phone?").setMessage("Phone listening will stop. Laptop data stays unchanged.").setNegativeButton("Cancel",null).setPositiveButton("Disconnect",(d,w)->{stopJoJo();getSharedPreferences("jojo",0).edit().remove("key").apply();pairingState.run();connectionStatus.setText("Not paired");}).show());
+        button(editor,"Save pairing",()->{
             String value=key.getText().toString().trim();
             if(!value.matches("[A-Za-z0-9_-]{30,100}")){Toast.makeText(this,"Paste the complete key from laptop Settings",Toast.LENGTH_LONG).show();return;}
             getSharedPreferences("jojo",0).edit().putString("key",value).apply();key.clearFocus();
             ((android.view.inputmethod.InputMethodManager)getSystemService(INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(key.getWindowToken(),0);
-            checkConnection();
+            pairingState.run();checkConnection();
         });
-        LinearLayout access=card(panel,"Permissions","You choose what JoJo can access. Screen control is needed for the edge glow and app actions.");
+        LinearLayout access=card(settings,"Permissions","You choose what JoJo can access. Screen control is needed for the edge glow and app actions.");
         button(access,"Enable screen control",()->startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
         button(access,"Phone app permissions",()->startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,android.net.Uri.parse("package:"+getPackageName()))));
-        LinearLayout look=card(panel,"Appearance","Animated cyan, violet and pink edges. Center animation is off by default.");
+        LinearLayout look=card(settings,"Appearance","Animated cyan, violet and pink edges. Center animation is off by default.");
         Switch centerToggle=new Switch(this);centerToggle.setText("Show center animation");centerToggle.setTextColor(Color.WHITE);centerToggle.setMinHeight(dp(48));
         centerToggle.setChecked(getSharedPreferences("jojo",0).getBoolean("overlay_center",false));look.addView(centerToggle);
         centerToggle.setOnCheckedChangeListener((b,v)->getSharedPreferences("jojo",0).edit().putBoolean("overlay_center",v).apply());
-        LinearLayout local=card(panel,"On this device","Limited local tools work without the laptop. Full voice and AI need the USB backend.");
+        LinearLayout local=card(skills,"On this device","Limited local tools work without the laptop. Full voice and AI need the USB backend.");
         button(local,"Open local essentials",()->startActivity(new Intent(this,JojoOfflineActivity.class)));
-        LinearLayout advanced=card(panel,"Advanced settings","Optional notifications, background operation and account removal.");
+        LinearLayout advanced=card(settings,"Advanced settings","Optional notifications, background operation and account removal.");
         LinearLayout options=new LinearLayout(this);options.setOrientation(LinearLayout.VERTICAL);options.setVisibility(android.view.View.GONE);
         button(advanced,"Show / hide advanced",()->options.setVisibility(options.getVisibility()==android.view.View.VISIBLE?android.view.View.GONE:android.view.View.VISIBLE));advanced.addView(options);
         button(options,"Background battery settings",()->startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)));
@@ -96,14 +116,19 @@ public class MainActivity extends Activity {
                 stopJoJo();if(ScreenService.instance!=null)ScreenService.instance.disableSelf();
                 startActivity(new Intent(Intent.ACTION_UNINSTALL_PACKAGE,android.net.Uri.parse("package:"+getPackageName())));
             }).show());
-        label(panel,"Phone Stop and laptop Deactivate are separate. Switching off the laptop or unplugging USB disconnects this companion. After reboot, use Resume JoJo in notifications.",12,Color.rgb(164,182,207));
-        label(panel,"JoJo • Native Android companion",12,Color.rgb(98,229,216));
-        ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.addView(panel);
-        LinearLayout screen=new LinearLayout(this);screen.setOrientation(LinearLayout.VERTICAL);screen.setBackgroundColor(Color.rgb(9,15,29));
-        screen.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-        LinearLayout footer=new LinearLayout(this);footer.setOrientation(LinearLayout.VERTICAL);footer.setPadding(dp(20),0,dp(20),dp(10));
-        button(footer,"Stop phone assistant",()->{stopJoJo();refreshStatus();});screen.addView(footer);
-        setContentView(screen);panel.requestFocus();refreshStatus();
+        LinearLayout identity=card(settings,"Owner & memory","Every voice command is checked against your enrolled voice. Voice matching is not replay-proof.");
+        label(identity,"Enroll or update your voice in PC Owner setup. Use the same owner voice on Redmi and the trial phone.",14,Color.WHITE);
+        button(identity,"Check owner enrollment",this::checkConnection);
+        LinearLayout models=card(connections,"AI & account","Your model and Firebase run on the paired laptop. Keys are never displayed here.");
+        button(models,"Model & memory controls",()->startActivity(new Intent(this,JojoManagementActivity.class)));
+        LinearLayout catalog=card(skills,"Skills & plugins","Manage shared capability switches. Changes apply to your paired backend.");
+        button(catalog,"Manage skills",()->startActivity(new Intent(this,JojoManagementActivity.class).putExtra("page","skills")));
+        LinearLayout navigation=new LinearLayout(this);navigation.setPadding(dp(6),0,dp(6),0);
+        String[] names={"Home","Connect","Skills","Settings"};
+        for(int i=0;i<names.length;i++){final int index=i;Button tab=new Button(this);tab.setText(names[i]);tab.setAllCaps(false);tab.setTextSize(12);tab.setBackgroundColor(Color.TRANSPARENT);tab.setMinWidth(0);tab.setPadding(0,0,0,0);tab.setContentDescription(names[i]+" tab");navigation.addView(tab,new LinearLayout.LayoutParams(0,dp(52),1));tabs.add(tab);tab.setOnClickListener(v->selectPage(index));}
+        LinearLayout footer=new LinearLayout(this);footer.setOrientation(LinearLayout.VERTICAL);footer.setPadding(dp(16),0,dp(16),dp(4));
+        button(footer,"Stop phone assistant",()->{stopJoJo();refreshStatus();});screen.addView(footer);screen.addView(navigation);
+        setContentView(screen);selectPage(0);refreshStatus();
     }
     private void refreshStatus(){
         if(permissionStatus==null)return;

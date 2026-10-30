@@ -127,6 +127,14 @@ class CompanionFlowTests(unittest.TestCase):
             result=self.step(session,apps='Amazon = com.amazon.mShop.android.shopping',screen='0: Home').json()
         self.assertEqual(result['action'],{'type':'open','package':'com.amazon.mShop.android.shopping'})
 
+    def test_reported_calculator_command_executes_without_planner(self):
+        session=self.voice('JoJo कैलकुलेटर ओपन कर').json()['session']
+        with patch('jojo_android.make_client') as model:
+            action=self.step(session,package='com.android.launcher',screen='0: Home').json()
+            self.assertEqual(action['action'],{'type':'open_system','app':'calculator'})
+            result=self.step(session,package='com.android.bbkcalculator',screen='0: 0',result='System app requested: com.android.bbkcalculator').json()
+            self.assertIn('khul gaya',result['reply']);model.assert_not_called()
+
     def test_simple_gallery_does_not_call_model_and_verifies_package(self):
         session=self.voice('JoJo gallery kholo').json()['session']
         with patch('jojo_android.make_client') as model:
