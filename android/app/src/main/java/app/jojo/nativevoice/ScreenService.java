@@ -173,8 +173,12 @@ public class ScreenService extends AccessibilityService {
             if(sensitiveScreen(getRootInActiveWindow(),0))return "handoff: payment or credential screen";
             if(type.equals("wait"))return "waiting; verify progress on next observation";
             if(type.equals("open_system")){
-                startActivity(systemIntent(action.optString("app")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-                return "System app requested; verify next screen";
+                Intent intent=systemIntent(action.optString("app")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                android.content.pm.ResolveInfo resolved=getPackageManager().resolveActivity(intent,android.content.pm.PackageManager.MATCH_DEFAULT_ONLY);
+                if(resolved==null||resolved.activityInfo==null)return "failed: no app handles this system request";
+                String expected=resolved.activityInfo.packageName;
+                if(Policy.blocked(expected))return "failed: restricted target";
+                startActivity(intent);return "System app requested: "+expected;
             }
             if(type.equals("open")){
                 String pkg=action.getString("package");

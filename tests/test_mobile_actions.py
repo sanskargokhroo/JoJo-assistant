@@ -127,4 +127,26 @@ class CompanionFlowTests(unittest.TestCase):
             result=self.step(session,apps='Amazon = com.amazon.mShop.android.shopping',screen='0: Home').json()
         self.assertEqual(result['action'],{'type':'open','package':'com.amazon.mShop.android.shopping'})
 
+    def test_simple_gallery_does_not_call_model_and_verifies_package(self):
+        session=self.voice('JoJo gallery kholo').json()['session']
+        with patch('jojo_android.make_client') as model:
+            action=self.step(session,package='com.android.launcher',screen='0: Home').json()
+            self.assertEqual(action['action'],{'type':'open_system','app':'gallery'})
+            result=self.step(session,package='com.vivo.gallery',screen='0: Albums',result='System app requested: com.vivo.gallery').json()
+            self.assertIn('khul gaya',result['reply']);model.assert_not_called()
+
+    def test_simple_open_cannot_claim_success_on_wrong_foreground(self):
+        session=self.voice('JoJo sms kholo').json()['session']
+        self.step(session,package='com.android.launcher',screen='0: Home')
+        result=self.step(session,package='com.android.launcher',screen='0: Home',result='System app requested: com.android.mms').json()
+        self.assertIn('verify nahi',result['reply'])
+
+    def test_natural_sleep_revokes_session(self):
+        session=self.voice('JoJo').json().get('session','')
+        # Wake parser fixture strips only a trailing space; use an ordinary wake request.
+        if not session:session=self.voice('JoJo hello').json()['session']
+        response=self.voice('thik hai off ho jao',session).json()
+        self.assertEqual(response['state'],'sleeping');self.assertEqual(response['session'],'')
+        self.assertTrue(response['reply'])
+
 if __name__=='__main__':unittest.main()

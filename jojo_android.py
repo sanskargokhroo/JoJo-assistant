@@ -13,6 +13,7 @@ from jojo_config import DATA_DIR, MODEL, make_client
 from jojo_journal import context, record
 from jojo_policy import blocked_reason, REFUSAL
 from jojo_runtime import is_stop_command
+from jojo_mobile_commands import sleep_requested, navigation, planning_failure
 from jojo_mobile_actions import APP_CATALOG, affirmative, validate_action
 from jojo_policy import PAYMENT_HANDOFF
 from jojo_inbox import read_mode, report_items, offer, advance, read_action_allowed
@@ -125,6 +126,17 @@ def register(app, core):
                 while len(state['observations'])>1 and sum(map(len,state['observations']))>60000:
                     state['observations'].pop(0)
                 state['read_package']=req.package
+        simple=navigation(state['goal']) if not state['read_mode'] and not state['reply_draft'] else None
+        if simple:
+            if not state['steps']:
+                action={'type':'open_system','app':simple}
+                state['steps'].append({'action':action,'previous_result':req.result})
+                return {'state':'working','session':state['session'],'action':action}
+            prefix='System app requested: '
+            expected=req.result[len(prefix):].strip() if req.result.startswith(prefix) else ''
+            if expected and expected not in ('android','com.android.intentresolver') and expected==req.package and req.screen.strip():
+                return finish(simple.capitalize()+' phone par khul gaya.','completed')
+            return finish(simple.capitalize()+' kholne ka result verify nahi hua. Phone par app chooser ya permission prompt check kijiye.','needs_input')
         prompt = '''You control the user's Android phone through a native accessibility service.
 Return JSON only: {"type":"click|type|scroll|open|open_system|request_install|wait|back|finish","node":0,"text":"","package":"","app":"","direction":"down|up","reply":"","status":"completed|incomplete|needs_input"}.
 You are running on Android, never on the laptop. Do not run desktop tools or claim a laptop action.
@@ -230,7 +242,8 @@ If duplicate names cannot be distinguished, ask the user. Do not claim delivered
             state['steps'].append({'action': action, 'previous_result': req.result})
             return {'state': 'working', 'session': state['session'], 'action': action}
         except Exception as exc:
-            return finish('Connection/planning failed (' + type(exc).__name__ + '). Work was not replayed.', 'incomplete')
+            print('Mobile planner failure:',type(exc).__name__,'code=',getattr(exc,'code',None))
+            return finish(planning_failure(exc), 'incomplete')
 
     def finish(reply, status):
         status = status if status in ('completed','incomplete','needs_input') else 'incomplete'
@@ -274,9 +287,9 @@ If duplicate names cannot be distinguished, ask the user. Do not claim delivered
                 return {'state': 'access_denied', 'reply': 'आप मेरे बॉस नहीं हो' if core.boss_profile is not None else 'Desktop Settings mein owner voice enroll kijiye.'}
             if state['goal']:
                 finish('Previous task interrupted by a new voice command; completed actions were not repeated.', 'incomplete')
-            if is_stop_command(clean) or clean.casefold().strip(' .!।') in core.SLEEP_WORDS:
+            if is_stop_command(clean) or sleep_requested(clean) or clean.casefold().strip(' .!।') in core.SLEEP_WORDS:
                 state.update(session='', expires=0, goal='', pending_install=None, install_grant=None, clarification='',inbox=None,reply_draft=None,read_mode='')
-                return {'state': 'sleeping', 'reply': '', 'session': ''}
+                return {'state': 'sleeping', 'reply': 'Theek hai, so raha hoon. Zarurat ho toh JoJo boliye.', 'session': ''}
             pending = state['pending_install'] if awake else None
             clarification = state['clarification'] if awake else ''
             inbox = state['inbox'] if awake else None

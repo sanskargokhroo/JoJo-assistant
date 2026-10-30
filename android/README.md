@@ -11,7 +11,7 @@ Firestore synchronization and remaining device tests. The local test APK built o
 
 ## Current testing build
 
-The 29 October 2026 testing build is **0.3.0-alpha.3**, version code 4, minimum
+The 30 October 2026 testing build is **0.3.0-alpha.4**, version code 5, minimum
 Android 8.1 (API 27). It includes the native dashboard, JoJo icon, masked pairing
 field, connection diagnostics and selected laptop-voice playback. APK signing
 and Java compilation passed; physical voice/action testing is still in progress.
@@ -159,3 +159,26 @@ listening/resume until Start is tapped. Uninstall opens Android's system removal
 confirmation; it does not erase the laptop or Firestore. See
 [removal scope](../JOJO_UNINSTALL.md). These controls are included in the 0.2.0-alpha.2 local test APK.
 
+
+## Basic navigation and mobile sleep (October 30)
+
+Exact Hindi/Hinglish/English requests to open Gallery/Album, SMS/Messages,
+Contacts, Dialer and Settings use native system intents without a model-planning
+request. Wi-Fi, Bluetooth and display *settings pages* are also supported; this
+is not a direct toggle. Completion is reported only when the returned target
+package matches the next observed foreground and screen content is available.
+A chooser, missing handler or unverifiable screen is reported without claiming success.
+Compound requests still use the model. A synthetic live request reproduced a model
+HTTP 504 deadline error; this update avoids that dependency for basic navigation,
+but does not promise to fix an external model outage for complex tasks.
+
+Say "thik hai off ho jao" or "ठीक है बंद हो जाओ" to end the phone wake session.
+JoJo acknowledges, hides the overlay and waits for "JoJo" again. Idle sleep is
+20 seconds on the phone only, evaluated in the audio-listening loop. Task processing
+and speech playback happen outside that loop. The idle clock resets after the reply
+and on voice activity; it does not cancel a running task. Stop phone assistant remains
+the explicit microphone/service stop. Laptop silence behavior is unchanged.
+
+234 isolated regression tests passed, including direct-route selection, foreground
+verification, sleep aliases and planner error reporting. Physical command recognition,
+launch latency, audible acknowledgement and idle timing still need owner trials.

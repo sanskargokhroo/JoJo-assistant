@@ -142,12 +142,12 @@ public class VoiceService extends Service {
         for(int steps=0;running&&steps<25;steps++){
             String state=response.optString("state","sleeping");
             if(response.has("session")){session=response.getString("session");lastActive=SystemClock.elapsedRealtime();}
-            if(state.equals("sleeping")){show(state);return;}
+            if(state.equals("sleeping")){session="";if(!response.optString("reply").isEmpty())say(response.optString("reply"));show(state);return;}
             if(state.equals("access_denied")){session="";say(response.optString("reply"));show("access_denied");Thread.sleep(2000);show("sleeping");return;}
             JSONObject action=response.optJSONObject("action");
             if(action==null||action.optString("type").equals("finish")){
                 onMain(()->{if(ScreenService.instance!=null)ScreenService.instance.clearInstall();return null;});
-                say(response.optString("reply"));show(response.optBoolean("sleep_after")?"sleeping":"listening");return;
+                say(response.optString("reply"));lastActive=SystemClock.elapsedRealtime();if(response.optBoolean("sleep_after"))session="";show(session.isEmpty()?"sleeping":"listening");return;
             }
             show("working");final JSONObject next=action;
             String result=action.optString("type").equals("observe")?"Fresh observation requested":onMain(()->{if(!running||ScreenService.instance==null)return "failed: service stopped";return ScreenService.instance.execute(next);});
@@ -168,9 +168,10 @@ public class VoiceService extends Service {
                 java.util.ArrayDeque<byte[]> preRoll=new java.util.ArrayDeque<>();int quiet=0,voiced=0;boolean speaking=false;
                 while(running){
                     int n=audio.read(block,0,block.length);if(n<=0)throw new IOException("Audio stream stopped");
-                    if(!session.isEmpty()&&SystemClock.elapsedRealtime()-lastActive>90000){session="";show("sleeping");}
+                    if(!session.isEmpty()&&!speaking&&SystemClock.elapsedRealtime()-lastActive>=20000){session="";show("sleeping");}
                     double sum=0;byte[] bytes=new byte[n*2];for(int i=0;i<n;i++){sum+=(double)block[i]*block[i];bytes[2*i]=(byte)block[i];bytes[2*i+1]=(byte)(block[i]>>8);}
                     boolean loud=Math.sqrt(sum/n)>350;
+                    if(loud&&!session.isEmpty())lastActive=SystemClock.elapsedRealtime();
                     if(!speaking){preRoll.add(bytes);while(preRoll.size()>6)preRoll.removeFirst();if(!loud)continue;speaking=true;for(byte[] b:preRoll)utterance.write(b);preRoll.clear();voiced=1;continue;}
                     utterance.write(bytes);if(loud){quiet=0;voiced++;}else quiet++;
                     if(quiet>=22||utterance.size()>=640000){
