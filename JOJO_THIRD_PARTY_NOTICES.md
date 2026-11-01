@@ -12,3 +12,7 @@ The following attribution statements were present in the original project header
 - `jojo_skills/jojo_git_manager.py`: Ported from OpenJarvis git_tool
 - `jojo_skills/jojo_pdf_processor.py`: Ported from OpenJarvis pdf_tool
 - `jojo_skills/jojo_weather_assistant.py`: Ported from OpenJarvis weather tool
+
+## ECC
+
+JoJo includes the complete [ECC repository](https://github.com/affaan-m/ECC/tree/b38be6a7f6350964d59328b52f0624e1d1d552d1) as an offline reference. The upstream MIT license and individual file notices are preserved in the archive.

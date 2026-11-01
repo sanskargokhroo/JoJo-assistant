@@ -12,7 +12,8 @@ CATALOG={
  'smart_home':('Home Assistant','Only configured, allowlisted devices.'),
 }
 GROUPS={
- 'playbooks':{'get_skill_guidance'},
+ 'playbooks':{'get_skill_guidance', 'search_ecc_library', 'read_ecc_resource',
+              'check_source_syntax', 'compare_source_text', 'consult_jojo_agent'},
  'smart_home':{'list_smart_devices','control_smart_device'},
  'security':{'audit_device_security','inspect_link','inspect_app_file','wifi_security_guidance'},
  'memory':{'remember_workflow','search_semantic_memories','save_semantic_fact','draft_workflow'},

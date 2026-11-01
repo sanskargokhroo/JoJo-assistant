@@ -82,7 +82,6 @@ class JoJoDesktop:
 
     def build(self):
         sidebar=tk.Frame(self.root,bg=PANEL,width=210);sidebar.pack(side='left',fill='y');sidebar.pack_propagate(False)
-        tk.Label(sidebar,text='JJ  /  JoJo',bg=PANEL,fg=ACCENT,font=('Segoe UI',23,'bold')).pack(anchor='w',padx=20,pady=(24,4))
         try:
             self.brand_image=tk.PhotoImage(file=str(ROOT/'assets/jojo_jj_hd.png'))
             self.brand_image=self.brand_image.subsample(max(1,self.brand_image.width()//64))
@@ -100,7 +99,7 @@ class JoJoDesktop:
         body=tk.Frame(self.root,bg=BG);body.pack(side='left',fill='both',expand=True)
         head = tk.Frame(body, bg=BG)
         head.pack(fill='x', padx=24, pady=(22, 0))
-        tk.Label(head, text='JOJO', font=('Segoe UI', 23, 'bold'), fg=TEXT, bg=BG).pack(side='left')
+        tk.Label(head, text='JoJo Dashboard', font=('Segoe UI', 23, 'bold'), fg=TEXT, bg=BG).pack(side='left')
         self.connection = tk.StringVar(value='STARTING…')
         tk.Label(head, textvariable=self.connection, font=('Segoe UI', 9, 'bold'), fg=ACCENT, bg=BG).pack(side='right')
         self.canvas = tk.Canvas(body, width=280, height=136, bg=BG, highlightthickness=0)
@@ -116,6 +115,12 @@ class JoJoDesktop:
         self.mic_button.pack(side='left')
         self.button(controls, 'Stop task', self.stop).pack(side='left', padx=8)
         self.button(controls, 'Stop JoJo', self.stop_assistant).pack(side='right')
+        studio=tk.Frame(body,bg=PANEL,padx=14,pady=10)
+        studio.pack(fill='x',padx=24,pady=(12,0))
+        tk.Label(studio,text='Workflow studio',font=('Segoe UI',12,'bold'),bg=PANEL,fg=TEXT).pack(anchor='w')
+        choices=tk.Frame(studio,bg=PANEL);choices.pack(fill='x')
+        for label,command in [('Python review','python-review'),('Code review','code-review'),('Plan','plan')]:
+            self.button(choices,label,lambda name=command:self.choose_workflow(name)).pack(side='left',padx=(0,5))
         self.chat = ScrolledText(body, bg=PANEL, fg=TEXT, insertbackground=TEXT,
             relief='flat', borderwidth=0, font=('Segoe UI', 11), wrap='word', padx=16, pady=12,
             state='disabled', height=10)
@@ -135,6 +140,13 @@ class JoJoDesktop:
             selectcolor=PANEL, activebackground=BG, font=('Segoe UI', 9)).pack(side='left')
         tk.Label(footer, text='Ctrl+Alt+J: launch • Ctrl+Shift+J: stop • Ctrl+Shift+Q: deactivate', bg=BG, fg=MUTED,
             font=('Segoe UI', 8)).pack(side='right')
+
+    def choose_workflow(self,name):
+        draft=self.input.get().split(' ',1) if self.input.get().startswith('/jojo:') else ['',self.input.get()]
+        self.input.delete(0,'end')
+        self.input.insert(0,'/jojo:'+name+' '+(draft[1] if len(draft)>1 else ''))
+        self.input.focus_set()
+        self.input.icursor('end')
 
     def append(self, who, message):
         if message:

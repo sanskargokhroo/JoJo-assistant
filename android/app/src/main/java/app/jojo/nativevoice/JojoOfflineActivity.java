@@ -17,25 +17,59 @@ public class JojoOfflineActivity extends Activity implements RecognitionListener
     @Override public void onCreate(Bundle state){
         super.onCreate(state);
         getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE);
-        getSharedPreferences("jojo",0).edit().putBoolean("listen_enabled",false).apply();
-        VoiceService.stopNow();stopService(new Intent(this,VoiceService.class));
-        Intent confirm=getSystemService(KeyguardManager.class).createConfirmDeviceCredentialIntent("JoJo local essentials","Confirm ownership. These commands run on this phone without the laptop.");
+        Intent confirm=getSystemService(KeyguardManager.class).createConfirmDeviceCredentialIntent("JoJo phone assistant","Unlock to use this Android device.");
         if(confirm==null){Toast.makeText(this,"Set a device screen lock first",Toast.LENGTH_LONG).show();finish();return;}
         startActivityForResult(confirm,18);
     }
     @Override protected void onActivityResult(int request,int result,Intent data){
         super.onActivityResult(request,result,data);
         if(request!=18||result!=RESULT_OK){finish();return;}
-        authenticated=true;build();
+        authenticated=true;
+        getSharedPreferences("jojo",0).edit().putBoolean("listen_enabled",false).apply();
+        VoiceService.stopNow();stopService(new Intent(this,VoiceService.class));
+        build();
     }
     @Override protected void onPause(){super.onPause();if(authenticated){authenticated=false;finish();}}
     @Override protected void onDestroy(){if(recognizer!=null)recognizer.destroy();super.onDestroy();}
     private void build(){
         LinearLayout panel=new LinearLayout(this);panel.setOrientation(1);panel.setPadding(30,50,30,20);
-        status=new TextView(this);status.setText("JoJo local essentials\nNo laptop or model API. Device authentication replaces voice matching in this explicit local mode.\nCommands: time, date, battery, lock phone, open <exact app name>, timer <minutes>.\nTap-to-talk needs Android 12+ and an installed on-device recognition service/language. Type if unavailable. Background wake listening is stopped.");panel.addView(status);
+        TextView title=new TextView(this);title.setText("JoJo • "+Build.MODEL);title.setTextSize(23);panel.addView(title);
+        status=new TextView(this);status.setText("Running on this phone. Local commands work offline. For AI or a workflow, connect your phone to the internet and set up Phone AI.");status.setTextIsSelectable(true);panel.addView(status);
         command=new EditText(this);command.setHint("JoJo open Calculator");panel.addView(command);
         Button run=new Button(this);run.setText("Run local command");run.setOnClickListener(v->execute(command.getText().toString()));panel.addView(run);
         Button mic=new Button(this);mic.setText("Tap to speak locally");mic.setOnClickListener(v->listen());panel.addView(mic);
+        PinVault vault=new PinVault(this,"jojo_phone_ai");
+        Button ask=new Button(this);ask.setText("Ask Phone AI / run workflow");panel.addView(ask);
+        ask.setOnClickListener(v->{
+            String task=command.getText().toString().trim();
+            if(!authenticated||task.isEmpty()||getSystemService(KeyguardManager.class).isDeviceLocked())return;
+            if(Policy.blocked(task)){status.setText("This request is restricted.");return;}
+            if(!vault.configured(getPackageName())){status.setText("Open Phone AI setup and save your Gemini API key.");return;}
+            String model=getSharedPreferences("jojo",0).getString("phone_model","gemini-3.5-flash-lite");
+            ask.setEnabled(false);status.setText("Phone AI is working…");
+            new Thread(()->{
+                String result;
+                try{result=JojoPhoneModel.ask(this,task,model,new String(vault.decrypt(getPackageName()),java.nio.charset.StandardCharsets.UTF_8));}
+                catch(IllegalArgumentException invalid){result=invalid.getMessage();}
+                catch(Exception unavailable){result="Phone AI unavailable. Check your connection or reopen Phone AI setup.";}
+                final String reply=result;runOnUiThread(()->{if(authenticated&&!isFinishing()){status.setText(reply);ask.setEnabled(true);}});
+            },"JoJo phone AI").start();
+        });
+        Button setup=new Button(this);setup.setText("Phone AI setup");panel.addView(setup);
+        setup.setOnClickListener(v->{
+            LinearLayout fields=new LinearLayout(this);fields.setOrientation(1);
+            EditText model=new EditText(this);model.setSingleLine();model.setText(getSharedPreferences("jojo",0).getString("phone_model","gemini-3.5-flash-lite"));fields.addView(model);
+            EditText key=new EditText(this);key.setSingleLine();key.setHint("Gemini API key");key.setInputType(129);fields.addView(key);
+            new AlertDialog.Builder(this).setTitle("Connect this phone to Gemini").setMessage("AI requests go directly from this phone to Google. Local commands work without setup.")
+                .setView(fields).setNegativeButton("Cancel",null).setNeutralButton("Disconnect",(d,w)->vault.remove(getPackageName()))
+                .setPositiveButton("Save",(d,w)->{
+                    String name=model.getText().toString().trim(),secret=key.getText().toString().trim();
+                    if(!name.matches("[a-zA-Z0-9._-]+")||(secret.isEmpty()&&!vault.configured(getPackageName()))){status.setText("Enter a model and API key.");return;}
+                    try{if(!secret.isEmpty())vault.save(getPackageName(),secret.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                        getSharedPreferences("jojo",0).edit().putString("phone_model",name).apply();status.setText("Phone AI configured.");}
+                    catch(Exception failure){status.setText("Could not save Phone AI settings.");}
+                }).show();
+        });
         for(android.content.pm.ResolveInfo app:getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER),0)){
             String name=app.loadLabel(getPackageManager()).toString(),pkg=app.activityInfo.packageName;
             if(!Policy.blocked(pkg+" "+name)&&!pkg.equals(getPackageName())){
@@ -50,6 +84,12 @@ public class JojoOfflineActivity extends Activity implements RecognitionListener
     private void execute(String raw){
         if(!authenticated||getSystemService(KeyguardManager.class).isDeviceLocked())return;
         String text=raw.trim().toLowerCase(Locale.ROOT).replaceFirst("^jojo[ ,:]*","");
+        if(text.matches("(?:phone (?:ki|ka) )?battery(?: kitni(?: hai)?)?"))text="battery";
+        else if(text.matches("time (?:kya hai|batao)|kitne baje(?: hain)?"))text="time";
+        else if(text.matches("aaj (?:ki )?(?:date|tarikh)(?: kya hai)?"))text="date";
+        else if(text.matches("(?:phone|mobile) lock (?:kar|karo|kar do)"))text="lock phone";
+        else if(text.matches(".+ (?:kholo|khol do)"))text="open "+text.replaceFirst(" (?:kholo|khol do)$","");
+        else if(text.matches("[0-9]{1,3} (?:minute|min) (?:ka )?timer(?: lagao)?"))text="timer "+text.split(" ")[0];
         if(Policy.blocked(text)){status.setText("Restricted app/action. Please handle it manually.");return;}
         try{
             if(text.equals("time")||text.equals("date")){status.setText(java.text.DateFormat.getDateTimeInstance().format(new Date()));return;}
@@ -70,7 +110,7 @@ public class JojoOfflineActivity extends Activity implements RecognitionListener
                 Intent launch=getPackageManager().getLaunchIntentForPackage(pkg);
                 if(launch!=null){startActivity(launch);return;}
             }
-            status.setText("Supported locally: time, date, battery, lock phone, open <app>, timer <minutes>. Advanced tasks need the paired assistant.");
+            status.setText("Local commands: time, date, battery, lock phone, open <app>, timer <minutes>. For a question or /jojo: workflow tap Ask Phone AI.");
         }catch(Exception error){status.setText("Action unavailable on this phone. Nothing was retried.");}
     }
     private void listen(){

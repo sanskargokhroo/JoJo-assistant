@@ -6,6 +6,7 @@ import secrets
 import threading
 import time
 import uuid
+import queue
 from pathlib import Path
 from fastapi import HTTPException, Request
 from pydantic import BaseModel, Field
@@ -35,6 +36,9 @@ class MobileInput(BaseModel):
     apps: str = Field(default='', max_length=12000)
     result: str = Field(default='', max_length=2000)
 
+class WorkflowInput(BaseModel):
+    message: str = Field(min_length=1, max_length=12000)
+
 def pairing_key():
     path = DATA_DIR / 'android_pairing.json'
     if not path.exists():
@@ -59,6 +63,31 @@ def register(app, core):
     from jojo_mobile_management import register as register_management
     register_management(app,authenticate)
 
+    def submit_workflow(message):
+        from jojo_ecc import match_workflow
+        from jojo_capabilities import enabled
+        if not enabled('playbooks'):
+            raise HTTPException(403, 'Enable workflow guidance in Skills.')
+        if not match_workflow(message) or blocked_reason(message):
+            raise HTTPException(400, 'Choose a supported JoJo workflow and permitted task.')
+        try:
+            return core.task_manager.submit(message, 'mobile', False)
+        except queue.Full:
+            raise HTTPException(429, 'JoJo is busy. Try again shortly.')
+
+    @app.post('/api/mobile/workflows')
+    def mobile_workflow(req: WorkflowInput, request: Request):
+        authenticate(request)
+        return {'id': submit_workflow(req.message)['id']}
+
+    @app.get('/api/mobile/workflows/{task_id}')
+    def workflow_status(task_id: str, request: Request):
+        authenticate(request)
+        task = core.task_manager.get(task_id)
+        if not task or task['source'] != 'mobile':
+            raise HTTPException(404, 'Phone task not found.')
+        return {key: task.get(key) for key in ('status','progress','reply','error')}
+
     @app.get('/api/mobile/status')
     def mobile_status(request: Request):
         authenticate(request)
@@ -82,6 +111,14 @@ def register(app, core):
         return {'state':'working','session':state['session'],'action':{'type':'prepare_unlock','scope':scope,'command_id':command_id,'issued_ms':int(time.time()*1000)}}
 
     def plan(req):
+        if state.get('workflow_task'):
+            task = core.task_manager.get(state['workflow_task'])
+            if task and task['status'] in ('queued','running'):
+                return {'state':'working','session':state['session'],'action':{'type':'wait'}}
+            state.pop('workflow_task',None)
+            if not task:
+                return finish('Phone workflow is unavailable.', 'incomplete')
+            return finish(task['reply'] or task['error'] or task['status'],task['status'])
         from jojo_notifications import notification_intent, summarize_notifications
         if notification_intent(state['goal']):
             if req.device_locked:return finish('Phone unlock kijiye; locked screen ki notifications read nahi karunga.','needs_input')
@@ -248,6 +285,7 @@ If duplicate names cannot be distinguished, ask the user. Do not claim delivered
             return finish(planning_failure(exc), 'incomplete')
 
     def finish(reply, status):
+        state.pop('workflow_task',None)
         status = status if status in ('completed','incomplete','needs_input') else 'incomplete'
         record({'id': state['id'], 'created_at': time.time(), 'source': 'mobile','private':state.get('private',False),'device_id':state['device_id'], 'message': state['goal'],
                 'reply': reply, 'status': status, 'events': state['steps']})
@@ -358,6 +396,13 @@ If duplicate names cannot be distinguished, ask the user. Do not claim delivered
                 return {'state': 'listening', 'session': state['session'], 'reply': 'हाँ बॉस, बोलिए!'}
             if blocked_reason(clean):
                 return finish(REFUSAL, 'needs_input')
+            from jojo_ecc import match_workflow
+            if match_workflow(clean) and not req.device_locked:
+                try:
+                    state['workflow_task'] = submit_workflow(clean)['id']
+                except HTTPException as exc:
+                    return finish(exc.detail,'needs_input')
+                return {'state':'working','session':state['session'],'action':{'type':'wait'}}
             # Ask the verified companion for a fresh screen only after wake + owner match.
             from jojo_notifications import notification_intent
             return {'state': 'thinking', 'session': state['session'], 'action': {'type': 'observe', 'notifications':notification_intent(clean)}}

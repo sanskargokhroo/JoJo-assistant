@@ -2085,6 +2085,15 @@ def listen_command(duration=3.0):
 def dispatch_command(message, source="laptop"):
     from jojo_runtime import bind_device
     bind_device(source)
+    if source == 'mobile':
+        from jojo_ecc import match_workflow
+        if match_workflow(message):
+            from jojo_capabilities import enabled
+            from jojo_policy import require_allowed
+            require_allowed(message)
+            if not enabled('mobile') or not enabled('playbooks'):
+                raise PermissionError('Phone workflows are disabled in Skills.')
+            return jojo_agi.run_agent_cycle(message, context_notes='Target device: mobile. Use supplied task evidence.')
     if source == "laptop" and desktop_deactivated.is_set():
         raise ValueError("Laptop assistant is deactivated. Open JoJo to reactivate it; phone service is separate.")
     from jojo_workspace import set_private
@@ -2146,10 +2155,13 @@ def dispatch_command(message, source="laptop"):
         from jojo_character import followup as optional_followup
         followup = optional_followup(' Kya search karna hai?') if not query else ''
         return f"{shop}: {query or 'homepage'} ek tab mein kholne ka request bheja hai." + followup
-    # Compound commands must not stop at the first substring match.
-    if is_explanation_request(message):
+    from jojo_ecc import match_workflow
+    # Explicit workflow commands take precedence over conversational routing.
+    if message.lstrip().startswith('/') and match_workflow(message):
+        reply = jojo_agi.run_agent_cycle(message, context_notes="Target device: " + source)
+    elif is_explanation_request(message):
         reply = ask_jojo_brain(message)
-    elif needs_planning(message):
+    elif needs_planning(message) or match_workflow(message):
         reply = jojo_agi.run_agent_cycle(message, context_notes="Target device: " + source)
     else:
         reply = handle_reminder_voice_command(message)

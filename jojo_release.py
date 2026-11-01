@@ -21,10 +21,12 @@ def files(root=ROOT):
     for name in ('README.md','build.gradle','settings.gradle','build_local.py','check_java.py','install_on_phone.ps1','app/build.gradle'):
         if (root/'android'/name).is_file():chosen.add(root/'android'/name)
     chosen.update(p for p in (root/'android/app/src').rglob('*') if p.is_file() and p.suffix in ('.java','.xml'))
+    mobile_library=root/'android/app/src/main/res/raw/jojo_workflows.json'
+    if mobile_library.is_file():chosen.add(mobile_library)
     chosen.update(p for p in (root/'web').glob('*') if p.is_file() and p.suffix in ('.html','.js','.json','.glb'))
     chosen.update((root/'web/icons').glob('jojo_*.png'))
     # Explicit public brand assets only; never include arbitrary screenshots.
-    for name in ('assets/jojo_jj_hd.png','android/app/src/main/res/drawable/jojo_brand.png'):
+    for name in ('assets/jojo_workflows.zip','assets/jojo_jj_hd.png','android/app/src/main/res/drawable/jojo_brand.png'):
         if (root/name).is_file():chosen.add(root/name)
     return sorted(chosen)
 
@@ -48,6 +50,11 @@ def audit(selected,root=ROOT):
         if path.is_symlink() or path.name in PRIVATE_NAMES or any(part in ('.git','__pycache__','voice_cache','hud_profile','build') for part in path.relative_to(root).parts):
             issues.append((relative,'private/generated path'));continue
         if path.suffix in ('.png','.glb'):continue
+        if relative == 'assets/jojo_workflows.zip':
+            from jojo_ecc import SHA256
+            if hashlib.sha256(path.read_bytes()).hexdigest() != SHA256:
+                issues.append((relative,'unexpected ECC archive digest'))
+            continue
         text=path.read_text(encoding='utf-8-sig')
         for label,pattern in patterns:
             if pattern.search(text):issues.append((relative,label))

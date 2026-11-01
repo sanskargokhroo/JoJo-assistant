@@ -13,8 +13,16 @@
 </p>
 
 > **Experimental software.** JoJo is a tool-using assistant, not verified AGI.
-> Windows is the supported desktop target. Android currently needs the laptop
-> backend and USB connection. No claim of universal app control or perfect security.
+> Windows is the supported desktop target. Android includes a standalone phone assistant and an optional USB companion mode.
+
+## Install JoJo
+
+| Platform | Download | First launch |
+| --- | --- | --- |
+| Windows 10/11 x64 | [JoJo-Setup.exe](https://github.com/sanskargokhroo/JoJo-assistant/releases/download/v0.3.0-alpha.5/JoJo-Setup.exe) | Run the installer, select **Install / update**, then complete model and dependency setup. Python is bundled. Internet is required for first-time setup. The installer is unsigned. |
+| Android 8.1+ | [JoJo-debug.apk](https://github.com/sanskargokhroo/JoJo-assistant/releases/download/v0.3.0-alpha.5/JoJo-debug.apk) | Open the APK and allow installation from that source if Android prompts. Open **Phone assistant** and confirm your device lock. Local commands work offline. For AI, add your own Gemini key under **Phone AI setup**. This preview APK is debug-signed. |
+
+[Release notes, source ZIP and SHA-256 checksums](https://github.com/sanskargokhroo/JoJo-assistant/releases/tag/v0.3.0-alpha.5) · [Windows installer source](jojo_build_windows.py) · [Android app source](android/app/src/main) · [APK build script](android/build_local.py)
 
 ## Meet JoJo
 
@@ -34,7 +42,7 @@ Developed by **[Sanskar Gokhroo](https://github.com/sanskargokhroo)**.
 
 ## Get started
 
-You need Windows 10/11, a microphone, Python with Tkinter and an API key from your
+For a Windows installation from source, you need Windows 10/11, a microphone, Python with Tkinter and an API key from your
 chosen provider. The current development environment uses Python 3.14; dependency
 availability on other Python versions has not been fully validated.
 

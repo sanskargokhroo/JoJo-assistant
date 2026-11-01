@@ -14,7 +14,9 @@ import org.json.JSONObject;
 final class PinVault {
     private static final String ALIAS="jojo.local.pin.v1";
     private final Context context;
-    PinVault(Context context){this.context=context;}
+    private final String storage;
+    PinVault(Context context){this(context,"pin_vault");}
+    PinVault(Context context,String storage){this.context=context;this.storage=storage;}
     private SecretKey key() throws Exception {
         KeyStore store=KeyStore.getInstance("AndroidKeyStore");store.load(null);
         if(!store.containsAlias(ALIAS)){
@@ -41,32 +43,32 @@ final class PinVault {
         byte[] cert=signatures[0].toByteArray();
         return scope+":"+Base64.encodeToString(MessageDigest.getInstance("SHA-256").digest(cert),Base64.NO_WRAP);
     }
-    boolean configured(String scope){return context.getSharedPreferences("pin_vault",0).contains(scope);}
+    boolean configured(String scope){return context.getSharedPreferences(storage,0).contains(scope);}
     void save(String scope,byte[] pin) throws Exception {
         String identity=identity(scope);
         Cipher cipher=Cipher.getInstance("AES/GCM/NoPadding");cipher.init(Cipher.ENCRYPT_MODE,key());
-        cipher.updateAAD(identity.getBytes(StandardCharsets.UTF_8));
+        cipher.updateAAD((storage.equals("pin_vault")?identity:storage+identity).getBytes(StandardCharsets.UTF_8));
         JSONObject record=new JSONObject().put("identity",identity).put("iv",Base64.encodeToString(cipher.getIV(),Base64.NO_WRAP))
             .put("ciphertext",Base64.encodeToString(cipher.doFinal(pin),Base64.NO_WRAP));
-        if(!context.getSharedPreferences("pin_vault",0).edit().putString(scope,record.toString()).remove("blocked:"+scope).commit())throw new IllegalStateException("Save failed");
+        if(!context.getSharedPreferences(storage,0).edit().putString(scope,record.toString()).remove("blocked:"+scope).commit())throw new IllegalStateException("Save failed");
     }
     byte[] decrypt(String scope) throws Exception {
-        JSONObject record=new JSONObject(context.getSharedPreferences("pin_vault",0).getString(scope,"{}"));
+        JSONObject record=new JSONObject(context.getSharedPreferences(storage,0).getString(scope,"{}"));
         String identity=identity(scope);
         if(!identity.equals(record.getString("identity")))throw new SecurityException("App identity changed");
         Cipher cipher=Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.DECRYPT_MODE,key(),new GCMParameterSpec(128,Base64.decode(record.getString("iv"),Base64.NO_WRAP)));
-        cipher.updateAAD(identity.getBytes(StandardCharsets.UTF_8));
+        cipher.updateAAD((storage.equals("pin_vault")?identity:storage+identity).getBytes(StandardCharsets.UTF_8));
         return cipher.doFinal(Base64.decode(record.getString("ciphertext"),Base64.NO_WRAP));
     }
     boolean reserve(String scope,String commandId){
-        android.content.SharedPreferences p=context.getSharedPreferences("pin_vault",0);
+        android.content.SharedPreferences p=context.getSharedPreferences(storage,0);
         java.util.Set<String> used=new java.util.HashSet<>(p.getStringSet("used_commands",java.util.Collections.emptySet()));
         if(commandId.isEmpty()||p.getBoolean("blocked:"+scope,false)||used.contains(commandId))return false;
         if(used.size()>=64)used.clear();
         used.add(commandId);
         return p.edit().putBoolean("blocked:"+scope,true).putStringSet("used_commands",used).commit();
     }
-    void verified(String scope){context.getSharedPreferences("pin_vault",0).edit().remove("blocked:"+scope).apply();}
-    void remove(String scope){context.getSharedPreferences("pin_vault",0).edit().remove(scope).remove("blocked:"+scope).apply();}
+    void verified(String scope){context.getSharedPreferences(storage,0).edit().remove("blocked:"+scope).apply();}
+    void remove(String scope){context.getSharedPreferences(storage,0).edit().remove(scope).remove("blocked:"+scope).apply();}
 }

@@ -16,6 +16,10 @@ public class MainActivity extends Activity {
     private final java.util.ArrayList<ScrollView> pages=new java.util.ArrayList<>();
     private final java.util.ArrayList<Button> tabs=new java.util.ArrayList<>();
     private LinearLayout pageHost;
+    private TextView workflowStatus;
+    private EditText workflowInput;
+    private boolean workflowBusy;
+    private final Runnable pollWorkflow=()->workflowRequest(null);
     private LinearLayout page(){
         LinearLayout p=new LinearLayout(this);p.setOrientation(LinearLayout.VERTICAL);p.setPadding(dp(16),0,dp(16),dp(16));
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.addView(p);pages.add(scroll);
@@ -52,11 +56,28 @@ public class MainActivity extends Activity {
         ImageView logo=new ImageView(this);logo.setImageResource(getResources().getIdentifier("jojo_icon","drawable",getPackageName()));logo.setContentDescription("JoJo double J logo");
         header.addView(logo,new LinearLayout.LayoutParams(dp(44),dp(44)));
         LinearLayout titles=new LinearLayout(this);titles.setOrientation(LinearLayout.VERTICAL);titles.setPadding(dp(12),0,0,0);
-        label(titles,"JoJo",25,Color.WHITE).setTypeface(null,android.graphics.Typeface.BOLD);
+        label(titles,"JoJo Dashboard",25,Color.WHITE).setTypeface(null,android.graphics.Typeface.BOLD);
         label(titles,android.os.Build.MODEL+" • Phone workspace",12,Color.rgb(164,182,207));header.addView(titles);screen.addView(header);
         pageHost=new LinearLayout(this);pageHost.setOrientation(LinearLayout.VERTICAL);screen.addView(pageHost,new LinearLayout.LayoutParams(-1,0,1));
         LinearLayout panel=page(),connections=page(),skills=page(),settings=page();
-        LinearLayout status=card(panel,"This phone","USB companion • laptop backend required");
+        LinearLayout phone=card(panel,"This phone",android.os.Build.MODEL+" • Android workspace");
+        button(phone,"Open phone assistant",()->startActivity(new Intent(this,JojoOfflineActivity.class)));
+        LinearLayout workflows=card(panel,"Paired workflow studio","Runs through your connected laptop. For independent use, open Phone assistant above.");
+        Spinner picker=new Spinner(this);
+        String[] presets={"Python review","Code review","Plan","Custom command"};
+        String[] commands={"/jojo:python-review ","/jojo:code-review ","/jojo:plan ",""};
+        picker.setAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_spinner_dropdown_item,presets));
+        workflows.addView(picker);
+        workflowInput=new EditText(this);workflowInput.setHint("Task details or code");workflowInput.setMinLines(2);
+        workflowInput.setMaxLines(6);workflows.addView(workflowInput);
+        button(workflows,"Run workflow",()->{
+            String draft=workflowInput.getText().toString().trim();
+            if(draft.isEmpty()){workflowInput.setError("Enter task details");return;}
+            if(workflowBusy || !getSharedPreferences("jojo",0).getString("workflow_task","").isEmpty())return;
+            workflowRequest(draft.startsWith("/")?draft:commands[picker.getSelectedItemPosition()]+draft);
+        });
+        workflowStatus=label(workflows,"Ready",14,Color.rgb(98,229,216));workflowStatus.setTextIsSelectable(true);
+        LinearLayout status=card(panel,"Laptop connection","Optional USB companion");
         connectionStatus=label(status,"Tap Check connection to verify pairing.",14,Color.WHITE);
         permissionStatus=label(status,"",13,Color.rgb(164,182,207));
         button(status,"Check connection",this::checkConnection);
@@ -136,6 +157,44 @@ public class MainActivity extends Activity {
         boolean mic=checkSelfPermission(Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED;
         permissionStatus.setText("Microphone: "+(mic?"allowed":"not allowed")+"  •  Screen control: "+(ScreenService.instance!=null?"on":"off")+"\nPhone listening: "+(VoiceService.isRunning()?"on":"off"));
     }
+    private void workflowRequest(String message){
+        android.content.SharedPreferences prefs=getSharedPreferences("jojo",0);
+        String id=prefs.getString("workflow_task",""),key=prefs.getString("key","");
+        if(workflowBusy || (message==null && id.isEmpty()))return;
+        if(key.isEmpty()){workflowStatus.setText("Pair your laptop in Connect to run workflows.");return;}
+        workflowBusy=true;
+        if(message!=null)workflowStatus.setText("Submitting…");
+        new Thread(()->{
+            String status;boolean again=false;java.net.HttpURLConnection c=null;
+            try{
+                String path="/api/mobile/workflows"+(message==null?"/"+id:"");
+                c=(java.net.HttpURLConnection)new java.net.URL("http://127.0.0.1:8000"+path).openConnection();
+                c.setConnectTimeout(4000);c.setReadTimeout(8000);c.setRequestProperty("X-JoJo-Key",key);
+                if(message!=null){
+                    c.setRequestMethod("POST");c.setDoOutput(true);c.setRequestProperty("Content-Type","application/json");
+                    try(java.io.OutputStream out=c.getOutputStream()){out.write(new org.json.JSONObject().put("message",message).toString().getBytes("UTF-8"));}
+                }
+                int code=c.getResponseCode();
+                if(code!=200){
+                    if(code==404)prefs.edit().remove("workflow_task").apply();
+                    status=code==401?"Check pairing in Connect.":code==403?"Check mobile and workflow permissions in Skills.":code==400?"Check the workflow command and task details.":"Workflow unavailable ("+code+").";
+                }else{
+                    org.json.JSONObject data;
+                    try(java.util.Scanner reader=new java.util.Scanner(c.getInputStream(),"UTF-8").useDelimiter("\\A")){data=new org.json.JSONObject(reader.next());}
+                    if(message!=null){prefs.edit().putString("workflow_task",data.getString("id")).apply();status="Queued";again=true;}
+                    else{
+                        String stage=data.getString("status");again=stage.equals("queued")||stage.equals("running");
+                        status=again?data.optString("progress",stage):data.optString("reply","");
+                        if(status.isEmpty())status=data.optString("error",stage);
+                        if(!again)prefs.edit().remove("workflow_task").apply();
+                    }
+                }
+            }catch(Exception unavailable){status="Connection interrupted. Check USB and the laptop backend.";again=message==null;}
+            finally{if(c!=null)c.disconnect();}
+            final String result=status;final boolean retry=again;
+            ui.post(()->{workflowBusy=false;if(!destroyed){workflowStatus.setText(result);if(retry&&hasWindowFocus())ui.postDelayed(pollWorkflow,1800);}});
+        },"JoJo workflow").start();
+    }
     private void checkConnection(){
         if(checking)return;
         String key=getSharedPreferences("jojo",0).getString("key","");
@@ -163,10 +222,11 @@ public class MainActivity extends Activity {
             final String text=message;ui.post(()->{checking=false;if(!destroyed){connectionStatus.setText(text);refreshStatus();}});
         },"JoJo connection check").start();
     }
-    @Override protected void onPause(){ui.removeCallbacks(refresh);super.onPause();}
+    @Override protected void onPause(){ui.removeCallbacks(refresh);ui.removeCallbacks(pollWorkflow);super.onPause();}
     @Override protected void onDestroy(){destroyed=true;ui.removeCallbacks(refresh);super.onDestroy();}
     @Override protected void onPostResume(){
         super.onPostResume();ui.removeCallbacks(refresh);ui.post(refresh);
+        ui.removeCallbacks(pollWorkflow);ui.post(pollWorkflow);
         if(getSharedPreferences("jojo",0).getBoolean("listen_enabled",false))startListening(false);
     }
     private void startListening(boolean request){
@@ -192,7 +252,7 @@ public class MainActivity extends Activity {
     }
     void button(LinearLayout panel,String text,Runnable action){
         Button b=new Button(this);b.setText(text);b.setAllCaps(false);b.setTextSize(15);b.setGravity(android.view.Gravity.CENTER);b.setMinHeight(dp(50));
-        boolean primary=text.equals("Start listening");boolean stop=text.equals("Stop phone assistant");
+        boolean primary=text.equals("Run workflow");boolean stop=text.equals("Stop phone assistant");
         b.setTextColor(primary?Color.rgb(9,15,29):Color.WHITE);
         b.setBackground(surface(primary?Color.rgb(98,229,216):stop?Color.rgb(100,38,58):Color.rgb(37,51,74),12));
         b.setPadding(dp(12),dp(8),dp(12),dp(8));

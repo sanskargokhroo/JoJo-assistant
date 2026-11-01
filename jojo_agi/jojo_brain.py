@@ -126,7 +126,14 @@ def run_agent_cycle(goal, speak_callback=None, thought_callback=None, context_no
             if thought_callback:
                 thought_callback("Planning and checking each requested step…")
             with make_client() as client:
-                result = run_tool_loop(client, goal, prompt, get_all_tools(), on_state=update_agent_state)
+                from jojo_runtime import target_platform
+                tools = get_all_tools()
+                if target_platform() == 'mobile':
+                    from jojo_ecc import match_workflow
+                    if match_workflow(goal):
+                        from jojo_capabilities import GROUPS
+                        tools = [tool for tool in tools if tool.__name__ in GROUPS['playbooks']]
+                result = run_tool_loop(client, goal, prompt, tools, on_state=update_agent_state)
             set_outcome(result.status)
             update_agent_state(thought=result.status.replace("_", " "), active=False, tool="", result=result.reply, status=result.status)
             log_episode(goal, "Explicit tool execution and verification", [step["tool"] for step in result.steps], result.reply, result.status)
